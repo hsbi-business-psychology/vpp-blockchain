@@ -23,7 +23,7 @@ export function AppLayout({ children, currentPath, onNavigate }: AppLayoutProps)
           </div>
         )}
         <Header currentPath={currentPath} onNavigate={onNavigate} />
-        <main className="mx-auto w-full max-w-[1100px] flex-1 px-4 py-8 md:px-6">
+        <main id="main-content" className="mx-auto w-full max-w-[1100px] flex-1 px-4 py-8 md:px-6">
           {children}
         </main>
         <Footer onNavigate={onNavigate} />

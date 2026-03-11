@@ -31,25 +31,30 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
           <button
             onClick={() => handleNav('/')}
             className="flex items-center"
+            aria-label={t('nav.home')}
           >
-            <img src="/hsbi-logo-light.png" alt="HSBI" className="h-12 dark:hidden md:h-16" />
-            <img src="/hsbi-logo-dark.png" alt="HSBI" className="hidden h-12 dark:block md:h-16" />
+            <img src="/hsbi-logo-light.png" alt="HSBI – Startseite" className="h-12 dark:hidden md:h-16" />
+            <img src="/hsbi-logo-dark.png" alt="HSBI – Startseite" className="hidden h-12 dark:block md:h-16" aria-hidden="true" />
           </button>
 
-          <nav className="hidden items-center gap-1 md:flex">
-            {navLinks.map(({ href, label }) => (
-              <button
-                key={href}
-                onClick={() => handleNav(href)}
-                className={`relative px-3 py-2 text-base font-semibold transition-colors hover:text-primary ${
-                  currentPath === href || currentPath.startsWith(href + '/')
-                    ? 'text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary'
-                    : 'text-foreground'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+          <nav className="hidden items-center gap-1 md:flex" aria-label={t('nav.main', 'Hauptnavigation')}>
+            {navLinks.map(({ href, label }) => {
+              const isActive = currentPath === href || currentPath.startsWith(href + '/')
+              return (
+                <button
+                  key={href}
+                  onClick={() => handleNav(href)}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`relative px-3 py-2 text-base font-semibold transition-colors hover:text-primary ${
+                    isActive
+                      ? 'text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary'
+                      : 'text-foreground'
+                  }`}
+                >
+                  {label}
+                </button>
+              )
+            })}
             <div className="ml-2 flex items-center gap-1">
               <LanguageSwitcher />
               <ThemeToggle />
@@ -59,51 +64,58 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="flex size-9 items-center justify-center rounded-md text-foreground md:hidden"
-            aria-label="Toggle menu"
+            aria-label={menuOpen ? t('nav.closeMenu', 'Menü schließen') : t('nav.openMenu', 'Menü öffnen')}
+            aria-expanded={menuOpen}
           >
-            {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+            {menuOpen ? <X className="size-5" aria-hidden="true" /> : <Menu className="size-5" aria-hidden="true" />}
           </button>
         </div>
       </header>
 
       {menuOpen && (
-        <div className="fixed inset-0 z-50 bg-background md:hidden">
+        <div className="fixed inset-0 z-50 bg-background md:hidden" role="dialog" aria-label={t('nav.mobileMenu', 'Navigation')}>
           <div className="flex items-center justify-between px-4 py-5">
             <button
               onClick={() => handleNav('/')}
               className="flex items-center"
+              aria-label={t('nav.home')}
             >
-              <img src="/hsbi-logo-light.png" alt="HSBI" className="h-12 dark:hidden" />
-              <img src="/hsbi-logo-dark.png" alt="HSBI" className="hidden h-12 dark:block" />
+              <img src="/hsbi-logo-light.png" alt="HSBI – Startseite" className="h-12 dark:hidden" />
+              <img src="/hsbi-logo-dark.png" alt="" className="hidden h-12 dark:block" aria-hidden="true" />
             </button>
             <button
               onClick={() => setMenuOpen(false)}
               className="flex size-9 items-center justify-center"
-              aria-label="Close menu"
+              aria-label={t('nav.closeMenu', 'Menü schließen')}
             >
-              <X className="size-5" />
+              <X className="size-5" aria-hidden="true" />
             </button>
           </div>
-          <nav className="flex flex-col gap-1 px-4 pt-6">
+          <nav className="flex flex-col gap-1 px-4 pt-6" aria-label={t('nav.main', 'Hauptnavigation')}>
             <button
               onClick={() => handleNav('/')}
+              aria-current={currentPath === '/' ? 'page' : undefined}
               className={`rounded-md px-4 py-3 text-left text-base font-semibold ${
                 currentPath === '/' ? 'bg-accent text-primary' : ''
               }`}
             >
               {t('nav.home')}
             </button>
-            {navLinks.map(({ href, label }) => (
-              <button
-                key={href}
-                onClick={() => handleNav(href)}
-                className={`rounded-md px-4 py-3 text-left text-base font-semibold ${
-                  currentPath === href || currentPath.startsWith(href + '/') ? 'bg-accent text-primary' : ''
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+            {navLinks.map(({ href, label }) => {
+              const isActive = currentPath === href || currentPath.startsWith(href + '/')
+              return (
+                <button
+                  key={href}
+                  onClick={() => handleNav(href)}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`rounded-md px-4 py-3 text-left text-base font-semibold ${
+                    isActive ? 'bg-accent text-primary' : ''
+                  }`}
+                >
+                  {label}
+                </button>
+              )
+            })}
             <div className="mt-4 flex items-center gap-2 px-4">
               <LanguageSwitcher />
               <ThemeToggle />
