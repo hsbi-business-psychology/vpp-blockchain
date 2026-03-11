@@ -131,8 +131,8 @@ feat(contracts): add survey deactivation function
 
 ## Reporting Issues
 
-- Use the [Bug Report](https://github.com/hsbi/vpp-blockchain/issues/new?template=bug_report.md) template for bugs
-- Use the [Feature Request](https://github.com/hsbi/vpp-blockchain/issues/new?template=feature_request.md) template for ideas
+- Use the [Bug Report](https://github.com/hsbi-business-psychology/vpp-blockchain/issues/new?template=bug_report.md) template for bugs
+- Use the [Feature Request](https://github.com/hsbi-business-psychology/vpp-blockchain/issues/new?template=feature_request.md) template for ideas
 - Check existing issues before creating a new one
 
 ## Project Structure
@@ -151,4 +151,4 @@ vpp-blockchain/
 
 ## Questions?
 
-If you have questions about contributing, feel free to [open a discussion](https://github.com/hsbi/vpp-blockchain/discussions) or reach out via an issue.
+If you have questions about contributing, feel free to [open a discussion](https://github.com/hsbi-business-psychology/vpp-blockchain/discussions) or reach out via an issue.

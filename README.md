@@ -64,7 +64,7 @@ VPP lets students earn points for completing surveys. Points are recorded on a p
 ### Installation
 
 ```bash
-git clone https://github.com/hsbi/vpp-blockchain.git
+git clone https://github.com/hsbi-business-psychology/vpp-blockchain.git
 cd vpp-blockchain
 pnpm install
 ```
