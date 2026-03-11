@@ -92,7 +92,7 @@ export default function AdminPage() {
     return () => { cancelled = true }
   }, [wallet, rpcUrl, contractAddress])
 
-  const handleAuth = async () => {
+  const handleAuth = useCallback(async () => {
     if (!wallet) return
     setAuthLoading(true)
     try {
@@ -106,7 +106,13 @@ export default function AdminPage() {
     } finally {
       setAuthLoading(false)
     }
-  }
+  }, [wallet, sign, t])
+
+  useEffect(() => {
+    if (adminCheck === 'admin' && !authenticated && !authLoading) {
+      handleAuth()
+    }
+  }, [adminCheck, authenticated, authLoading, handleAuth])
 
   const fetchSurveys = useCallback(async () => {
     if (!authCredentials) return
@@ -288,31 +294,9 @@ export default function AdminPage() {
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">{t('admin.title')}</h1>
         <Card className="mx-auto max-w-lg">
-          <CardHeader>
-            <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10">
-              <ShieldCheck className="size-6 text-primary" />
-            </div>
-            <CardTitle>{t('admin.auth.title')}</CardTitle>
-            <CardDescription>{t('admin.auth.description')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-lg bg-muted p-3">
-              <p className="text-xs text-muted-foreground">Wallet</p>
-              <p className="truncate text-sm font-mono">{wallet?.address}</p>
-            </div>
-            <Button onClick={handleAuth} disabled={authLoading} className="w-full">
-              {authLoading ? (
-                <>
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  {t('common.loading')}
-                </>
-              ) : (
-                <>
-                  <ShieldCheck className="mr-2 size-4" />
-                  {t('admin.auth.button')}
-                </>
-              )}
-            </Button>
+          <CardContent className="flex flex-col items-center gap-4 py-8">
+            <Loader2 className="size-8 animate-spin text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">{t('admin.auth.description')}</p>
           </CardContent>
         </Card>
       </div>
