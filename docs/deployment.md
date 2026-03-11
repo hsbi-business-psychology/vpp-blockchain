@@ -35,7 +35,7 @@ pnpm run deploy:sepolia
 pnpm run deploy:mainnet
 ```
 
-Save the deployed contract address — you will need it for the backend and frontend configuration.
+The deploy script will output a **Deployment Summary** including the contract address, deploy block number, and ready-to-use environment variables. Save these — you need them for both the backend and frontend configuration.
 
 ### Verify the Contract
 
@@ -154,6 +154,7 @@ cp -r packages/frontend/dist/* /var/www/vpp-frontend/
 | `RPC_URL` | Yes | Base RPC endpoint |
 | `CONTRACT_ADDRESS` | Yes | Deployed SurveyPoints address |
 | `MINTER_PRIVATE_KEY` | Yes | Backend wallet private key (MINTER_ROLE) |
+| `CONTRACT_DEPLOY_BLOCK` | No | Block number at contract deployment (speeds up event queries; default: `0`) |
 | `EXPLORER_BASE_URL` | Yes | Block explorer URL |
 | `FRONTEND_URL` | Yes | Frontend URL (CORS + template redirects) |
 | `CLAIM_RATE_LIMIT_WINDOW_MS` | No | Rate limit window for claims (default: `60000`) |
@@ -169,6 +170,7 @@ cp -r packages/frontend/dist/* /var/www/vpp-frontend/
 | `VITE_API_URL` | Yes | Backend API base URL |
 | `VITE_RPC_URL` | Yes | Base RPC endpoint |
 | `VITE_CONTRACT_ADDRESS` | Yes | Deployed SurveyPoints address |
+| `VITE_CONTRACT_DEPLOY_BLOCK` | No | Block number at contract deployment (speeds up event queries; default: `0`) |
 | `VITE_EXPLORER_URL` | Yes | Block explorer base URL |
 | `VITE_DEFAULT_LOCALE` | No | Default language `en` or `de` (default: `en`) |
 
@@ -180,6 +182,7 @@ cp -r packages/frontend/dist/* /var/www/vpp-frontend/
 - [ ] Backend health check returns `200 OK` at `/api/health`
 - [ ] Frontend loads and theme toggle works
 - [ ] Admin can register a survey
+- [ ] `CONTRACT_DEPLOY_BLOCK` is set for faster event queries
 - [ ] Test claim flow works end-to-end
 - [ ] CORS is configured correctly (no cross-origin errors)
 - [ ] HTTPS is enabled (required for wallet signing in production)

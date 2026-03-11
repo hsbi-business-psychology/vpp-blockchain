@@ -269,6 +269,62 @@ Health check endpoint. Returns the server status and blockchain connectivity.
 
 ---
 
+## `GET /api/wallets/:address/submitted`
+
+Check whether a wallet has been marked as "submitted" for thesis admission.
+
+**Parameters:**
+
+| Name | In | Type | Description |
+|---|---|---|---|
+| `address` | path | string | Wallet address |
+
+**Response (200):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "address": "0x...",
+    "submitted": false,
+    "totalPoints": 8
+  }
+}
+```
+
+---
+
+## `POST /api/wallets/:address/mark-submitted`
+
+Mark a wallet as submitted for thesis admission.
+
+**Authentication:** Admin wallet signature (via `x-admin-signature` and `x-admin-message` headers).
+
+**Response (200):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "address": "0x...",
+    "txHash": "0x...",
+    "explorerUrl": "https://basescan.org/tx/0x..."
+  }
+}
+```
+
+---
+
+## `POST /api/wallets/:address/unmark-submitted`
+
+Remove the submission mark from a wallet (e.g. to correct a mistake).
+
+**Authentication:** Admin wallet signature (via `x-admin-signature` and `x-admin-message` headers).
+
+**Response format:** Same as `mark-submitted`.
+
+---
+
 ## Error Format
 
 All error responses follow a consistent format:

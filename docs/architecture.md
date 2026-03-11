@@ -82,9 +82,10 @@ The `SurveyPoints` contract is the single source of truth for all point data.
 | `_surveyPoints` | Points per wallet per survey |
 | `_totalPoints` | Accumulated points per wallet |
 | `_claimed` | Boolean: has wallet claimed survey? |
+| `_walletSubmitted` | Boolean: has wallet been presented for thesis admission? |
 
 **Access control** uses OpenZeppelin `AccessControl`:
-- `ADMIN_ROLE` — Can register and deactivate surveys
+- `ADMIN_ROLE` — Can register/deactivate surveys, manage admins, mark wallet submissions
 - `MINTER_ROLE` — Can award points (assigned to the backend wallet)
 
 **Design decision:** Simple mappings instead of ERC-721/ERC-1155 tokens reduce gas costs by ~75%.
@@ -194,6 +195,12 @@ Base is an Ethereum Layer 2 (Optimistic Rollup) operated by Coinbase. It provide
 ### Why No Database?
 
 The blockchain **is** the database. The backend is stateless — it only relays verified transactions. This eliminates synchronization issues and makes the system fully auditable.
+
+### Performance
+
+- **Survey cache:** The backend caches the survey list with a 30-second TTL. Repeated requests within that window are served from memory, avoiding expensive event queries.
+- **Deploy block:** Both backend and frontend accept a `CONTRACT_DEPLOY_BLOCK` setting. Event queries (`queryFilter`) only scan from that block onward, skipping irrelevant blockchain history.
+- **Progressive loading:** The frontend renders UI shells immediately and fills in data as it arrives. Metrics cards show skeleton states while surveys load; points and history load independently on the student page.
 
 ### Why a Backend Relayer?
 
