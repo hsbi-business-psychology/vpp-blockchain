@@ -1,6 +1,7 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
+import { ethers } from 'ethers'
 import { ShieldCheck, Loader2, LogOut } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -9,6 +10,7 @@ import { Separator } from '@/components/ui/separator'
 import { MetricsCards } from '@/components/admin/metrics-cards'
 import { SurveyTable } from '@/components/admin/survey-table'
 import { RegisterSurveyDialog } from '@/components/admin/register-survey-dialog'
+import { RoleManagement } from '@/components/admin/role-management'
 import { useWallet } from '@/hooks/use-wallet'
 import { useApi } from '@/hooks/use-api'
 
@@ -167,6 +169,18 @@ export default function AdminPage() {
     )
   }
 
+  const rpcUrl = import.meta.env.VITE_RPC_URL || ''
+
+  const signer = useMemo(() => {
+    if (!wallet) return null
+    try {
+      const provider = new ethers.JsonRpcProvider(rpcUrl)
+      return new ethers.Wallet(wallet.privateKey, provider)
+    } catch {
+      return null
+    }
+  }, [wallet, rpcUrl])
+
   // Authenticated -> dashboard
   const totalClaims = surveys.reduce((sum, s) => sum + s.claimCount, 0)
   const totalPointsAwarded = surveys.reduce((sum, s) => sum + s.claimCount * s.points, 0)
@@ -211,6 +225,12 @@ export default function AdminPage() {
           )}
         </CardContent>
       </Card>
+
+      <Separator />
+
+      {wallet && signer && (
+        <RoleManagement walletAddress={wallet.address} signer={signer} />
+      )}
     </div>
   )
 }

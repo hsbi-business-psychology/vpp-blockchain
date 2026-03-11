@@ -246,6 +246,23 @@
       "secret": "Ein Geheimnis, das nur am Ende der Umfrage sichtbar wird. Bewahre es vertraulich auf.",
       "maxClaims": "0 bedeutet unbegrenzt. Ansonsten wird die Punktevergabe nach Erreichen des Limits gestoppt.",
       "minterRole": "Die MINTER_ROLE erlaubt dem Backend, Punkte zu vergeben. Nur autorisierte Wallets können diese Funktion nutzen."
+    },
+    "roles": {
+      "title": "Admin-Rollenverwaltung",
+      "description": "Verwalte, welche Wallet-Adressen die Admin-Rolle im Smart Contract besitzen. Admins können Umfragen registrieren, deaktivieren und andere Admins hinzufügen oder entfernen.",
+      "addressLabel": "Wallet-Adresse",
+      "placeholder": "0x...",
+      "addAdmin": "Als Admin hinzufügen",
+      "removeAdmin": "Admin entfernen",
+      "currentAdmins": "Aktuelle Admins",
+      "noAdmins": "Keine Admin-Events gefunden",
+      "successAdd": "Admin-Rolle erfolgreich vergeben!",
+      "successRemove": "Admin-Rolle erfolgreich entzogen!",
+      "errorAdd": "Admin konnte nicht hinzugefügt werden",
+      "errorRemove": "Admin konnte nicht entfernt werden",
+      "infoTip": "Die ADMIN_ROLE wird direkt im Smart Contract gespeichert. Jeder Admin kann anderen Wallets die Admin-Rolle geben oder entziehen. Diese Änderungen sind auf der Blockchain sichtbar und unveränderlich protokolliert.",
+      "you": "(Du)",
+      "checking": "Prüfe Rolle..."
     }
   },
   "infoTips": {

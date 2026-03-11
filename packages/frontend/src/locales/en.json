@@ -246,6 +246,23 @@
       "secret": "A secret that is only visible at the end of the survey. Keep it confidential.",
       "maxClaims": "0 means unlimited. Otherwise point distribution stops when the limit is reached.",
       "minterRole": "The MINTER_ROLE allows the backend to award points. Only authorized wallets can use this function."
+    },
+    "roles": {
+      "title": "Admin Role Management",
+      "description": "Manage which wallet addresses hold the admin role on the smart contract. Admins can register surveys, deactivate them, and add or remove other admins.",
+      "addressLabel": "Wallet address",
+      "placeholder": "0x...",
+      "addAdmin": "Add as Admin",
+      "removeAdmin": "Remove Admin",
+      "currentAdmins": "Current Admins",
+      "noAdmins": "No admin events found",
+      "successAdd": "Admin role granted successfully!",
+      "successRemove": "Admin role revoked successfully!",
+      "errorAdd": "Failed to add admin",
+      "errorRemove": "Failed to remove admin",
+      "infoTip": "The ADMIN_ROLE is stored directly in the smart contract. Any admin can grant or revoke the admin role for other wallets. These changes are visible on the blockchain and immutably recorded.",
+      "you": "(You)",
+      "checking": "Checking role..."
     }
   },
   "infoTips": {
