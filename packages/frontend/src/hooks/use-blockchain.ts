@@ -1,0 +1,109 @@
+import { useState, useCallback } from 'react'
+import { ethers } from 'ethers'
+import { config } from '@/lib/config'
+import { SURVEY_POINTS_ABI } from '@/lib/contract-abi'
+
+interface SurveyClaimEntry {
+  surveyId: number
+  points: number
+  txHash: string
+  blockNumber: number
+}
+
+function getContract() {
+  if (!config.contractAddress) {
+    throw new Error('Contract address not configured')
+  }
+  const provider = new ethers.JsonRpcProvider(config.rpcUrl)
+  return new ethers.Contract(config.contractAddress, SURVEY_POINTS_ABI, provider)
+}
+
+export function useBlockchain() {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const getTotalPoints = useCallback(async (address: string): Promise<number> => {
+    setLoading(true)
+    setError(null)
+    try {
+      const contract = getContract()
+      const points = await contract.totalPoints(address)
+      return Number(points)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch points'
+      setError(message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const getSurveyPoints = useCallback(async (address: string, surveyId: number): Promise<number> => {
+    const contract = getContract()
+    const points = await contract.surveyPoints(address, surveyId)
+    return Number(points)
+  }, [])
+
+  const hasClaimed = useCallback(async (address: string, surveyId: number): Promise<boolean> => {
+    const contract = getContract()
+    return contract.claimed(address, surveyId)
+  }, [])
+
+  const getSurveyInfo = useCallback(
+    async (
+      surveyId: number,
+    ): Promise<{
+      points: number
+      maxClaims: number
+      claimCount: number
+      active: boolean
+      registeredAt: Date
+    }> => {
+      const contract = getContract()
+      const info = await contract.getSurveyInfo(surveyId)
+      return {
+        points: Number(info[1]),
+        maxClaims: Number(info[2]),
+        claimCount: Number(info[3]),
+        active: info[4],
+        registeredAt: new Date(Number(info[5]) * 1000),
+      }
+    },
+    [],
+  )
+
+  const getClaimHistory = useCallback(async (address: string): Promise<SurveyClaimEntry[]> => {
+    setLoading(true)
+    setError(null)
+    try {
+      const contract = getContract()
+      const filter = contract.filters.PointsAwarded(address)
+      const events = await contract.queryFilter(filter)
+      return events.map((event) => {
+        const log = event as ethers.EventLog
+        return {
+          surveyId: Number(log.args[1]),
+          points: Number(log.args[2]),
+          txHash: log.transactionHash,
+          blockNumber: log.blockNumber,
+        }
+      })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch history'
+      setError(message)
+      return []
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  return {
+    loading,
+    error,
+    getTotalPoints,
+    getSurveyPoints,
+    hasClaimed,
+    getSurveyInfo,
+    getClaimHistory,
+  }
+}
