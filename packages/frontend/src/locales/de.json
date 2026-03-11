@@ -1,4 +1,19 @@
 {
+  "pageTitle": {
+    "home": "VPP Blockchain – Versuchspersonenpunkte digital & fälschungssicher",
+    "points": "Meine Punkte – VPP Blockchain",
+    "claim": "Punkte einlösen – VPP Blockchain",
+    "admin": "Lehrenden-Bereich – VPP Blockchain",
+    "docs": "Dokumentation – VPP Blockchain",
+    "impressum": "Impressum – VPP Blockchain",
+    "datenschutz": "Datenschutz – VPP Blockchain",
+    "barrierefreiheit": "Barrierefreiheit – VPP Blockchain"
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "description": "Die angeforderte Seite existiert leider nicht.",
+    "back": "Zur Startseite"
+  },
   "common": {
     "appName": "VPP Blockchain",
     "loading": "Laden...",
@@ -42,7 +57,8 @@
     "contactEmail": "vpstunden@hsbi.de",
     "imprint": "Impressum",
     "privacy": "Datenschutz",
-    "accessibility": "Barrierefreiheit"
+    "accessibility": "Barrierefreiheit",
+    "legalNav": "Rechtliches"
   },
   "home": {
     "hero": {

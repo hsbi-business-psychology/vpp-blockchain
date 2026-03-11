@@ -1,4 +1,19 @@
 {
+  "pageTitle": {
+    "home": "VPP Blockchain – Participant Points, Digital & Tamper-proof",
+    "points": "My Points – VPP Blockchain",
+    "claim": "Claim Points – VPP Blockchain",
+    "admin": "Lecturers' Area – VPP Blockchain",
+    "docs": "Documentation – VPP Blockchain",
+    "impressum": "Imprint – VPP Blockchain",
+    "datenschutz": "Privacy Policy – VPP Blockchain",
+    "barrierefreiheit": "Accessibility – VPP Blockchain"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The requested page does not exist.",
+    "back": "Go to homepage"
+  },
   "common": {
     "appName": "VPP Blockchain",
     "loading": "Loading...",
@@ -42,7 +57,8 @@
     "contactEmail": "vpstunden@hsbi.de",
     "imprint": "Imprint",
     "privacy": "Privacy Policy",
-    "accessibility": "Accessibility"
+    "accessibility": "Accessibility",
+    "legalNav": "Legal"
   },
   "home": {
     "hero": {
