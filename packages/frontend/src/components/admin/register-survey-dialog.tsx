@@ -1,9 +1,14 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Loader2 } from 'lucide-react'
+import { Plus, Loader2, Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import {
   Dialog,
   DialogContent,
@@ -52,8 +57,8 @@ export function RegisterSurveyDialog({ onRegister }: RegisterSurveyDialogProps) 
   }
 
   const isValid =
-    form.surveyId && form.points && form.secret && form.maxClaims &&
-    Number(form.surveyId) > 0 && Number(form.points) > 0 && Number(form.maxClaims) > 0
+    form.surveyId && form.points && form.secret && form.maxClaims !== '' &&
+    Number(form.surveyId) > 0 && Number(form.points) > 0 && Number(form.maxClaims) >= 0
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -71,7 +76,10 @@ export function RegisterSurveyDialog({ onRegister }: RegisterSurveyDialogProps) 
           </DialogHeader>
           <div className="mt-4 space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="reg-surveyId">{t('admin.register.surveyId')}</Label>
+              <div className="flex items-center gap-1">
+                <Label htmlFor="reg-surveyId">{t('admin.register.surveyId')}</Label>
+                <InfoTip text={t('admin.info.surveyId')} />
+              </div>
               <Input
                 id="reg-surveyId"
                 type="number"
@@ -95,11 +103,14 @@ export function RegisterSurveyDialog({ onRegister }: RegisterSurveyDialogProps) 
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="reg-maxClaims">{t('admin.register.maxClaims')}</Label>
+                <div className="flex items-center gap-1">
+                  <Label htmlFor="reg-maxClaims">{t('admin.register.maxClaims')}</Label>
+                  <InfoTip text={t('admin.info.maxClaims')} />
+                </div>
                 <Input
                   id="reg-maxClaims"
                   type="number"
-                  min="1"
+                  min="0"
                   value={form.maxClaims}
                   onChange={(e) => setForm((f) => ({ ...f, maxClaims: e.target.value }))}
                   required
@@ -107,7 +118,10 @@ export function RegisterSurveyDialog({ onRegister }: RegisterSurveyDialogProps) 
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="reg-secret">{t('admin.register.secret')}</Label>
+              <div className="flex items-center gap-1">
+                <Label htmlFor="reg-secret">{t('admin.register.secret')}</Label>
+                <InfoTip text={t('admin.info.secret')} />
+              </div>
               <Input
                 id="reg-secret"
                 type="text"
@@ -135,5 +149,23 @@ export function RegisterSurveyDialog({ onRegister }: RegisterSurveyDialogProps) 
         </form>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function InfoTip({ text }: { text: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex size-5 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+        >
+          <Info className="size-3.5" />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-xs text-xs">
+        {text}
+      </TooltipContent>
+    </Tooltip>
   )
 }

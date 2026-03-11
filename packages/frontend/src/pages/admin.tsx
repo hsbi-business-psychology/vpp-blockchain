@@ -121,8 +121,8 @@ export default function AdminPage() {
           <CardContent className="flex flex-col items-center gap-4 py-8">
             <ShieldCheck className="size-10 text-muted-foreground" />
             <p className="text-muted-foreground">{t('points.noWallet')}</p>
-            <Button onClick={() => navigate('/wallet')}>
-              {t('home.hero.cta.wallet')}
+            <Button onClick={() => navigate('/points')}>
+              {t('wallet.create.title')}
             </Button>
           </CardContent>
         </Card>
