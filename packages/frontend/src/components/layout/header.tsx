@@ -26,7 +26,7 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
 
   return (
     <>
-      <header className="w-full bg-background">
+      <header className="w-full bg-transparent">
         <div className="mx-auto flex max-w-[1100px] items-center justify-between px-4 py-5 md:px-6">
           <button
             onClick={() => handleNav('/')}
