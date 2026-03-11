@@ -39,6 +39,7 @@ contract SurveyPoints is AccessControl, ReentrancyGuard {
     mapping(address => mapping(uint256 => uint8)) private _surveyPoints;
     mapping(address => uint256) private _totalPoints;
     mapping(address => mapping(uint256 => bool)) private _claimed;
+    mapping(address => bool) private _walletSubmitted;
 
     // ---------------------------------------------------------------
     //  Events
@@ -59,6 +60,9 @@ contract SurveyPoints is AccessControl, ReentrancyGuard {
 
     event SurveyDeactivated(uint256 indexed surveyId);
 
+    event WalletSubmitted(address indexed wallet, address indexed markedBy);
+    event WalletUnsubmitted(address indexed wallet, address indexed unmarkedBy);
+
     // ---------------------------------------------------------------
     //  Errors
     // ---------------------------------------------------------------
@@ -72,6 +76,8 @@ contract SurveyPoints is AccessControl, ReentrancyGuard {
     error InvalidPoints();
     error InvalidSurveyId();
     error ZeroAddress();
+    error WalletAlreadySubmitted(address wallet);
+    error WalletNotSubmitted(address wallet);
 
     // ---------------------------------------------------------------
     //  Constructor
@@ -183,8 +189,40 @@ contract SurveyPoints is AccessControl, ReentrancyGuard {
     }
 
     // ---------------------------------------------------------------
+    //  Wallet submission tracking
+    // ---------------------------------------------------------------
+
+    /// @notice Mark a student wallet as having submitted their points for
+    ///         thesis admission. Prevents the same wallet from being used
+    ///         by multiple students.
+    function markWalletSubmitted(address wallet) external onlyRole(ADMIN_ROLE) {
+        if (wallet == address(0)) revert ZeroAddress();
+        if (_walletSubmitted[wallet]) revert WalletAlreadySubmitted(wallet);
+
+        _walletSubmitted[wallet] = true;
+
+        emit WalletSubmitted(wallet, msg.sender);
+    }
+
+    /// @notice Remove the submission mark from a wallet (e.g. to correct
+    ///         a mistake).
+    function unmarkWalletSubmitted(address wallet) external onlyRole(ADMIN_ROLE) {
+        if (wallet == address(0)) revert ZeroAddress();
+        if (!_walletSubmitted[wallet]) revert WalletNotSubmitted(wallet);
+
+        _walletSubmitted[wallet] = false;
+
+        emit WalletUnsubmitted(wallet, msg.sender);
+    }
+
+    // ---------------------------------------------------------------
     //  Read functions
     // ---------------------------------------------------------------
+
+    /// @notice Check whether a wallet has been marked as submitted.
+    function isWalletSubmitted(address wallet) external view returns (bool) {
+        return _walletSubmitted[wallet];
+    }
 
     /// @notice Check whether an address has ADMIN_ROLE.
     function isAdmin(address account) external view returns (bool) {

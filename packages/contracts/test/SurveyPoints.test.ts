@@ -530,4 +530,86 @@ describe('SurveyPoints', () => {
       ).to.be.revertedWithCustomError(contract, 'ZeroAddress')
     })
   })
+
+  // -------------------------------------------------------------------
+  //  Wallet Submission Tracking
+  // -------------------------------------------------------------------
+
+  describe('Wallet submission tracking', () => {
+    it('should mark a wallet as submitted', async () => {
+      await contract.connect(admin).markWalletSubmitted(student1.address)
+      expect(await contract.isWalletSubmitted(student1.address)).to.be.true
+    })
+
+    it('should emit WalletSubmitted event', async () => {
+      await expect(contract.connect(admin).markWalletSubmitted(student1.address))
+        .to.emit(contract, 'WalletSubmitted')
+        .withArgs(student1.address, admin.address)
+    })
+
+    it('should revert when wallet is already submitted', async () => {
+      await contract.connect(admin).markWalletSubmitted(student1.address)
+
+      await expect(
+        contract.connect(admin).markWalletSubmitted(student1.address),
+      ).to.be.revertedWithCustomError(contract, 'WalletAlreadySubmitted')
+    })
+
+    it('should unmark a submitted wallet', async () => {
+      await contract.connect(admin).markWalletSubmitted(student1.address)
+      await contract.connect(admin).unmarkWalletSubmitted(student1.address)
+      expect(await contract.isWalletSubmitted(student1.address)).to.be.false
+    })
+
+    it('should emit WalletUnsubmitted event', async () => {
+      await contract.connect(admin).markWalletSubmitted(student1.address)
+
+      await expect(contract.connect(admin).unmarkWalletSubmitted(student1.address))
+        .to.emit(contract, 'WalletUnsubmitted')
+        .withArgs(student1.address, admin.address)
+    })
+
+    it('should revert when unmarking a non-submitted wallet', async () => {
+      await expect(
+        contract.connect(admin).unmarkWalletSubmitted(student1.address),
+      ).to.be.revertedWithCustomError(contract, 'WalletNotSubmitted')
+    })
+
+    it('should revert when called by non-admin (mark)', async () => {
+      await expect(
+        contract.connect(outsider).markWalletSubmitted(student1.address),
+      ).to.be.reverted
+    })
+
+    it('should revert when called by non-admin (unmark)', async () => {
+      await contract.connect(admin).markWalletSubmitted(student1.address)
+
+      await expect(
+        contract.connect(outsider).unmarkWalletSubmitted(student1.address),
+      ).to.be.reverted
+    })
+
+    it('should revert for zero address (mark)', async () => {
+      await expect(
+        contract.connect(admin).markWalletSubmitted(ethers.ZeroAddress),
+      ).to.be.revertedWithCustomError(contract, 'ZeroAddress')
+    })
+
+    it('should revert for zero address (unmark)', async () => {
+      await expect(
+        contract.connect(admin).unmarkWalletSubmitted(ethers.ZeroAddress),
+      ).to.be.revertedWithCustomError(contract, 'ZeroAddress')
+    })
+
+    it('should return false for a non-submitted wallet', async () => {
+      expect(await contract.isWalletSubmitted(student1.address)).to.be.false
+    })
+
+    it('should allow re-marking after unmark', async () => {
+      await contract.connect(admin).markWalletSubmitted(student1.address)
+      await contract.connect(admin).unmarkWalletSubmitted(student1.address)
+      await contract.connect(admin).markWalletSubmitted(student1.address)
+      expect(await contract.isWalletSubmitted(student1.address)).to.be.true
+    })
+  })
 })
