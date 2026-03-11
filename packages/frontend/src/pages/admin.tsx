@@ -221,9 +221,9 @@ export default function AdminPage() {
 
   if (!hasWallet) {
     return (
-      <div className="mx-auto max-w-lg space-y-6 py-8">
+      <div className="space-y-6">
         <h1 className="text-2xl font-bold">{t('admin.title')}</h1>
-        <Card>
+        <Card className="mx-auto max-w-lg">
           <CardContent className="flex flex-col items-center gap-4 py-8">
             <ShieldCheck className="size-10 text-muted-foreground" />
             <p className="text-muted-foreground">{t('points.noWallet')}</p>
@@ -238,9 +238,9 @@ export default function AdminPage() {
 
   if (adminCheck === 'loading') {
     return (
-      <div className="mx-auto max-w-lg space-y-6 py-8">
+      <div className="space-y-6">
         <h1 className="text-2xl font-bold">{t('admin.title')}</h1>
-        <Card>
+        <Card className="mx-auto max-w-lg">
           <CardContent className="flex flex-col items-center gap-4 py-8">
             <Loader2 className="size-8 animate-spin text-muted-foreground" />
             <p className="text-sm text-muted-foreground">{t('admin.roles.checking')}</p>
@@ -252,9 +252,9 @@ export default function AdminPage() {
 
   if (adminCheck === 'denied') {
     return (
-      <div className="mx-auto max-w-lg space-y-6 py-8">
+      <div className="space-y-6">
         <h1 className="text-2xl font-bold">{t('admin.title')}</h1>
-        <Card>
+        <Card className="mx-auto max-w-lg">
           <CardContent className="flex flex-col items-center gap-5 py-8 text-center">
             <div className="flex size-14 items-center justify-center rounded-full bg-destructive/10">
               <ShieldX className="size-7 text-destructive" />
@@ -283,9 +283,9 @@ export default function AdminPage() {
 
   if (!authenticated) {
     return (
-      <div className="mx-auto max-w-lg space-y-6 py-8">
+      <div className="space-y-6">
         <h1 className="text-2xl font-bold">{t('admin.title')}</h1>
-        <Card>
+        <Card className="mx-auto max-w-lg">
           <CardHeader>
             <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10">
               <ShieldCheck className="size-6 text-primary" />
