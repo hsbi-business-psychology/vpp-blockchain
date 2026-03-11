@@ -11,7 +11,7 @@
 
 ## What is VPP?
 
-VPP lets students earn points for completing surveys. Points are recorded on a public blockchain (Base L2), making them **transparent, tamper-proof, and pseudonymous**. No cryptocurrency knowledge is required — wallets are created in-app, and all transaction fees are covered by the system.
+VPP lets students earn points for completing surveys. Points are recorded on a public blockchain (Base L2), making them **transparent, tamper-proof, and pseudonymous**. No cryptocurrency knowledge is required — wallets can be created in-app or connected via MetaMask, and all transaction fees are covered by the system.
 
 ### Key Principles
 
@@ -19,7 +19,8 @@ VPP lets students earn points for completing surveys. Points are recorded on a p
 - **Transparent** — All points are publicly verifiable on-chain
 - **Self-sovereign** — Students own their private keys and control their wallets
 - **Free for participants** — No gas fees, no crypto required
-- **Educational** — Students learn about wallets, keys, and blockchain transactions hands-on
+- **Flexible** — Browser wallets for beginners, MetaMask for advanced users
+- **Accessible** — WCAG-compliant, mobile-first, bilingual (DE/EN)
 
 ## Architecture
 
@@ -60,9 +61,10 @@ VPP lets students earn points for completing surveys. Points are recorded on a p
 |---|---|
 | Smart Contract | Solidity 0.8.24, Hardhat, OpenZeppelin, TypeChain |
 | Backend | Node.js 20+, Express, ethers.js v6, TypeScript |
-| Frontend | React 19, Vite 6, TypeScript, Tailwind CSS v4, shadcn/ui |
+| Frontend | React 19, Vite 6, TypeScript, Tailwind CSS v4, shadcn/ui, i18next |
+| Wallet | Browser wallet (built-in) or MetaMask (optional) |
 | Testing | Hardhat + Chai, Vitest, React Testing Library |
-| CI/CD | GitHub Actions, Docker |
+| CI/CD | GitHub Actions |
 
 ## Quick Start
 
@@ -114,10 +116,10 @@ The deploy script creates **3 test surveys** and awards **15 points** to a test 
 
 #### Testing the Admin Flow
 
-1. Open `http://localhost:5173` and create a **new wallet** (or import any key)
+1. Open `http://localhost:5173` and create a **new wallet** (Browser Wallet, MetaMask, or import a key)
 2. Navigate to **Lecturers' Area** — you will see an "Access Denied" message because the new wallet has no ADMIN_ROLE
-3. Delete the wallet and **import the Admin private key** from the table above
-4. Navigate to **Lecturers' Area** — the on-chain check passes, sign in to see the dashboard
+3. Switch to the Admin wallet: delete the current wallet and **import the Admin private key** from the table above
+4. Navigate to **Lecturers' Area** — the on-chain check passes, authentication happens automatically
 5. In the **Admin Role Management** section at the bottom, you can grant ADMIN_ROLE to any other wallet address
 
 #### Testing the Student Flow

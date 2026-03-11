@@ -39,7 +39,7 @@
         "sections": [
           { "type": "text", "heading": "Was ist VPP Blockchain?", "content": "VPP Blockchain ist ein System der Hochschule, mit dem du Versuchspersonenpunkte (VPP) digital und fälschungssicher sammeln kannst. Statt Papierscheinen werden deine Punkte auf einer Blockchain gespeichert -- einem öffentlichen, unveränderlichen Register.\n\nDas Beste: Du brauchst weder Geld noch technisches Vorwissen. Alles funktioniert direkt in deinem Browser." },
           { "type": "steps", "heading": "In 3 Schritten zum ersten Punkt", "steps": [
-            { "title": "Wallet erstellen", "text": "Gehe auf \"Meine Punkte\" und erstelle eine neue Wallet. Du erhältst eine Adresse (dein Public Key) und einen Private Key. Speichere den Private Key sicher -- er ist dein Zugang zu deinen Punkten." },
+            { "title": "Wallet verbinden", "text": "Gehe auf \"Meine Punkte\" und wähle eine der drei Optionen: Browser-Wallet erstellen (ein Klick, nichts installieren), MetaMask verbinden (sicherer, falls installiert) oder einen bestehenden Private Key importieren." },
             { "title": "An einer Studie teilnehmen", "text": "Nimm an einer Studie teil (z.B. über SoSci Survey). Am Ende wirst du automatisch weitergeleitet, um deinen Punkt einzulösen." },
             { "title": "Punkt einlösen (Claim)", "text": "Du signierst eine Nachricht mit deiner Wallet -- das beweist, dass du der Besitzer bist. Der Punkt wird dann auf der Blockchain gespeichert und ist sofort in deinem Dashboard sichtbar." }
           ]},
@@ -67,7 +67,7 @@
         "title": "Wallet und Private Key",
         "description": "Was eine Wallet ist, wie Public und Private Keys funktionieren, und wie du sie sicher aufbewahrst.",
         "sections": [
-          { "type": "text", "heading": "Was ist eine Wallet?", "content": "Eine Wallet ist dein digitaler Schlüsselbund im Blockchain-Netzwerk. Sie besteht aus zwei Teilen:\n\n1. Dem Public Key (öffentlicher Schlüssel) -- das ist deine Adresse, vergleichbar mit einer E-Mail-Adresse. Du kannst sie bedenkenlos teilen.\n\n2. Dem Private Key (privater Schlüssel) -- das ist dein Passwort. Wer den Private Key hat, kontrolliert die Wallet und alle darin gespeicherten Punkte." },
+          { "type": "text", "heading": "Was ist eine Wallet?", "content": "Eine Wallet ist dein digitaler Schlüsselbund im Blockchain-Netzwerk. Sie besteht aus zwei Teilen:\n\n1. Dem Public Key (öffentlicher Schlüssel) -- das ist deine Adresse, vergleichbar mit einer E-Mail-Adresse. Du kannst sie bedenkenlos teilen.\n\n2. Dem Private Key (privater Schlüssel) -- das ist dein Passwort. Wer den Private Key hat, kontrolliert die Wallet und alle darin gespeicherten Punkte.\n\nDu hast drei Möglichkeiten, eine Wallet zu nutzen: Ein Browser-Wallet direkt auf der Webseite erstellen, MetaMask verbinden (verschlüsselte Schlüsselverwaltung), oder einen bestehenden Private Key importieren." },
           { "type": "diagram", "diagramId": "public-private-key" },
           { "type": "text", "heading": "Wie funktioniert das kryptografisch?", "content": "Public und Private Key bilden ein kryptografisches Schlüsselpaar. Sie werden mathematisch erzeugt und hängen zusammen: Aus dem Private Key kann der Public Key berechnet werden, aber nicht umgekehrt.\n\nWenn du eine Nachricht signierst, verwendest du deinen Private Key. Jeder kann dann mit deinem Public Key überprüfen, dass die Signatur von dir stammt -- ohne den Private Key zu kennen. Dieses Prinzip nennt sich asymmetrische Kryptografie." },
           { "type": "list", "heading": "Sicherheitstipps", "items": [
@@ -266,8 +266,8 @@
           { "type": "list", "heading": "Muss ich etwas bezahlen?", "items": [
             "Nein. Die Nutzung ist für Studierende komplett kostenlos. Alle Transaktionskosten (Gas Fees) werden vom System übernommen."
           ]},
-          { "type": "list", "heading": "Brauche ich ein Krypto-Wallet wie MetaMask?", "items": [
-            "Nein. Du erstellst deine Wallet direkt auf der Webseite. Es ist keine externe Software oder App nötig."
+          { "type": "list", "heading": "Brauche ich MetaMask?", "items": [
+            "Nein, aber du kannst es nutzen. Du hast drei Möglichkeiten: Ein Browser-Wallet direkt auf der Webseite erstellen (einfachste Option), MetaMask verbinden (sicherer, weil der Key verschlüsselt gespeichert wird), oder einen bestehenden Private Key importieren."
           ]},
           { "type": "list", "heading": "Kann ich dieselbe Studie mehrfach nutzen?", "items": [
             "Nein. Pro Wallet und Studie kann genau ein Mal geclaimed werden. Das wird durch den Smart Contract sichergestellt."

@@ -41,10 +41,9 @@ This document describes the security model of VPP Blockchain, including threat m
 ### Student Keys (Frontend)
 
 - Private keys are **never** sent to the server
-- Signing happens entirely in the browser using ethers.js
-- Keys are stored in `localStorage` (client-side only)
-- Students can export and back up their key
-- **Key loss = permanent loss of access** (no recovery mechanism by design)
+- Signing happens entirely in the browser using ethers.js (browser wallet) or MetaMask (if connected)
+- **Browser wallet:** Keys are stored in `localStorage` (client-side only). Students can export and back up their key. **Key loss = permanent loss of access** (no recovery mechanism by design)
+- **MetaMask:** Keys are managed by the MetaMask extension with password protection and optional seed phrase recovery. No private key is stored in `localStorage` — only the wallet address and type
 
 ### Backend Key (Server)
 

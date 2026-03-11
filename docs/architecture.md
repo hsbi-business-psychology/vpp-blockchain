@@ -106,14 +106,18 @@ A stateless API relayer. It holds no database — all persistent data lives on-c
 A React single-page application built with Vite, Tailwind CSS v4, and shadcn/ui.
 
 **Features:**
-- In-app wallet creation (ethers.js, no MetaMask required)
+- Flexible wallet connection: Browser wallet (built-in), MetaMask, or private key import
 - Claim flow with URL query parameters from SoSci Survey redirect
 - Points dashboard with on-chain data (read directly from blockchain, no backend needed)
 - Public explorer for any wallet address
-- Admin dashboard for survey management
+- Admin dashboard for survey management, role management, submission tracking
+- Comprehensive in-app documentation with diagrams and guides
 - Full i18n support (German / English)
 - Dark and light theme
 - Mobile-first responsive design
+- WCAG-compliant accessibility (skip links, ARIA labels, keyboard navigation)
+- SEO optimization (Open Graph, Twitter Cards, JSON-LD, sitemap)
+- Route-based code splitting with lazy loading
 
 ## Data Flow
 
@@ -185,12 +189,15 @@ Base is an Ethereum Layer 2 (Optimistic Rollup) operated by Coinbase. It provide
 - Full Solidity/EVM compatibility
 - Reliable public RPC endpoints
 
-### Why No MetaMask?
+### Why Both Browser Wallet and MetaMask?
 
-- MetaMask does not work reliably in mobile browsers (iOS/Android)
-- Requires extension/app installation
-- In-app wallets are more educational (students see raw private keys)
-- Zero dependency on third-party wallet software
+The system offers three wallet options to serve different user needs:
+
+- **Browser wallet** (default): Zero setup, ideal for students with no crypto experience. Keys are generated and stored in `localStorage`.
+- **MetaMask** (optional): For users who already have MetaMask installed. Keys are managed securely by the extension with password protection and recovery phrases.
+- **Import**: For restoring access on a new device with an existing private key.
+
+All three methods produce identical EIP-191 signatures. The backend cannot distinguish between them — this is by design.
 
 ### Why No Database?
 

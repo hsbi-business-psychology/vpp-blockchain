@@ -39,7 +39,7 @@
         "sections": [
           { "type": "text", "heading": "What is VPP Blockchain?", "content": "VPP Blockchain is a university system that lets you collect research participation points (VPP) digitally and tamper-proof. Instead of paper slips, your points are stored on a blockchain -- a public, immutable ledger.\n\nThe best part: You don't need money or technical knowledge. Everything works directly in your browser." },
           { "type": "steps", "heading": "3 Steps to Your First Point", "steps": [
-            { "title": "Create a Wallet", "text": "Go to \"My Points\" and create a new wallet. You'll receive an address (your public key) and a private key. Store the private key securely -- it's your access to your points." },
+            { "title": "Connect a Wallet", "text": "Go to \"My Points\" and choose one of three options: Create a browser wallet (one click, no installation), connect MetaMask (more secure, if installed), or import an existing private key." },
             { "title": "Participate in a Study", "text": "Take part in a study (e.g., via SoSci Survey). At the end, you'll be automatically redirected to claim your point." },
             { "title": "Claim Your Point", "text": "You sign a message with your wallet -- this proves you're the owner. The point is then stored on the blockchain and immediately visible in your dashboard." }
           ]},
@@ -67,7 +67,7 @@
         "title": "Wallet and Private Key",
         "description": "What a wallet is, how public and private keys work, and how to keep them safe.",
         "sections": [
-          { "type": "text", "heading": "What is a Wallet?", "content": "A wallet is your digital keychain in the blockchain network. It consists of two parts:\n\n1. The Public Key -- your address, comparable to an email address. You can safely share it.\n\n2. The Private Key -- your password. Whoever has the private key controls the wallet and all points stored in it." },
+          { "type": "text", "heading": "What is a Wallet?", "content": "A wallet is your digital keychain in the blockchain network. It consists of two parts:\n\n1. The Public Key -- your address, comparable to an email address. You can safely share it.\n\n2. The Private Key -- your password. Whoever has the private key controls the wallet and all points stored in it.\n\nYou have three ways to use a wallet: Create a browser wallet directly on the website, connect MetaMask (encrypted key management), or import an existing private key." },
           { "type": "diagram", "diagramId": "public-private-key" },
           { "type": "text", "heading": "How Does the Cryptography Work?", "content": "Public and private keys form a cryptographic key pair. They are generated mathematically and are linked: The public key can be derived from the private key, but not the other way around.\n\nWhen you sign a message, you use your private key. Anyone can then verify with your public key that the signature came from you -- without knowing your private key. This principle is called asymmetric cryptography." },
           { "type": "list", "heading": "Security Tips", "items": [
@@ -266,8 +266,8 @@
           { "type": "list", "heading": "Do I have to pay anything?", "items": [
             "No. Usage is completely free for students. All transaction costs (gas fees) are covered by the system."
           ]},
-          { "type": "list", "heading": "Do I need a crypto wallet like MetaMask?", "items": [
-            "No. You create your wallet directly on the website. No external software or app is needed."
+          { "type": "list", "heading": "Do I need MetaMask?", "items": [
+            "No, but you can use it. You have three options: Create a browser wallet directly on the website (easiest option), connect MetaMask (more secure, as the key is stored encrypted), or import an existing private key."
           ]},
           { "type": "list", "heading": "Can I use the same study multiple times?", "items": [
             "No. Each wallet can claim exactly once per study. This is enforced by the smart contract."
