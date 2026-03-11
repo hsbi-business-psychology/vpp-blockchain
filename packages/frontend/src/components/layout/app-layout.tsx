@@ -4,6 +4,7 @@ import { Separator } from '@/components/ui/separator'
 import { SidebarNav } from './sidebar-nav'
 import { MobileNav } from './mobile-nav'
 import { ThemeToggle } from './theme-toggle'
+import { LanguageSwitcher } from './language-switcher'
 
 interface AppLayoutProps {
   children: ReactNode
@@ -30,6 +31,7 @@ export function AppLayout({ children, currentPath, onNavigate, appName }: AppLay
           <div className="flex flex-1 flex-col justify-between py-4">
             <SidebarNav currentPath={currentPath} onNavigate={onNavigate} />
             <div className="flex flex-col items-center gap-2 px-2 pb-2">
+              <LanguageSwitcher />
               <ThemeToggle />
             </div>
           </div>
@@ -41,7 +43,8 @@ export function AppLayout({ children, currentPath, onNavigate, appName }: AppLay
           <header className="flex h-14 items-center gap-3 border-b px-4 md:hidden">
             <MobileNav currentPath={currentPath} onNavigate={onNavigate} appName={appName} />
             <span className="text-sm font-semibold">{appName}</span>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-1">
+              <LanguageSwitcher />
               <ThemeToggle />
             </div>
           </header>

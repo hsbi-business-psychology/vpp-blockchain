@@ -1,0 +1,179 @@
+{
+  "common": {
+    "appName": "VPP Blockchain",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Try again",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "download": "Download",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "close": "Close",
+    "search": "Search",
+    "noResults": "No results found"
+  },
+  "nav": {
+    "home": "Home",
+    "wallet": "Wallet",
+    "claim": "Claim",
+    "points": "Points",
+    "explorer": "Explorer",
+    "admin": "Admin"
+  },
+  "home": {
+    "hero": {
+      "title": "Verifiable Participant Points",
+      "subtitle": "Earn tamper-proof points for survey participation — secured by blockchain technology.",
+      "cta": {
+        "wallet": "Create Wallet",
+        "points": "View Points"
+      }
+    },
+    "features": {
+      "transparent": {
+        "title": "Transparent",
+        "description": "All points are recorded on the blockchain — publicly verifiable and tamper-proof."
+      },
+      "noExtensions": {
+        "title": "No Extensions",
+        "description": "No MetaMask or browser extensions needed. Everything works right in your browser."
+      },
+      "costEfficient": {
+        "title": "Cost Efficient",
+        "description": "Built on Base L2 — each transaction costs less than $0.01."
+      },
+      "openSource": {
+        "title": "Open Source",
+        "description": "Fully open source. Any university can deploy their own instance."
+      }
+    }
+  },
+  "wallet": {
+    "title": "Wallet",
+    "noWallet": "You don't have a wallet yet.",
+    "create": {
+      "title": "Create Wallet",
+      "description": "Generate a new wallet directly in your browser. No registration needed.",
+      "button": "Generate New Wallet",
+      "success": "Wallet created successfully!"
+    },
+    "import": {
+      "title": "Import Wallet",
+      "description": "Import an existing wallet using your private key.",
+      "placeholder": "Enter your private key (0x...)",
+      "button": "Import",
+      "error": "Invalid private key format"
+    },
+    "info": {
+      "address": "Address",
+      "privateKey": "Private Key",
+      "showKey": "Show Private Key",
+      "hideKey": "Hide Private Key",
+      "downloadKey": "Download Key File",
+      "warning": "Never share your private key with anyone. Store it securely!"
+    },
+    "delete": {
+      "title": "Delete Wallet",
+      "description": "This will remove the wallet from your browser. Make sure you have backed up your private key!",
+      "button": "Delete Wallet",
+      "success": "Wallet deleted"
+    }
+  },
+  "claim": {
+    "title": "Claim Points",
+    "steps": {
+      "wallet": "Wallet",
+      "sign": "Sign",
+      "submit": "Submit",
+      "done": "Done"
+    },
+    "noWallet": "You need a wallet to claim points.",
+    "createFirst": "Create Wallet First",
+    "signing": "Signing message...",
+    "submitting": "Submitting claim...",
+    "success": {
+      "title": "Points Claimed!",
+      "points": "{{points}} points awarded",
+      "tx": "Transaction",
+      "viewExplorer": "View on Explorer"
+    },
+    "error": {
+      "missingParams": "Missing survey ID or secret in the URL.",
+      "alreadyClaimed": "You have already claimed points for this survey.",
+      "invalidSecret": "Invalid secret. The claim link may be corrupted.",
+      "surveyInactive": "This survey is no longer active.",
+      "generic": "Failed to claim points. Please try again."
+    }
+  },
+  "points": {
+    "title": "My Points",
+    "total": "Total Points",
+    "noWallet": "Connect a wallet to view your points.",
+    "surveys": "Survey Breakdown",
+    "history": "Transaction History",
+    "table": {
+      "surveyId": "Survey ID",
+      "points": "Points",
+      "date": "Date",
+      "tx": "Transaction"
+    },
+    "empty": "No points yet. Complete a survey to earn your first points!"
+  },
+  "explorer": {
+    "title": "Explorer",
+    "description": "Look up points for any wallet address.",
+    "placeholder": "Enter wallet address (0x...)",
+    "search": "Search",
+    "invalidAddress": "Please enter a valid wallet address.",
+    "results": "Results for {{address}}"
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "auth": {
+      "title": "Admin Authentication",
+      "description": "Sign a message with your admin wallet to access the dashboard.",
+      "button": "Sign In"
+    },
+    "metrics": {
+      "totalSurveys": "Total Surveys",
+      "activeSurveys": "Active Surveys",
+      "totalClaims": "Total Claims",
+      "totalPoints": "Total Points Awarded"
+    },
+    "surveys": {
+      "title": "Surveys",
+      "register": "Register Survey",
+      "table": {
+        "id": "ID",
+        "points": "Points",
+        "claims": "Claims",
+        "status": "Status",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "nearLimit": "Near Limit"
+      },
+      "downloadTemplate": "Download Template",
+      "deactivate": "Deactivate"
+    },
+    "register": {
+      "title": "Register New Survey",
+      "surveyId": "Survey ID",
+      "points": "Points per Claim",
+      "secret": "Secret",
+      "maxClaims": "Maximum Claims",
+      "button": "Register",
+      "success": "Survey registered successfully!",
+      "error": "Failed to register survey"
+    }
+  }
+}

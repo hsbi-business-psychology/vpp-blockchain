@@ -1,0 +1,179 @@
+{
+  "common": {
+    "appName": "VPP Blockchain",
+    "loading": "Laden...",
+    "error": "Ein Fehler ist aufgetreten",
+    "retry": "Erneut versuchen",
+    "copy": "Kopieren",
+    "copied": "Kopiert!",
+    "download": "Herunterladen",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "submit": "Absenden",
+    "close": "Schließen",
+    "search": "Suchen",
+    "noResults": "Keine Ergebnisse gefunden"
+  },
+  "nav": {
+    "home": "Startseite",
+    "wallet": "Wallet",
+    "claim": "Einlösen",
+    "points": "Punkte",
+    "explorer": "Explorer",
+    "admin": "Admin"
+  },
+  "home": {
+    "hero": {
+      "title": "Verifiable Participant Points",
+      "subtitle": "Sammle fälschungssichere Punkte für deine Umfrageteilnahme — gesichert durch Blockchain-Technologie.",
+      "cta": {
+        "wallet": "Wallet erstellen",
+        "points": "Punkte anzeigen"
+      }
+    },
+    "features": {
+      "transparent": {
+        "title": "Transparent",
+        "description": "Alle Punkte werden auf der Blockchain gespeichert — öffentlich überprüfbar und fälschungssicher."
+      },
+      "noExtensions": {
+        "title": "Keine Erweiterungen",
+        "description": "Kein MetaMask oder Browser-Erweiterungen nötig. Alles funktioniert direkt im Browser."
+      },
+      "costEfficient": {
+        "title": "Kostengünstig",
+        "description": "Basiert auf Base L2 — jede Transaktion kostet weniger als 0,01 $."
+      },
+      "openSource": {
+        "title": "Open Source",
+        "description": "Vollständig quelloffen. Jede Universität kann eine eigene Instanz betreiben."
+      }
+    }
+  },
+  "wallet": {
+    "title": "Wallet",
+    "noWallet": "Du hast noch kein Wallet.",
+    "create": {
+      "title": "Wallet erstellen",
+      "description": "Erstelle ein neues Wallet direkt im Browser. Keine Registrierung nötig.",
+      "button": "Neues Wallet generieren",
+      "success": "Wallet erfolgreich erstellt!"
+    },
+    "import": {
+      "title": "Wallet importieren",
+      "description": "Importiere ein bestehendes Wallet mit deinem Private Key.",
+      "placeholder": "Private Key eingeben (0x...)",
+      "button": "Importieren",
+      "error": "Ungültiges Private-Key-Format"
+    },
+    "info": {
+      "address": "Adresse",
+      "privateKey": "Private Key",
+      "showKey": "Private Key anzeigen",
+      "hideKey": "Private Key verbergen",
+      "downloadKey": "Key-Datei herunterladen",
+      "warning": "Teile deinen Private Key niemals mit anderen. Bewahre ihn sicher auf!"
+    },
+    "delete": {
+      "title": "Wallet löschen",
+      "description": "Das Wallet wird aus deinem Browser entfernt. Stelle sicher, dass du deinen Private Key gesichert hast!",
+      "button": "Wallet löschen",
+      "success": "Wallet gelöscht"
+    }
+  },
+  "claim": {
+    "title": "Punkte einlösen",
+    "steps": {
+      "wallet": "Wallet",
+      "sign": "Signieren",
+      "submit": "Absenden",
+      "done": "Fertig"
+    },
+    "noWallet": "Du brauchst ein Wallet, um Punkte einzulösen.",
+    "createFirst": "Zuerst Wallet erstellen",
+    "signing": "Nachricht wird signiert...",
+    "submitting": "Claim wird eingereicht...",
+    "success": {
+      "title": "Punkte eingelöst!",
+      "points": "{{points}} Punkte vergeben",
+      "tx": "Transaktion",
+      "viewExplorer": "Auf Explorer anzeigen"
+    },
+    "error": {
+      "missingParams": "Survey-ID oder Secret fehlen in der URL.",
+      "alreadyClaimed": "Du hast für diese Umfrage bereits Punkte eingelöst.",
+      "invalidSecret": "Ungültiges Secret. Der Claim-Link könnte beschädigt sein.",
+      "surveyInactive": "Diese Umfrage ist nicht mehr aktiv.",
+      "generic": "Punkte konnten nicht eingelöst werden. Bitte versuche es erneut."
+    }
+  },
+  "points": {
+    "title": "Meine Punkte",
+    "total": "Gesamtpunkte",
+    "noWallet": "Verbinde ein Wallet, um deine Punkte zu sehen.",
+    "surveys": "Aufschlüsselung nach Umfrage",
+    "history": "Transaktionsverlauf",
+    "table": {
+      "surveyId": "Umfrage-ID",
+      "points": "Punkte",
+      "date": "Datum",
+      "tx": "Transaktion"
+    },
+    "empty": "Noch keine Punkte. Nimm an einer Umfrage teil, um deine ersten Punkte zu sammeln!"
+  },
+  "explorer": {
+    "title": "Explorer",
+    "description": "Punkte für beliebige Wallet-Adressen nachschlagen.",
+    "placeholder": "Wallet-Adresse eingeben (0x...)",
+    "search": "Suchen",
+    "invalidAddress": "Bitte gib eine gültige Wallet-Adresse ein.",
+    "results": "Ergebnisse für {{address}}"
+  },
+  "admin": {
+    "title": "Admin-Dashboard",
+    "auth": {
+      "title": "Admin-Authentifizierung",
+      "description": "Signiere eine Nachricht mit deinem Admin-Wallet, um auf das Dashboard zuzugreifen.",
+      "button": "Anmelden"
+    },
+    "metrics": {
+      "totalSurveys": "Umfragen gesamt",
+      "activeSurveys": "Aktive Umfragen",
+      "totalClaims": "Claims gesamt",
+      "totalPoints": "Vergebene Punkte"
+    },
+    "surveys": {
+      "title": "Umfragen",
+      "register": "Umfrage registrieren",
+      "table": {
+        "id": "ID",
+        "points": "Punkte",
+        "claims": "Claims",
+        "status": "Status",
+        "created": "Erstellt",
+        "actions": "Aktionen"
+      },
+      "status": {
+        "active": "Aktiv",
+        "inactive": "Inaktiv",
+        "nearLimit": "Fast voll"
+      },
+      "downloadTemplate": "Template herunterladen",
+      "deactivate": "Deaktivieren"
+    },
+    "register": {
+      "title": "Neue Umfrage registrieren",
+      "surveyId": "Umfrage-ID",
+      "points": "Punkte pro Claim",
+      "secret": "Secret",
+      "maxClaims": "Maximale Claims",
+      "button": "Registrieren",
+      "success": "Umfrage erfolgreich registriert!",
+      "error": "Umfrage konnte nicht registriert werden"
+    }
+  }
+}
