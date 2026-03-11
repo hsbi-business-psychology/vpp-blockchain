@@ -22,6 +22,7 @@ vi.mock('../src/services/blockchain.js', () => ({
   hasClaimed: vi.fn(),
   getPointsAwardedEvents: vi.fn(),
   getSurveyRegisteredEvents: vi.fn(),
+  deactivateSurvey: vi.fn(),
   isAdmin: vi.fn(),
   getBlockNumber: vi.fn(),
   getNetwork: vi.fn(),

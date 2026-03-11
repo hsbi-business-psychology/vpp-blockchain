@@ -8,10 +8,12 @@ import { isAdmin as checkAdmin } from '../services/blockchain.js'
  * The recovered signer must hold ADMIN_ROLE on the smart contract.
  */
 export async function requireAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
-  const { adminSignature, adminMessage } = req.body as {
-    adminSignature?: string
-    adminMessage?: string
-  }
+  const adminSignature =
+    (req.body as Record<string, string | undefined>).adminSignature ||
+    (req.headers['x-admin-signature'] as string | undefined)
+  const adminMessage =
+    (req.body as Record<string, string | undefined>).adminMessage ||
+    (req.headers['x-admin-message'] as string | undefined)
 
   if (!adminSignature || !adminMessage) {
     res.status(401).json({

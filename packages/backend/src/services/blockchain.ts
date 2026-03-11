@@ -56,6 +56,15 @@ export interface SurveyInfoRaw {
   title: string
 }
 
+export async function deactivateSurvey(
+  surveyId: number,
+): Promise<ethers.TransactionReceipt> {
+  const tx = await contract.deactivateSurvey(surveyId)
+  const receipt = await tx.wait()
+  if (!receipt) throw new Error('Transaction receipt is null')
+  return receipt
+}
+
 export async function getSurveyInfo(surveyId: number): Promise<SurveyInfoRaw> {
   const result = await readOnlyContract.getSurveyInfo(surveyId)
   return {

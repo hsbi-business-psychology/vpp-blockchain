@@ -133,3 +133,78 @@ describe('GET /api/surveys', () => {
     expect(res.body.data).toHaveLength(0)
   })
 })
+
+describe('POST /api/surveys/:id/deactivate', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('should deactivate an active survey', async () => {
+    const timestamp = Math.floor(Date.now() / 1000)
+    const adminMessage = `deactivate:1:${timestamp}`
+    const adminSignature = await ADMIN_WALLET.signMessage(adminMessage)
+
+    vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
+    vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
+      secretHash: ethers.ZeroHash,
+      points: 5,
+      maxClaims: 0n,
+      claimCount: 3n,
+      active: true,
+      registeredAt: 1710000000n,
+      title: 'Test',
+    })
+    vi.mocked(blockchain.deactivateSurvey).mockResolvedValue({
+      hash: '0xdeactivatetx',
+    } as unknown as ethers.TransactionReceipt)
+
+    const res = await request(app)
+      .post('/api/surveys/1/deactivate')
+      .set('x-admin-signature', adminSignature)
+      .set('x-admin-message', adminMessage)
+
+    expect(res.status).toBe(200)
+    expect(res.body.success).toBe(true)
+    expect(res.body.data.txHash).toBe('0xdeactivatetx')
+  })
+
+  it('should reject deactivation of already inactive survey', async () => {
+    const timestamp = Math.floor(Date.now() / 1000)
+    const adminMessage = `deactivate:1:${timestamp}`
+    const adminSignature = await ADMIN_WALLET.signMessage(adminMessage)
+
+    vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
+    vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
+      secretHash: ethers.ZeroHash,
+      points: 5,
+      maxClaims: 0n,
+      claimCount: 3n,
+      active: false,
+      registeredAt: 1710000000n,
+      title: 'Test',
+    })
+
+    const res = await request(app)
+      .post('/api/surveys/1/deactivate')
+      .set('x-admin-signature', adminSignature)
+      .set('x-admin-message', adminMessage)
+
+    expect(res.status).toBe(409)
+  })
+
+  it('should reject deactivation from non-admin', async () => {
+    const nonAdmin = ethers.Wallet.createRandom()
+    const timestamp = Math.floor(Date.now() / 1000)
+    const adminMessage = `deactivate:1:${timestamp}`
+    const adminSignature = await nonAdmin.signMessage(adminMessage)
+
+    vi.mocked(blockchain.isAdmin).mockResolvedValue(false)
+
+    const res = await request(app)
+      .post('/api/surveys/1/deactivate')
+      .set('x-admin-signature', adminSignature)
+      .set('x-admin-message', adminMessage)
+
+    expect(res.status).toBe(403)
+  })
+})
