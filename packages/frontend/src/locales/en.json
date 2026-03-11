@@ -59,66 +59,10 @@
         "text": "Create studies, view points, manage surveys — all free of charge, with roles and explorer links."
       }
     },
-    "faq": {
-      "title": "Frequently asked questions",
-      "items": [
-        {
-          "q": "Do I have to pay anything?",
-          "a": "No. It's free for you: the backend covers the network fees in the background. You don't need your own crypto balance to receive points."
-        },
-        {
-          "q": "Can I use the same study multiple times?",
-          "a": "No. There is exactly one point per wallet and study. That rule is enforced in the smart contract; duplicate awards are prevented."
-        },
-        {
-          "q": "Which network is used?",
-          "a": "We use Base L2 — an Ethereum Layer 2 with very low transaction costs and high security."
-        },
-        {
-          "q": "Which data are stored?",
-          "a": "Only what's needed for the proof is on-chain: your wallet address, the block time reference and point events. Names, student IDs or survey answers are not stored."
-        },
-        {
-          "q": "I don't have a wallet yet — what should I do?",
-          "a": "The wallet is created directly in the web app — no additional software needed. Keep your private key safe, it's the key to your points."
-        },
-        {
-          "q": "Do I need cryptocurrency?",
-          "a": "No. The backend sponsors the transactions so neither students nor lecturers have to pay fees."
-        },
-        {
-          "q": "How do I see my points?",
-          "a": "Your points are read directly from the blockchain and displayed in the web app. Lecturers can also verify your status via the admin portal."
-        },
-        {
-          "q": "Can I transfer or sell points?",
-          "a": "No. Points are bound to your wallet and are non-transferable. This prevents misuse."
-        },
-        {
-          "q": "I didn't receive anything at the end of the study — what now?",
-          "a": "Check if you had a wallet and confirmed the final step. If it still doesn't work, contact the lecturer with your wallet address."
-        },
-        {
-          "q": "I lost my wallet — are the points gone?",
-          "a": "Points are bound to your wallet. Contact the lecturer: corrections can be made in the admin portal."
-        },
-        {
-          "q": "How many points do I need to register my bachelor's thesis?",
-          "a": "A total of 10 VPP. You can view your progress at any time in the web app."
-        },
-        {
-          "q": "Which data are public?",
-          "a": "Only the wallet address, the block time reference and point events. Personal data are deliberately excluded."
-        },
-        {
-          "q": "What exactly do lecturers do in the portal?",
-          "a": "Create studies (survey ID & point value), generate the SoSci starter file, check wallets and manage surveys. Permissions are managed via simple roles."
-        },
-        {
-          "q": "Why is this free?",
-          "a": "The backend pays the transaction fees. Your confirmation is signed and the backend submits the transaction on the blockchain — the cost per claim is under $0.01."
-        }
-      ]
+    "docsCta": {
+      "title": "Questions? It's all in the docs.",
+      "text": "Guides for students and lecturers, technical background, FAQ and more — all in one place.",
+      "button": "Open documentation"
     }
   },
   "wallet": {

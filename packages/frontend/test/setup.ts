@@ -1,5 +1,18 @@
 import '@testing-library/jest-dom/vitest'
 
+globalThis.IntersectionObserver = class IntersectionObserver {
+  readonly root = null
+  readonly rootMargin = '0px'
+  readonly thresholds: ReadonlyArray<number> = [0]
+  constructor(private cb: IntersectionObserverCallback) {}
+  observe(target: Element) {
+    this.cb([{ isIntersecting: true, target } as IntersectionObserverEntry], this)
+  }
+  unobserve() {}
+  disconnect() {}
+  takeRecords(): IntersectionObserverEntry[] { return [] }
+} as unknown as typeof IntersectionObserver
+
 const localStorageMock = (() => {
   let store: Record<string, string> = {}
   return {

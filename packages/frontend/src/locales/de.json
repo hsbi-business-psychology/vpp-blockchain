@@ -59,66 +59,10 @@
         "text": "Studien anlegen, Punkte einsehen, Umfragen verwalten – alles ohne Gebühren, mit Rollen & Explorer-Links."
       }
     },
-    "faq": {
-      "title": "Häufige Fragen",
-      "items": [
-        {
-          "q": "Muss ich etwas bezahlen?",
-          "a": "Nein. Die Nutzung ist für dich kostenfrei: Das Backend übernimmt die Netzwerkgebühren im Hintergrund. Du brauchst kein eigenes Kryptoguthaben, um Punkte zu erhalten."
-        },
-        {
-          "q": "Kann ich dieselbe Studie mehrfach nutzen?",
-          "a": "Nein. Pro Wallet und Studie gibt es genau einen Punkt. Das ist technisch im Smart Contract hinterlegt; doppelte Vergaben sind ausgeschlossen."
-        },
-        {
-          "q": "Welches Netzwerk wird genutzt?",
-          "a": "Wir nutzen Base L2 – ein Ethereum Layer 2 mit sehr niedrigen Transaktionskosten und hoher Sicherheit."
-        },
-        {
-          "q": "Welche Daten werden gespeichert?",
-          "a": "Auf der Blockchain stehen nur: deine Wallet-Adresse, der Zeitbezug über den Block und die Punkte-Ereignisse. Namen, Matrikelnummern oder Umfrage-Antworten werden nicht gespeichert."
-        },
-        {
-          "q": "Ich habe noch keine Wallet – was mache ich?",
-          "a": "Die Wallet wird direkt in der Web-App erstellt – du brauchst keine zusätzliche Software. Bewahre deinen Private Key sicher auf, er ist der Zugang zu deinen Punkten."
-        },
-        {
-          "q": "Brauche ich Kryptogeld?",
-          "a": "Nein. Das Backend sponsert die Transaktionen, sodass weder Studierende noch Lehrende Gebühren zahlen müssen."
-        },
-        {
-          "q": "Wie sehe ich meine Punkte?",
-          "a": "Deine Punkte werden direkt von der Blockchain gelesen und in der Web-App angezeigt. Zusätzlich können Lehrende deinen Stand über das Admin-Portal prüfen."
-        },
-        {
-          "q": "Kann ich Punkte übertragen oder verkaufen?",
-          "a": "Nein. Punkte sind an deine Wallet gebunden und nicht übertragbar. Das verhindert Missbrauch."
-        },
-        {
-          "q": "Ich habe am Ende der Studie nichts bekommen – was tun?",
-          "a": "Prüfe, ob du ein Wallet hattest und den Schritt am Ende bestätigt hast. Wenn es weiterhin hakt, melde dich mit deiner Wallet-Adresse bei der Lehrperson."
-        },
-        {
-          "q": "Ich habe meine Wallet verloren – sind die Punkte weg?",
-          "a": "Die Punkte sind an deine Wallet gebunden. Wende dich an die Lehrperson: Im Admin-Portal können Korrekturen vorgenommen werden."
-        },
-        {
-          "q": "Wie viele Punkte brauche ich bis zur Bachelor-Anmeldung?",
-          "a": "Insgesamt 10 VPP. Deinen Zwischenstand siehst du jederzeit in der Web-App."
-        },
-        {
-          "q": "Welche Daten sieht die Öffentlichkeit?",
-          "a": "Nur die Wallet-Adresse, der Zeitbezug über den Block und die Punkte-Ereignisse. Persönliche Daten fehlen bewusst."
-        },
-        {
-          "q": "Was machen Lehrende genau im Portal?",
-          "a": "Studien anlegen (Survey-ID & Punktewert), die SoSci-Starterdatei erzeugen, Wallets prüfen und Umfragen verwalten. Berechtigungen werden über eine einfache Rollenverwaltung vergeben."
-        },
-        {
-          "q": "Warum kostet das alles nichts?",
-          "a": "Das Backend zahlt die Transaktionsgebühren. Deine Bestätigung wird signiert und das Backend sendet die Transaktion auf der Blockchain – die Kosten pro Claim liegen unter 0,01 $."
-        }
-      ]
+    "docsCta": {
+      "title": "Fragen? Alles in der Dokumentation.",
+      "text": "Anleitungen für Studierende und Lehrende, technische Hintergründe, FAQ und mehr – alles an einem Ort.",
+      "button": "Dokumentation öffnen"
     }
   },
   "wallet": {

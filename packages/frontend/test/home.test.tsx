@@ -18,14 +18,14 @@ describe('HomePage', () => {
 
   it('renders highlight cards for students and lecturers', () => {
     renderWithRouter(<HomePage />)
-    expect(screen.getByText(/For students|Für Studierende/i)).toBeInTheDocument()
-    expect(screen.getByText(/For lecturers|Für Lehrende/i)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /For students|Für Studierende/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /For lecturers|Für Lehrende/i })).toBeInTheDocument()
   })
 
-  it('renders the FAQ section', () => {
+  it('renders the docs CTA section', () => {
     renderWithRouter(<HomePage />)
     expect(
-      screen.getByText(/Frequently asked questions|Häufige Fragen/i),
+      screen.getByText(/Open documentation|Dokumentation öffnen/i),
     ).toBeInTheDocument()
   })
 

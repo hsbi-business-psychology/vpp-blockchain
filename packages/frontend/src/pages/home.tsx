@@ -1,92 +1,159 @@
+import { useEffect, useRef, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
-import { ArrowRight, GraduationCap, Users } from 'lucide-react'
+import { ArrowRight, GraduationCap, Users, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
+
+function FadeIn({ children, className = '', delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => el.classList.add('is-visible'), delay)
+          observer.unobserve(el)
+        }
+      },
+      { threshold: 0.15 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [delay])
+
+  return (
+    <div
+      ref={ref}
+      className={`fade-in-section ${className}`}
+    >
+      {children}
+    </div>
+  )
+}
+
+function MacBookMockup() {
+  return (
+    <div className="relative mx-auto w-full max-w-[540px]">
+      <div className="rounded-t-xl border border-border/60 bg-neutral-800 p-2.5 pb-0 shadow-2xl dark:bg-neutral-900 dark:border-neutral-700">
+        <div className="mx-auto mb-2 size-1.5 rounded-full bg-neutral-600 dark:bg-neutral-500" />
+        <div className="overflow-hidden rounded-t-md bg-black">
+          <img
+            src="/screenshots/student-transactions.png"
+            alt="VPP Blockchain – Transaktionsverlauf"
+            className="block w-full"
+            loading="eager"
+          />
+        </div>
+      </div>
+      <div className="relative z-10 h-3 rounded-b-sm border-x border-b border-border/60 bg-gradient-to-b from-neutral-700 to-neutral-800 dark:from-neutral-800 dark:to-neutral-900 dark:border-neutral-700">
+        <div className="absolute left-1/2 top-0 h-1 w-16 -translate-x-1/2 rounded-b-sm bg-neutral-600 dark:bg-neutral-500" />
+      </div>
+      <div className="mx-[-3%] h-1.5 rounded-b-xl bg-gradient-to-b from-neutral-700 to-neutral-800 dark:from-neutral-800 dark:to-neutral-900 border border-border/40 border-t-0 dark:border-neutral-700" />
+      <div className="absolute -inset-8 -z-10 rounded-3xl bg-primary/5 blur-3xl dark:bg-primary/10" />
+    </div>
+  )
+}
 
 export default function HomePage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
-  const faqItems = t('home.faq.items', { returnObjects: true }) as Array<{
-    q: string
-    a: string
-  }>
-
   return (
-    <div className="space-y-20 py-8 md:py-16">
-      {/* Hero */}
-      <section className="space-y-6 text-center">
-        <h1 className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
-          {t('home.hero.title')}
-        </h1>
-        <p className="mx-auto max-w-2xl text-base text-muted-foreground md:text-lg">
-          {t('home.hero.subtitle')}
-        </p>
-        <div className="flex flex-col items-center gap-3 pt-4 sm:flex-row sm:justify-center">
-          <Button size="lg" onClick={() => navigate('/points')} className="w-full sm:w-auto">
-            {t('home.hero.ctaStudent')}
-            <ArrowRight className="ml-2 size-4" />
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            onClick={() => navigate('/admin')}
-            className="w-full sm:w-auto"
-          >
-            {t('home.hero.ctaAdmin')}
-          </Button>
-        </div>
+    <div className="relative space-y-20 pb-8 pt-2 md:pb-16 md:pt-4">
+      {/* Background gradient orbs – full viewport width, bleed through header */}
+      <div className="pointer-events-none absolute -top-24 left-1/2 -z-10 w-screen -translate-x-1/2 overflow-hidden" style={{ height: 'calc(100% + 6rem)' }} aria-hidden="true">
+        <div className="absolute -top-32 left-1/2 h-[700px] w-[1000px] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,oklch(0.55_0.14_260/0.12),transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,oklch(0.55_0.16_280/0.22),transparent_70%)]" />
+        <div className="absolute top-[480px] -left-20 h-[550px] w-[550px] rounded-full bg-[radial-gradient(ellipse_at_center,oklch(0.6_0.12_145/0.09),transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,oklch(0.5_0.14_280/0.12),transparent_70%)]" />
+        <div className="absolute top-[850px] right-0 h-[450px] w-[650px] rounded-full bg-[radial-gradient(ellipse_at_center,oklch(0.65_0.10_260/0.08),transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,oklch(0.55_0.12_310/0.12),transparent_70%)]" />
+      </div>
+
+      {/* Hero – split layout on desktop */}
+      <section className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+        <FadeIn>
+          <div className="space-y-6 text-center lg:text-left">
+            <h1 className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
+              {t('home.hero.title')}
+            </h1>
+            <p className="mx-auto max-w-2xl text-base text-muted-foreground md:text-lg lg:mx-0">
+              {t('home.hero.subtitle')}
+            </p>
+            <div className="flex flex-col items-center gap-3 pt-2 sm:flex-row sm:justify-center lg:justify-start">
+              <Button size="lg" onClick={() => navigate('/points')} className="w-full sm:w-auto">
+                {t('home.hero.ctaStudent')}
+                <ArrowRight className="ml-2 size-4" />
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => navigate('/admin')}
+                className="w-full sm:w-auto"
+              >
+                {t('home.hero.ctaAdmin')}
+              </Button>
+            </div>
+          </div>
+        </FadeIn>
+
+        <FadeIn delay={150}>
+          <div className="flex justify-center lg:justify-end">
+            <MacBookMockup />
+          </div>
+        </FadeIn>
       </section>
 
       {/* Intro */}
-      <section className="mx-auto max-w-3xl text-center">
-        <h2 className="mb-4 text-2xl font-bold">{t('home.intro.title')}</h2>
-        <p className="text-base leading-relaxed text-muted-foreground md:text-lg">
-          {t('home.intro.text')}
-        </p>
-      </section>
+      <FadeIn>
+        <section className="mx-auto max-w-3xl text-center">
+          <h2 className="mb-4 text-2xl font-bold">{t('home.intro.title')}</h2>
+          <p className="text-base leading-relaxed text-muted-foreground md:text-lg">
+            {t('home.intro.text')}
+          </p>
+        </section>
+      </FadeIn>
 
       {/* Highlights */}
       <section>
-        <h2 className="mb-6 text-center text-2xl font-bold">{t('home.highlights.title')}</h2>
+        <FadeIn>
+          <h2 className="mb-6 text-center text-2xl font-bold">{t('home.highlights.title')}</h2>
+        </FadeIn>
         <div className="grid gap-8 md:grid-cols-2">
-          <div className="rounded-lg bg-card p-8 shadow-sm">
-            <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10">
-              <GraduationCap className="size-6 text-primary" />
+          <FadeIn delay={0}>
+            <div className="rounded-lg bg-card p-8 shadow-sm">
+              <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10">
+                <GraduationCap className="size-6 text-primary" />
+              </div>
+              <h3 className="mb-2 text-lg font-semibold">{t('home.highlights.student.title')}</h3>
+              <p className="text-base leading-relaxed text-muted-foreground">{t('home.highlights.student.text')}</p>
             </div>
-            <h3 className="mb-2 text-lg font-semibold">{t('home.highlights.student.title')}</h3>
-            <p className="text-base leading-relaxed text-muted-foreground">{t('home.highlights.student.text')}</p>
-          </div>
-          <div className="rounded-lg bg-card p-8 shadow-sm">
-            <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10">
-              <Users className="size-6 text-primary" />
+          </FadeIn>
+          <FadeIn delay={120}>
+            <div className="rounded-lg bg-card p-8 shadow-sm">
+              <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10">
+                <Users className="size-6 text-primary" />
+              </div>
+              <h3 className="mb-2 text-lg font-semibold">{t('home.highlights.lecturer.title')}</h3>
+              <p className="text-base leading-relaxed text-muted-foreground">{t('home.highlights.lecturer.text')}</p>
             </div>
-            <h3 className="mb-2 text-lg font-semibold">{t('home.highlights.lecturer.title')}</h3>
-            <p className="text-base leading-relaxed text-muted-foreground">{t('home.highlights.lecturer.text')}</p>
-          </div>
+          </FadeIn>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section>
-        <h2 className="mb-8 text-center text-2xl font-bold">{t('home.faq.title')}</h2>
-        <Accordion type="single" collapsible className="divide-y divide-border border-y border-border">
-          {faqItems.map((item, i) => (
-            <AccordionItem key={i} value={`faq-${i}`} className="border-none py-1">
-              <AccordionTrigger className="text-base">{item.q}</AccordionTrigger>
-              <AccordionContent className="text-base text-muted-foreground">
-                {item.a}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-      </section>
+      {/* Docs CTA */}
+      <FadeIn>
+        <section className="mx-auto max-w-2xl text-center">
+          <h2 className="mb-3 text-2xl font-bold">{t('home.docsCta.title')}</h2>
+          <p className="mb-6 text-base text-muted-foreground md:text-lg">
+            {t('home.docsCta.text')}
+          </p>
+          <Button variant="outline" size="lg" onClick={() => navigate('/docs')}>
+            <BookOpen className="mr-2 size-4" />
+            {t('home.docsCta.button')}
+          </Button>
+        </section>
+      </FadeIn>
     </div>
   )
 }
