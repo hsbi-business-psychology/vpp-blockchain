@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+out/
+
+# Hardhat / Solidity
+packages/contracts/artifacts/
+packages/contracts/cache/
+packages/contracts/typechain-types/
+
+# Coverage
+coverage/
+coverage.json
+.nyc_output/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Testing
+*.lcov
+
+# Misc
+.cache/
+tmp/
+temp/
+
+# Local planning docs (German, not part of the repository)
+ARCHITEKTUR.md
+GROBKONZEPT.md
+PHASENPLAN.md
+REQUIREMENTS.md

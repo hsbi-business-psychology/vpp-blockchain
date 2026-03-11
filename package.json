@@ -1,0 +1,22 @@
+{
+  "name": "vpp-blockchain",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Verifiable Participant Points — a blockchain-based system for awarding tamper-proof survey participation points",
+  "author": "HSBI BInEx",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "clean": "pnpm -r run clean"
+  }
+}
