@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
+import { toast } from 'sonner'
+import i18n from '@/lib/i18n'
 import type { WalletData } from '@/lib/wallet'
 import {
   createWallet as createWalletFn,
@@ -39,9 +41,15 @@ export function useWallet() {
       }
     }
 
+    const handleChainChanged = () => {
+      toast.warning(i18n.t('wallet.metamask.networkChanged'))
+    }
+
     window.ethereum.on('accountsChanged', handleAccountsChanged)
+    window.ethereum.on('chainChanged', handleChainChanged)
     return () => {
       window.ethereum?.removeListener?.('accountsChanged', handleAccountsChanged)
+      window.ethereum?.removeListener?.('chainChanged', handleChainChanged)
     }
   }, [wallet])
 

@@ -95,7 +95,8 @@
       "disconnect": "Disconnect MetaMask",
       "disconnectDescription": "The connection to MetaMask will be removed. Your wallet remains in MetaMask — you can reconnect at any time.",
       "reconnect": "You can reconnect at any time.",
-      "switchedAccount": "MetaMask account changed"
+      "switchedAccount": "MetaMask account changed",
+      "networkChanged": "MetaMask network was changed. Make sure you are connected to the correct network."
     },
     "create": {
       "title": "Create Wallet",

@@ -95,7 +95,8 @@
       "disconnect": "MetaMask trennen",
       "disconnectDescription": "Die Verbindung zu MetaMask wird getrennt. Dein Wallet bleibt in MetaMask erhalten – du kannst dich jederzeit erneut verbinden.",
       "reconnect": "Du kannst dich jederzeit wieder verbinden.",
-      "switchedAccount": "MetaMask-Account gewechselt"
+      "switchedAccount": "MetaMask-Account gewechselt",
+      "networkChanged": "MetaMask-Netzwerk wurde gewechselt. Stelle sicher, dass du mit dem richtigen Netzwerk verbunden bist."
     },
     "create": {
       "title": "Wallet erstellen",
