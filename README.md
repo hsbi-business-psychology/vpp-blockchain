@@ -2,10 +2,13 @@
 
 **Verifiable Participant Points** — A blockchain-based system for awarding tamper-proof, pseudonymous survey participation points.
 
+[![CI](https://github.com/hsbi-business-psychology/vpp-blockchain/actions/workflows/ci.yml/badge.svg)](https://github.com/hsbi-business-psychology/vpp-blockchain/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-green)](https://nodejs.org/)
 [![Solidity](https://img.shields.io/badge/Solidity-%5E0.8.24-363636)](https://soliditylang.org/)
 [![Base L2](https://img.shields.io/badge/Chain-Base%20L2-0052FF)](https://base.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-%3E%3D9-F69220)](https://pnpm.io/)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
 ---
 
@@ -193,6 +196,16 @@ A single $10 deposit covers thousands of claims across multiple semesters.
 ## Contributing
 
 We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) before submitting a pull request.
+
+This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a list of notable changes.
+
+## Security
+
+To report a vulnerability, please see our [Security Policy](SECURITY.md).
 
 ## License
 

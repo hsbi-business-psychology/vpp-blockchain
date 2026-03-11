@@ -1,9 +1,14 @@
 {
   "name": "@vpp/contracts",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "VPP SurveyPoints smart contract for Base L2",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hsbi-business-psychology/vpp-blockchain.git",
+    "directory": "packages/contracts"
+  },
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",

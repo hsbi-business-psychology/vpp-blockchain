@@ -7,7 +7,7 @@ responsibly.
 
 **Do NOT open a public GitHub issue for security vulnerabilities.**
 
-Instead, please send an email to the project maintainers with:
+Instead, please send an email to **vpp-security@hsbi.de** with:
 
 1. A description of the vulnerability
 2. Steps to reproduce the issue

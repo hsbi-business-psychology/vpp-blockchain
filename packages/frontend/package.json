@@ -1,7 +1,14 @@
 {
   "name": "@vpp/frontend",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
+  "description": "VPP reference frontend — React SPA for survey points management",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hsbi-business-psychology/vpp-blockchain.git",
+    "directory": "packages/frontend"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
