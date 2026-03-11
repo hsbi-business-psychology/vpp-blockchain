@@ -17,7 +17,7 @@ function validateAddress(address: string): string {
 // GET /api/wallets/:address/submitted — check submission status (public)
 router.get('/:address/submitted', async (req, res, next) => {
   try {
-    const address = validateAddress(req.params.address)
+    const address = validateAddress(req.params.address as string)
     const submitted = await blockchain.isWalletSubmitted(address)
     const totalPoints = await blockchain.getTotalPoints(address)
 
@@ -36,7 +36,7 @@ router.post(
   requireAdmin as unknown as RequestHandler,
   async (req, res, next) => {
     try {
-      const address = validateAddress(req.params.address)
+      const address = validateAddress(req.params.address as string)
 
       const alreadySubmitted = await blockchain.isWalletSubmitted(address)
       if (alreadySubmitted) {
@@ -65,7 +65,7 @@ router.post(
   requireAdmin as unknown as RequestHandler,
   async (req, res, next) => {
     try {
-      const address = validateAddress(req.params.address)
+      const address = validateAddress(req.params.address as string)
 
       const isSubmitted = await blockchain.isWalletSubmitted(address)
       if (!isSubmitted) {

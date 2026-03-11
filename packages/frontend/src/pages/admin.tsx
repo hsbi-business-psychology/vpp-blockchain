@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { ethers } from 'ethers'
@@ -7,7 +7,7 @@ import { ShieldCheck, ShieldX, Loader2, LogOut, AlertTriangle, Download, Info } 
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import {
   Dialog,
@@ -47,7 +47,10 @@ export default function AdminPage() {
   const [adminCheck, setAdminCheck] = useState<'loading' | 'admin' | 'denied'>('loading')
   const [authenticated, setAuthenticated] = useState(false)
   const [authLoading, setAuthLoading] = useState(false)
-  const [authCredentials, setAuthCredentials] = useState<{ signature: string; message: string } | null>(null)
+  const [authCredentials, setAuthCredentials] = useState<{
+    signature: string
+    message: string
+  } | null>(null)
   const [surveys, setSurveys] = useState<SurveyRow[]>([])
   const [loading, setLoading] = useState(false)
 
@@ -73,7 +76,9 @@ export default function AdminPage() {
     signerInitRef.current = true
 
     if (isMetaMask) {
-      getMetaMaskSigner().then(setSigner).catch(() => setSigner(null))
+      getMetaMaskSigner()
+        .then(setSigner)
+        .catch(() => setSigner(null))
     } else {
       try {
         const provider = new ethers.JsonRpcProvider(rpcUrl)
@@ -83,7 +88,9 @@ export default function AdminPage() {
       }
     }
 
-    return () => { signerInitRef.current = false }
+    return () => {
+      signerInitRef.current = false
+    }
   }, [wallet, rpcUrl, isMetaMask])
 
   useEffect(() => {
@@ -105,7 +112,9 @@ export default function AdminPage() {
       }
     }
     check()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [wallet, rpcUrl, contractAddress])
 
   const handleAuth = useCallback(async () => {
@@ -163,7 +172,13 @@ export default function AdminPage() {
     }
   }
 
-  const handleRegister = async (data: { surveyId: number; points: number; secret: string; maxClaims: number; title: string }) => {
+  const handleRegister = async (data: {
+    surveyId: number
+    points: number
+    secret: string
+    maxClaims: number
+    title: string
+  }) => {
     if (!authCredentials) return
     try {
       const timestamp = Date.now()
@@ -251,9 +266,7 @@ export default function AdminPage() {
           <CardContent className="flex flex-col items-center gap-4 py-8">
             <ShieldCheck className="size-10 text-muted-foreground" />
             <p className="text-muted-foreground">{t('points.noWallet')}</p>
-            <Button onClick={() => navigate('/points')}>
-              {t('wallet.create.title')}
-            </Button>
+            <Button onClick={() => navigate('/points')}>{t('wallet.create.title')}</Button>
           </CardContent>
         </Card>
       </div>
@@ -293,9 +306,7 @@ export default function AdminPage() {
               <p className="text-xs text-muted-foreground">Wallet</p>
               <p className="truncate font-mono text-sm">{wallet?.address}</p>
             </div>
-            <p className="text-sm text-muted-foreground">
-              {t('admin.accessDenied.hint')}
-            </p>
+            <p className="text-sm text-muted-foreground">{t('admin.accessDenied.hint')}</p>
             <Button variant="outline" onClick={() => navigate('/')}>
               {t('admin.accessDenied.back')}
             </Button>
@@ -333,7 +344,12 @@ export default function AdminPage() {
             onRegister={handleRegister}
             nextSurveyId={surveys.length > 0 ? Math.max(...surveys.map((s) => s.surveyId)) + 1 : 1}
           />
-          <Button variant="ghost" size="icon" onClick={handleLogout} aria-label={t('admin.logout', 'Abmelden')}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleLogout}
+            aria-label={t('admin.logout', 'Abmelden')}
+          >
             <LogOut className="size-4" aria-hidden="true" />
           </Button>
         </div>
@@ -374,9 +390,7 @@ export default function AdminPage() {
 
       <Separator />
 
-      {wallet && signer && (
-        <RoleManagement walletAddress={wallet.address} signer={signer} />
-      )}
+      {wallet && signer && <RoleManagement walletAddress={wallet.address} signer={signer} />}
 
       <Separator />
 
@@ -395,19 +409,33 @@ export default function AdminPage() {
               <AlertTriangle className="size-6 text-destructive" />
             </div>
             <DialogTitle>{t('admin.surveys.deactivateConfirm.title')}</DialogTitle>
-            <DialogDescription>{t('admin.surveys.deactivateConfirm.description')}</DialogDescription>
+            <DialogDescription>
+              {t('admin.surveys.deactivateConfirm.description')}
+            </DialogDescription>
           </DialogHeader>
           {deactivateTarget && (
             <div className="rounded-lg bg-muted p-3 space-y-1">
-              <p className="text-sm font-medium">{deactivateTarget.title || `Survey #${deactivateTarget.surveyId}`}</p>
-              <p className="text-xs text-muted-foreground">ID: {deactivateTarget.surveyId} · {deactivateTarget.claimCount} Claims</p>
+              <p className="text-sm font-medium">
+                {deactivateTarget.title || `Survey #${deactivateTarget.surveyId}`}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                ID: {deactivateTarget.surveyId} · {deactivateTarget.claimCount} Claims
+              </p>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeactivateTarget(null)} disabled={deactivateLoading}>
+            <Button
+              variant="outline"
+              onClick={() => setDeactivateTarget(null)}
+              disabled={deactivateLoading}
+            >
               {t('common.cancel')}
             </Button>
-            <Button variant="destructive" onClick={handleDeactivateConfirm} disabled={deactivateLoading}>
+            <Button
+              variant="destructive"
+              onClick={handleDeactivateConfirm}
+              disabled={deactivateLoading}
+            >
               {deactivateLoading ? (
                 <Loader2 className="mr-1.5 size-4 animate-spin" />
               ) : (
@@ -431,19 +459,27 @@ export default function AdminPage() {
           </DialogHeader>
           {templateTarget && (
             <div className="rounded-lg bg-muted p-3 space-y-1">
-              <p className="text-sm font-medium">{templateTarget.title || `Survey #${templateTarget.surveyId}`}</p>
-              <p className="text-xs text-muted-foreground">ID: {templateTarget.surveyId} · {templateTarget.points} Punkte</p>
+              <p className="text-sm font-medium">
+                {templateTarget.title || `Survey #${templateTarget.surveyId}`}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                ID: {templateTarget.surveyId} · {templateTarget.points} Punkte
+              </p>
             </div>
           )}
           <div className="space-y-2">
-            <label className="text-sm font-medium">{t('admin.surveys.templateDialog.secretLabel')}</label>
+            <label className="text-sm font-medium">
+              {t('admin.surveys.templateDialog.secretLabel')}
+            </label>
             <Input
               value={templateSecret}
               onChange={(e) => setTemplateSecret(e.target.value)}
               placeholder={t('admin.surveys.templateDialog.secretPlaceholder')}
               type="password"
               className="font-mono text-xs"
-              onKeyDown={(e) => e.key === 'Enter' && templateSecret.trim() && handleTemplateDialogDownload()}
+              onKeyDown={(e) =>
+                e.key === 'Enter' && templateSecret.trim() && handleTemplateDialogDownload()
+              }
             />
             <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
               <Info className="mt-0.5 size-3 shrink-0" />
@@ -454,7 +490,10 @@ export default function AdminPage() {
             <Button variant="outline" onClick={() => setTemplateTarget(null)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleTemplateDialogDownload} disabled={!templateSecret.trim() || templateLoading}>
+            <Button
+              onClick={handleTemplateDialogDownload}
+              disabled={!templateSecret.trim() || templateLoading}
+            >
               {templateLoading ? (
                 <Loader2 className="mr-1.5 size-4 animate-spin" />
               ) : (

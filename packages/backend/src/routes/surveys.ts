@@ -66,41 +66,45 @@ router.get('/', async (_req, res, next) => {
 })
 
 // POST /api/surveys/:id/deactivate — deactivate a survey (admin only)
-router.post('/:id/deactivate', requireAdmin as unknown as RequestHandler, async (req, res, next) => {
-  try {
-    const surveyId = parseInt(req.params.id, 10)
-    if (isNaN(surveyId) || surveyId <= 0) {
-      throw new AppError(400, 'INVALID_SURVEY_ID', 'Survey ID must be a positive integer')
+router.post(
+  '/:id/deactivate',
+  requireAdmin as unknown as RequestHandler,
+  async (req, res, next) => {
+    try {
+      const surveyId = parseInt(req.params.id as string, 10)
+      if (isNaN(surveyId) || surveyId <= 0) {
+        throw new AppError(400, 'INVALID_SURVEY_ID', 'Survey ID must be a positive integer')
+      }
+
+      const info = await blockchain.getSurveyInfo(surveyId)
+      if (info.points === 0) {
+        throw new AppError(404, 'SURVEY_NOT_FOUND', 'Survey does not exist')
+      }
+      if (!info.active) {
+        throw new AppError(409, 'ALREADY_INACTIVE', 'Survey is already inactive')
+      }
+
+      const receipt = await blockchain.deactivateSurvey(surveyId)
+
+      invalidateCache()
+
+      res.json({
+        success: true,
+        data: {
+          txHash: receipt.hash,
+          explorerUrl: `${config.explorerBaseUrl}/tx/${receipt.hash}`,
+        },
+      })
+    } catch (err) {
+      next(err)
     }
-
-    const info = await blockchain.getSurveyInfo(surveyId)
-    if (info.points === 0) {
-      throw new AppError(404, 'SURVEY_NOT_FOUND', 'Survey does not exist')
-    }
-    if (!info.active) {
-      throw new AppError(409, 'ALREADY_INACTIVE', 'Survey is already inactive')
-    }
-
-    const receipt = await blockchain.deactivateSurvey(surveyId)
-
-    invalidateCache()
-
-    res.json({
-      success: true,
-      data: {
-        txHash: receipt.hash,
-        explorerUrl: `${config.explorerBaseUrl}/tx/${receipt.hash}`,
-      },
-    })
-  } catch (err) {
-    next(err)
-  }
-})
+  },
+)
 
 // GET /api/surveys/:id/template — download SoSci Survey XML template
 router.get('/:id/template', async (req, res, next) => {
   try {
-    const surveyId = parseInt(req.params.id, 10)
+    const surveyId = parseInt(req.params.id as string, 10)
     if (isNaN(surveyId) || surveyId <= 0) {
       throw new AppError(400, 'INVALID_SURVEY_ID', 'Survey ID must be a positive integer')
     }
