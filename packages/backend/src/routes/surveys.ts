@@ -5,8 +5,9 @@ import { config } from '../config.js'
 import { AppError } from '../middleware/errorHandler.js'
 import { requireAdmin } from '../middleware/auth.js'
 import * as blockchain from '../services/blockchain.js'
+import { getSurveysWithCache, invalidateCache } from '../services/survey-cache.js'
 import { generateSoSciTemplate } from '../services/template.js'
-import type { SurveyInfo, SurveyRegisterResult } from '../types.js'
+import type { SurveyRegisterResult } from '../types.js'
 
 const router: Router = Router()
 
@@ -45,31 +46,18 @@ router.post('/', requireAdmin as unknown as RequestHandler, async (req, res, nex
       templateDownloadUrl: `/api/surveys/${surveyId}/template?secret=${encodeURIComponent(secret)}`,
     }
 
+    invalidateCache()
+
     res.status(201).json({ success: true, data: result })
   } catch (err) {
     next(err)
   }
 })
 
-// GET /api/surveys — list all registered surveys
+// GET /api/surveys — list all registered surveys (cached)
 router.get('/', async (_req, res, next) => {
   try {
-    const events = await blockchain.getSurveyRegisteredEvents()
-
-    const surveys: SurveyInfo[] = await Promise.all(
-      events.map(async (event) => {
-        const info = await blockchain.getSurveyInfo(event.surveyId)
-        return {
-          surveyId: event.surveyId,
-          title: info.title,
-          points: info.points,
-          maxClaims: Number(info.maxClaims),
-          claimCount: Number(info.claimCount),
-          active: info.active,
-          registeredAt: new Date(Number(info.registeredAt) * 1000).toISOString(),
-        }
-      }),
-    )
+    const surveys = await getSurveysWithCache()
 
     res.json({ success: true, data: surveys })
   } catch (err) {
@@ -94,6 +82,8 @@ router.post('/:id/deactivate', requireAdmin as unknown as RequestHandler, async 
     }
 
     const receipt = await blockchain.deactivateSurvey(surveyId)
+
+    invalidateCache()
 
     res.json({
       success: true,

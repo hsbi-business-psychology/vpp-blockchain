@@ -3,6 +3,7 @@ import request from 'supertest'
 import { ethers } from 'ethers'
 import { createApp } from '../src/server.js'
 import * as blockchain from '../src/services/blockchain.js'
+import { invalidateCache } from '../src/services/survey-cache.js'
 
 const app = createApp()
 
@@ -92,6 +93,7 @@ describe('POST /api/surveys', () => {
 describe('GET /api/surveys', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
+    invalidateCache()
   })
 
   it('should list all registered surveys', async () => {
