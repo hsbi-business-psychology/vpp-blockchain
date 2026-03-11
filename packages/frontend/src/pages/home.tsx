@@ -1,99 +1,102 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
-import { ArrowRight, Eye, Globe, ShieldCheck, Zap } from 'lucide-react'
+import { ArrowRight, GraduationCap, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-
-const featureIcons = {
-  transparent: Eye,
-  noExtensions: Zap,
-  costEfficient: Globe,
-  openSource: ShieldCheck,
-} as const
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 
 export default function HomePage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
-  const features = ['transparent', 'noExtensions', 'costEfficient', 'openSource'] as const
+  const badges = t('home.hero.badges', { returnObjects: true }) as string[]
+  const faqItems = t('home.faq.items', { returnObjects: true }) as Array<{
+    q: string
+    a: string
+  }>
 
   return (
-    <div className="mx-auto max-w-4xl space-y-16 py-8 md:py-16">
+    <div className="space-y-20 py-8 md:py-16">
       {/* Hero */}
       <section className="space-y-6 text-center">
-        <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
-          Base L2 Blockchain
-        </div>
-        <h1 className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
+        <h1 className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
           {t('home.hero.title')}
         </h1>
-        <p className="mx-auto max-w-2xl text-lg text-muted-foreground md:text-xl">
+        <p className="mx-auto max-w-2xl text-base text-muted-foreground md:text-lg">
           {t('home.hero.subtitle')}
         </p>
-        <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <Button size="lg" onClick={() => navigate('/wallet')} className="w-full sm:w-auto">
-            {t('home.hero.cta.wallet')}
+        <div className="flex flex-wrap justify-center gap-2">
+          {badges.map((badge) => (
+            <span
+              key={badge}
+              className="inline-block border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary"
+            >
+              {badge}
+            </span>
+          ))}
+        </div>
+        <div className="flex flex-col items-center gap-3 pt-2 sm:flex-row sm:justify-center">
+          <Button size="lg" onClick={() => navigate('/points')} className="w-full sm:w-auto">
+            {t('home.hero.ctaStudent')}
             <ArrowRight className="ml-2 size-4" />
           </Button>
           <Button
             size="lg"
             variant="outline"
-            onClick={() => navigate('/points')}
+            onClick={() => navigate('/admin')}
             className="w-full sm:w-auto"
           >
-            {t('home.hero.cta.points')}
+            {t('home.hero.ctaAdmin')}
           </Button>
         </div>
       </section>
 
-      {/* Feature cards */}
-      <section className="grid gap-4 sm:grid-cols-2">
-        {features.map((key) => {
-          const Icon = featureIcons[key]
-          return (
-            <Card key={key} className="transition-colors hover:border-primary/30">
-              <CardHeader>
-                <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-primary/10">
-                  <Icon className="size-5 text-primary" />
-                </div>
-                <CardTitle className="text-lg">{t(`home.features.${key}.title`)}</CardTitle>
-                <CardDescription>{t(`home.features.${key}.description`)}</CardDescription>
-              </CardHeader>
-            </Card>
-          )
-        })}
+      {/* Intro */}
+      <section className="mx-auto max-w-3xl">
+        <h2 className="mb-4 text-2xl font-bold">{t('home.intro.title')}</h2>
+        <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
+          {t('home.intro.text')}
+        </p>
       </section>
 
-      {/* How it works */}
-      <section className="space-y-6">
-        <h2 className="text-center text-2xl font-bold">How it works</h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          {[
-            {
-              step: '1',
-              title: 'Create Wallet',
-              description: 'Generate a wallet in your browser — no signup, no extensions.',
-            },
-            {
-              step: '2',
-              title: 'Complete Survey',
-              description: 'Participate in a survey. You\'ll receive a unique claim link.',
-            },
-            {
-              step: '3',
-              title: 'Claim Points',
-              description: 'Sign the claim with your wallet. Points are recorded on-chain.',
-            },
-          ].map(({ step, title, description }) => (
-            <div key={step} className="relative flex flex-col items-center text-center">
-              <div className="mb-3 flex size-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-                {step}
-              </div>
-              <h3 className="font-semibold">{title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+      {/* Highlights */}
+      <section>
+        <h2 className="mb-6 text-2xl font-bold">{t('home.highlights.title')}</h2>
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="border border-border p-6">
+            <div className="mb-3 flex size-10 items-center justify-center bg-primary/10">
+              <GraduationCap className="size-5 text-primary" />
             </div>
-          ))}
+            <h3 className="mb-2 text-lg font-semibold">{t('home.highlights.student.title')}</h3>
+            <p className="text-sm text-muted-foreground">{t('home.highlights.student.text')}</p>
+          </div>
+          <div className="border border-border p-6">
+            <div className="mb-3 flex size-10 items-center justify-center bg-primary/10">
+              <Users className="size-5 text-primary" />
+            </div>
+            <h3 className="mb-2 text-lg font-semibold">{t('home.highlights.lecturer.title')}</h3>
+            <p className="text-sm text-muted-foreground">{t('home.highlights.lecturer.text')}</p>
+          </div>
         </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="mx-auto max-w-3xl">
+        <h2 className="mb-6 text-2xl font-bold">{t('home.faq.title')}</h2>
+        <Accordion type="single" collapsible className="border border-border">
+          {faqItems.map((item, i) => (
+            <AccordionItem key={i} value={`faq-${i}`} className="px-6">
+              <AccordionTrigger>{item.q}</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                {item.a}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
       </section>
     </div>
   )
