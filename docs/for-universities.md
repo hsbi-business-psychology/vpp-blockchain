@@ -85,6 +85,27 @@ Deploying your own contract costs approximately $0.50 and provides clean data se
 
 ## Customization
 
+### Logo
+
+The header displays two PNG logo files from `packages/frontend/public/`:
+
+| File | Usage |
+|---|---|
+| `hsbi-logo-light.png` | Shown in **light mode** (dark logo on light background) |
+| `hsbi-logo-dark.png` | Shown in **dark mode** (light logo on dark background) |
+
+Both images should have a **transparent background**. The switching is handled automatically via Tailwind's `dark:` variant in the header component (`packages/frontend/src/components/layout/header.tsx`).
+
+**To replace the logo with your own institution's logo:**
+
+1. Create two PNG versions of your logo with transparent backgrounds (one for each theme)
+2. Replace the files in `packages/frontend/public/`
+3. Keep the same filenames, or update the `<img>` references in `header.tsx`
+
+The logo size is controlled via Tailwind classes in the header:
+- Mobile: `h-12` (48px height)
+- Desktop: `md:h-16` (64px height)
+
 ### Branding
 
 The frontend is fully customizable through environment variables:

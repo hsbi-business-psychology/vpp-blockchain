@@ -31,8 +31,8 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
             onClick={() => handleNav('/')}
             className="flex items-center"
           >
-            <img src="/hsbi-logo-light.png" alt="HSBI" className="h-10 dark:hidden md:h-12" />
-            <img src="/hsbi-logo-dark.png" alt="HSBI" className="hidden h-10 dark:block md:h-12" />
+            <img src="/hsbi-logo-light.png" alt="HSBI" className="h-12 dark:hidden md:h-16" />
+            <img src="/hsbi-logo-dark.png" alt="HSBI" className="hidden h-12 dark:block md:h-16" />
           </button>
 
           <nav className="hidden items-center gap-1 md:flex">
@@ -72,8 +72,8 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
               onClick={() => handleNav('/')}
               className="flex items-center"
             >
-              <img src="/hsbi-logo-light.png" alt="HSBI" className="h-10 dark:hidden" />
-              <img src="/hsbi-logo-dark.png" alt="HSBI" className="hidden h-10 dark:block" />
+              <img src="/hsbi-logo-light.png" alt="HSBI" className="h-12 dark:hidden" />
+              <img src="/hsbi-logo-dark.png" alt="HSBI" className="hidden h-12 dark:block" />
             </button>
             <button
               onClick={() => setMenuOpen(false)}
