@@ -20,6 +20,7 @@ import {
   ClipboardCheck,
   Gift,
   BarChart3,
+  CheckCircle2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -57,9 +58,10 @@ import { ethers } from 'ethers'
 export default function PointsPage() {
   const { t } = useTranslation()
   const { wallet, hasWallet, loading: walletLoading, create, importKey, remove, downloadKey } = useWallet()
-  const { getTotalPoints, getClaimHistory, loading } = useBlockchain()
+  const { getTotalPoints, getClaimHistory, isWalletSubmitted: checkSubmitted, loading } = useBlockchain()
 
   const [totalPoints, setTotalPoints] = useState<number | null>(null)
+  const [walletSubmitted, setWalletSubmitted] = useState(false)
   const [history, setHistory] = useState<
     Array<{ surveyId: number; points: number; txHash: string; blockNumber: number }>
   >([])
@@ -88,18 +90,20 @@ export default function PointsPage() {
     if (!wallet?.address) return
     const fetchData = async () => {
       try {
-        const [points, claims] = await Promise.all([
+        const [points, claims, submitted] = await Promise.all([
           getTotalPoints(wallet.address),
           getClaimHistory(wallet.address),
+          checkSubmitted(wallet.address),
         ])
         setTotalPoints(points)
         setHistory(claims)
+        setWalletSubmitted(submitted)
       } catch {
         // handled by hook
       }
     }
     fetchData()
-  }, [wallet?.address, getTotalPoints, getClaimHistory])
+  }, [wallet?.address, getTotalPoints, getClaimHistory, checkSubmitted])
 
   function handleCopy(text: string) {
     navigator.clipboard.writeText(text)
@@ -347,6 +351,23 @@ export default function PointsPage() {
               <p className="mt-1 text-sm text-muted-foreground sm:text-base">{t('points.total')}</p>
             </div>
           </div>
+
+          {/* ─── Submitted Banner ─── */}
+          {walletSubmitted && (
+            <div className="flex items-start gap-3 rounded-lg border border-green-500/20 bg-green-500/5 p-4">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-green-500/10">
+                <CheckCircle2 className="size-5 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <p className="font-semibold text-green-700 dark:text-green-400">
+                  {t('points.submittedBanner.title')}
+                </p>
+                <p className="mt-0.5 text-sm text-green-600/80 dark:text-green-400/80">
+                  {t('points.submittedBanner.description')}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* ─── How It Works (visible when no points yet or on first visit) ─── */}
           {history.length === 0 && !loading && (

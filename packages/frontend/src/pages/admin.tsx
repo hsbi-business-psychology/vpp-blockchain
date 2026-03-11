@@ -20,6 +20,7 @@ import { MetricsCards } from '@/components/admin/metrics-cards'
 import { SurveyTable } from '@/components/admin/survey-table'
 import { RegisterSurveyDialog } from '@/components/admin/register-survey-dialog'
 import { RoleManagement } from '@/components/admin/role-management'
+import { SubmissionManagement } from '@/components/admin/submission-management'
 import { useWallet } from '@/hooks/use-wallet'
 import { useApi } from '@/hooks/use-api'
 import { SURVEY_POINTS_ABI } from '@/lib/contract-abi'
@@ -364,6 +365,10 @@ export default function AdminPage() {
           )}
         </CardContent>
       </Card>
+
+      <Separator />
+
+      <SubmissionManagement />
 
       <Separator />
 

@@ -201,6 +201,10 @@
     "title": "Meine Punkte",
     "subtitle": "Hier siehst du deinen aktuellen Punktestand und alle bisherigen Einlösungen. Deine Punkte werden direkt von der Blockchain gelesen – fälschungssicher und jederzeit nachvollziehbar.",
     "total": "Gesamtpunkte",
+    "submittedBanner": {
+      "title": "Punkte abgegeben",
+      "description": "Dein Wallet wurde als abgegeben markiert. Deine Punkte wurden zur Zulassung zur Bachelorarbeit vorgelegt und akzeptiert."
+    },
     "noWallet": "Erstelle oder importiere ein Wallet, um deine Punkte zu sehen.",
     "history": "Transaktionsverlauf",
     "historyDescription": "Jede Einlösung wird als Transaktion auf der Blockchain gespeichert. Klicke auf den Link, um die Transaktion im Block-Explorer zu verifizieren.",
@@ -319,6 +323,35 @@
       "secret": "Wird automatisch generiert. Am Ende der Umfrage wird es für den Claim-Link benötigt.",
       "title": "Ein kurzer Name für die Umfrage, damit du sie leicht wiederfindest.",
       "minterRole": "Die MINTER_ROLE erlaubt dem Backend, Punkte zu vergeben. Nur autorisierte Wallets können diese Funktion nutzen."
+    },
+    "submissions": {
+      "title": "Studierenden-Abgaben",
+      "description": "Suche ein Studierenden-Wallet und markiere es als abgegeben, sobald die Punkte zur Zulassung vorgelegt wurden. So wird sichergestellt, dass das gleiche Wallet nicht mehrfach verwendet wird.",
+      "searchPlaceholder": "Studierenden-Wallet-Adresse (0x...)",
+      "search": "Suchen",
+      "invalidAddress": "Bitte gib eine gültige Wallet-Adresse ein.",
+      "noResults": "Noch keine Suche durchgeführt.",
+      "points": "Punkte",
+      "status": "Status",
+      "submitted": "Abgegeben",
+      "notSubmitted": "Nicht abgegeben",
+      "markSubmitted": "Als abgegeben markieren",
+      "unmarkSubmitted": "Markierung aufheben",
+      "markSuccess": "Wallet wurde als abgegeben markiert!",
+      "unmarkSuccess": "Markierung wurde aufgehoben!",
+      "markError": "Wallet konnte nicht markiert werden",
+      "unmarkError": "Markierung konnte nicht aufgehoben werden",
+      "confirmMark": {
+        "title": "Wallet als abgegeben markieren",
+        "description": "Damit wird auf der Blockchain gespeichert, dass dieses Wallet seine Punkte für die Thesis-Zulassung vorgelegt hat. Das Wallet kann dann nicht erneut zur Zulassung verwendet werden.",
+        "button": "Bestätigen und markieren"
+      },
+      "confirmUnmark": {
+        "title": "Markierung aufheben",
+        "description": "Die Abgabe-Markierung wird von diesem Wallet entfernt. Es kann dann erneut zur Zulassung vorgelegt werden.",
+        "button": "Markierung aufheben"
+      },
+      "infoTip": "Wenn Studierende genügend Punkte gesammelt haben, zeigen sie ihren Public Key dem Prüfer. Dieser prüft den Punktestand und markiert das Wallet als abgegeben, damit es nicht erneut verwendet werden kann."
     },
     "roles": {
       "title": "Admin-Rollenverwaltung",

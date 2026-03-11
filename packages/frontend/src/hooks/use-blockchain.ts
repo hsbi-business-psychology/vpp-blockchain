@@ -97,6 +97,11 @@ export function useBlockchain() {
     }
   }, [])
 
+  const isWalletSubmitted = useCallback(async (address: string): Promise<boolean> => {
+    const contract = getContract()
+    return contract.isWalletSubmitted(address)
+  }, [])
+
   return {
     loading,
     error,
@@ -105,5 +110,6 @@ export function useBlockchain() {
     hasClaimed,
     getSurveyInfo,
     getClaimHistory,
+    isWalletSubmitted,
   }
 }

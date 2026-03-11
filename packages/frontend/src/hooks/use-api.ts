@@ -130,6 +130,43 @@ export function useApi() {
     [],
   )
 
+  const getWalletSubmissionStatus = useCallback(
+    async (address: string): Promise<{ address: string; submitted: boolean; totalPoints: number }> => {
+      return apiFetch<{ address: string; submitted: boolean; totalPoints: number }>(
+        `/api/wallets/${address}/submitted`,
+      )
+    },
+    [],
+  )
+
+  const markWalletSubmitted = useCallback(
+    async (address: string, signature: string, message: string): Promise<{ txHash: string }> => {
+      return apiFetch<{ txHash: string }>(`/api/wallets/${address}/mark-submitted`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-signature': signature,
+          'x-admin-message': message,
+        },
+      })
+    },
+    [],
+  )
+
+  const unmarkWalletSubmitted = useCallback(
+    async (address: string, signature: string, message: string): Promise<{ txHash: string }> => {
+      return apiFetch<{ txHash: string }>(`/api/wallets/${address}/unmark-submitted`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-signature': signature,
+          'x-admin-message': message,
+        },
+      })
+    },
+    [],
+  )
+
   const getHealth = useCallback(async (): Promise<HealthResult> => {
     return apiFetch<HealthResult>('/api/health')
   }, [])
@@ -141,6 +178,9 @@ export function useApi() {
     registerSurvey,
     downloadTemplate,
     deactivateSurvey,
+    getWalletSubmissionStatus,
+    markWalletSubmitted,
+    unmarkWalletSubmitted,
     getHealth,
   }
 }

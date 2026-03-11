@@ -201,6 +201,10 @@
     "title": "My Points",
     "subtitle": "View your current points balance and all past claims. Your points are read directly from the blockchain — tamper-proof and verifiable at any time.",
     "total": "Total Points",
+    "submittedBanner": {
+      "title": "Points Submitted",
+      "description": "Your wallet has been marked as \"submitted\". Your points have been presented and accepted for thesis admission."
+    },
     "noWallet": "Create or import a wallet to view your points.",
     "history": "Transaction History",
     "historyDescription": "Each claim is stored as a transaction on the blockchain. Click the link to verify the transaction in the block explorer.",
@@ -319,6 +323,35 @@
       "secret": "Generated automatically. It will be needed for the claim link at the end of the survey.",
       "title": "A short name for the survey so you can easily identify it.",
       "minterRole": "The MINTER_ROLE allows the backend to award points. Only authorized wallets can use this function."
+    },
+    "submissions": {
+      "title": "Student Submissions",
+      "description": "Look up a student wallet and mark it as \"submitted\" once the points have been presented for thesis admission. This ensures the same wallet cannot be used twice.",
+      "searchPlaceholder": "Student wallet address (0x...)",
+      "search": "Search",
+      "invalidAddress": "Please enter a valid wallet address.",
+      "noResults": "No search performed yet.",
+      "points": "Points",
+      "status": "Status",
+      "submitted": "Submitted",
+      "notSubmitted": "Not submitted",
+      "markSubmitted": "Mark as submitted",
+      "unmarkSubmitted": "Remove mark",
+      "markSuccess": "Wallet has been marked as submitted!",
+      "unmarkSuccess": "Submission mark has been removed!",
+      "markError": "Failed to mark wallet",
+      "unmarkError": "Failed to remove mark",
+      "confirmMark": {
+        "title": "Mark wallet as submitted",
+        "description": "This will record on the blockchain that this wallet's points have been presented for thesis admission. The wallet cannot be used for admission again.",
+        "button": "Confirm and mark"
+      },
+      "confirmUnmark": {
+        "title": "Remove submission mark",
+        "description": "The submission mark will be removed from this wallet. It can then be presented for admission again.",
+        "button": "Remove mark"
+      },
+      "infoTip": "When students have collected enough points, they show their public key to the examiner. The examiner checks the balance and marks the wallet as \"submitted\" so it cannot be reused."
     },
     "roles": {
       "title": "Admin Role Management",

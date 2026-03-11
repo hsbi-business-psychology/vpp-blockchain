@@ -12,6 +12,11 @@ export const SURVEY_POINTS_ABI = [
   'event PointsAwarded(address indexed wallet, uint256 indexed surveyId, uint8 points)',
   'event SurveyRegistered(uint256 indexed surveyId, uint8 points, uint256 maxClaims, string title)',
   'event SurveyDeactivated(uint256 indexed surveyId)',
+  'function markWalletSubmitted(address wallet) external',
+  'function unmarkWalletSubmitted(address wallet) external',
+  'function isWalletSubmitted(address wallet) external view returns (bool)',
   'event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)',
   'event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)',
+  'event WalletSubmitted(address indexed wallet, address indexed markedBy)',
+  'event WalletUnsubmitted(address indexed wallet, address indexed unmarkedBy)',
 ] as const
