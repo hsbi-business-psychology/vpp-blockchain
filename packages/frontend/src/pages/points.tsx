@@ -75,6 +75,9 @@ export default function PointsPage() {
   const [revealChecks, setRevealChecks] = useState([false, false, false])
   const [keyRevealed, setKeyRevealed] = useState(false)
 
+  const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [createChecks, setCreateChecks] = useState([false, false, false])
+
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   const [showImportDialog, setShowImportDialog] = useState(false)
@@ -112,8 +115,14 @@ export default function PointsPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  function handleCreate() {
+  function handleCreateRequest() {
+    setCreateChecks([false, false, false])
+    setShowCreateDialog(true)
+  }
+
+  function handleCreateConfirm() {
     create()
+    setShowCreateDialog(false)
     toast.success(t('wallet.create.success'))
   }
 
@@ -234,7 +243,7 @@ export default function PointsPage() {
                 {t('wallet.browser.description')}
               </p>
               <div className="ml-auto shrink-0 md:ml-0 md:mt-3">
-                <Button onClick={handleCreate} size="sm" className="md:w-full">
+                <Button onClick={handleCreateRequest} size="sm" className="md:w-full">
                   <Wallet className="mr-2 size-4" aria-hidden="true" />
                   {t('wallet.browser.button')}
                 </Button>
@@ -746,6 +755,64 @@ export default function PointsPage() {
             <Button onClick={handleImport} disabled={!importValue.trim()}>
               <Upload className="mr-1.5 size-4" />
               {t('wallet.import.button')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── Create Wallet Info Dialog ─── */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <div className="mb-2 flex size-12 items-center justify-center rounded-lg bg-primary/10">
+              <Wallet className="size-6 text-primary" />
+            </div>
+            <DialogTitle>{t('wallet.create.dialogTitle')}</DialogTitle>
+            <DialogDescription>{t('wallet.create.dialogDescription')}</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-1">
+            {[
+              { title: t('wallet.create.dialogInfo1Title'), text: t('wallet.create.dialogInfo1Text') },
+              { title: t('wallet.create.dialogInfo2Title'), text: t('wallet.create.dialogInfo2Text') },
+              { title: t('wallet.create.dialogInfo3Title'), text: t('wallet.create.dialogInfo3Text') },
+              { title: t('wallet.create.dialogInfo4Title'), text: t('wallet.create.dialogInfo4Text') },
+            ].map(({ title, text }) => (
+              <div key={title} className="rounded-lg border border-border p-3">
+                <p className="text-sm font-semibold">{title}</p>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{text}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-2 border-t border-border pt-3">
+            {[t('wallet.create.dialogCheck1'), t('wallet.create.dialogCheck2'), t('wallet.create.dialogCheck3')].map((text, i) => (
+              <label key={i} className="flex cursor-pointer items-start gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50">
+                <input
+                  type="checkbox"
+                  checked={createChecks[i]}
+                  onChange={() => {
+                    const next = [...createChecks]
+                    next[i] = !next[i]
+                    setCreateChecks(next)
+                  }}
+                  className="mt-0.5 size-4 shrink-0 rounded accent-primary"
+                />
+                <span className="text-sm">{text}</span>
+              </label>
+            ))}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              disabled={!createChecks.every(Boolean)}
+              onClick={handleCreateConfirm}
+            >
+              <Wallet className="mr-1.5 size-4" />
+              {t('wallet.create.dialogConfirm')}
             </Button>
           </DialogFooter>
         </DialogContent>
