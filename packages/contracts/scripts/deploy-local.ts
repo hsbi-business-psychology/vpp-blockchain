@@ -27,9 +27,11 @@ async function main() {
 
   // Seed test surveys
   const surveys = [
-    { id: 1, secret: 'test-secret-alpha', points: 5, maxClaims: 0, title: 'Persönlichkeitstest WS 2025' },
-    { id: 2, secret: 'test-secret-beta', points: 10, maxClaims: 0, title: 'Stresswahrnehmung Studie' },
+    { id: 1, secret: 'test-secret-alpha', points: 2, maxClaims: 0, title: 'Persönlichkeitstest WS 2025' },
+    { id: 2, secret: 'test-secret-beta', points: 1, maxClaims: 0, title: 'Stresswahrnehmung Studie' },
     { id: 3, secret: 'test-secret-gamma', points: 3, maxClaims: 0, title: 'Entscheidungsfindung Experiment' },
+    { id: 4, secret: 'test-secret-delta', points: 1, maxClaims: 0, title: 'Lernverhalten Befragung' },
+    { id: 5, secret: 'test-secret-epsilon', points: 2, maxClaims: 0, title: 'Emotionsregulation Studie' },
   ]
 
   for (const s of surveys) {
@@ -39,17 +41,23 @@ async function main() {
     console.log(`Survey #${s.id} "${s.title}" registered (${s.points} pts, secret: "${s.secret}")`)
   }
 
-  // Award test points to student for surveys 1 and 2
-  const tx1 = await contract.awardPoints(student.address, 1, 'test-secret-alpha')
-  await tx1.wait()
-  console.log(`\nAwarded 5 pts to student for survey #1`)
+  // Award test points to student for surveys 1-4 (survey 5 left open for claim testing)
+  const claims = [
+    { surveyId: 1, secret: 'test-secret-alpha', points: 2 },
+    { surveyId: 2, secret: 'test-secret-beta', points: 1 },
+    { surveyId: 3, secret: 'test-secret-gamma', points: 3 },
+    { surveyId: 4, secret: 'test-secret-delta', points: 1 },
+  ]
 
-  const tx2 = await contract.awardPoints(student.address, 2, 'test-secret-beta')
-  await tx2.wait()
-  console.log(`Awarded 10 pts to student for survey #2`)
+  console.log('')
+  for (const c of claims) {
+    const tx = await contract.awardPoints(student.address, c.surveyId, c.secret)
+    await tx.wait()
+    console.log(`Awarded ${c.points} pts to student for survey #${c.surveyId}`)
+  }
 
   const total = await contract.totalPoints(student.address)
-  console.log(`Student total: ${total} pts`)
+  console.log(`Student total: ${total} pts (survey #5 open for claim testing)`)
 
   console.log('\n=== Setup Complete ===\n')
   console.log('Add this to your .env files:\n')
