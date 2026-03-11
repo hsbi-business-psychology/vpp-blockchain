@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router'
 import '@/lib/i18n'
 import { ThemeProvider } from '@/components/layout/theme-provider'
@@ -12,12 +13,19 @@ import PrivacyPage from '@/pages/datenschutz'
 import AccessibilityPage from '@/pages/barrierefreiheit'
 import DocsPage from '@/pages/docs'
 
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  return null
+}
+
 function AppRoutes() {
   const navigate = useNavigate()
   const location = useLocation()
 
   return (
     <AppLayout currentPath={location.pathname} onNavigate={(href) => navigate(href)}>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/claim" element={<ClaimPage />} />
