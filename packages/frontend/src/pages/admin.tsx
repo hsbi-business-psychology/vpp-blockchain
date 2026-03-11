@@ -21,6 +21,7 @@ import { SurveyTable } from '@/components/admin/survey-table'
 import { RegisterSurveyDialog } from '@/components/admin/register-survey-dialog'
 import { RoleManagement } from '@/components/admin/role-management'
 import { SubmissionManagement } from '@/components/admin/submission-management'
+import { SystemStatus } from '@/components/admin/system-status'
 import { useWallet } from '@/hooks/use-wallet'
 import { useApi } from '@/hooks/use-api'
 import { SURVEY_POINTS_ABI } from '@/lib/contract-abi'
@@ -375,6 +376,15 @@ export default function AdminPage() {
 
       {wallet && signer && (
         <RoleManagement walletAddress={wallet.address} signer={signer} />
+      )}
+
+      <Separator />
+
+      {authCredentials && (
+        <SystemStatus
+          adminSignature={authCredentials.signature}
+          adminMessage={authCredentials.message}
+        />
       )}
 
       {/* ─── Deactivate Confirmation Dialog ─── */}

@@ -44,6 +44,23 @@ interface HealthResult {
   }
 }
 
+interface SystemStatus {
+  minterAddress: string
+  balance: string
+  lowBalance: boolean
+  gasPrice: string
+  estimates: {
+    claimsRemaining: number
+    registrationsRemaining: number
+    costPerClaim: string
+    costPerRegistration: string
+  }
+  blockchain: {
+    network: string
+    blockNumber: number
+  }
+}
+
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const url = `${config.apiUrl}${path}`
   const res = await fetch(url, {
@@ -171,6 +188,19 @@ export function useApi() {
     return apiFetch<HealthResult>('/api/health')
   }, [])
 
+  const getSystemStatus = useCallback(
+    async (signature: string, message: string): Promise<SystemStatus> => {
+      return apiFetch<SystemStatus>('/api/status', {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-signature': signature,
+          'x-admin-message': message,
+        },
+      })
+    },
+    [],
+  )
+
   return {
     claimPoints,
     getPoints,
@@ -182,5 +212,6 @@ export function useApi() {
     markWalletSubmitted,
     unmarkWalletSubmitted,
     getHealth,
+    getSystemStatus,
   }
 }

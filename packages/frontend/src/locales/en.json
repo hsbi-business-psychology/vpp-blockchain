@@ -369,6 +369,24 @@
       "infoTip": "The ADMIN_ROLE is stored directly in the smart contract. Any admin can grant or revoke the admin role for other wallets. These changes are visible on the blockchain and immutably recorded.",
       "you": "(You)",
       "checking": "Checking role..."
+    },
+    "systemStatus": {
+      "title": "System Status",
+      "description": "Overview of the backend wallet and blockchain connection status.",
+      "balance": "Balance",
+      "minterAddress": "Backend Wallet",
+      "gasPrice": "Gas Price",
+      "network": "Network",
+      "blockNumber": "Block",
+      "claimsRemaining": "Claims Remaining",
+      "registrationsRemaining": "Registrations Remaining",
+      "costPerClaim": "Cost per Claim",
+      "costPerRegistration": "Cost per Registration",
+      "lowBalanceWarning": "Low balance! Please top up the backend wallet to ensure continued operation.",
+      "statusOk": "Sufficient",
+      "statusLow": "Low",
+      "loadError": "Failed to load system status",
+      "infoTip": "The backend wallet pays all transaction costs (gas fees) on the blockchain. When the balance runs out, no new claims or surveys can be processed. Top up ETH to the displayed address in time."
     }
   },
   "infoTips": {

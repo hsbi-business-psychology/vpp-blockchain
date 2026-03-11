@@ -369,6 +369,24 @@
       "infoTip": "Die ADMIN_ROLE wird direkt im Smart Contract gespeichert. Jeder Admin kann anderen Wallets die Admin-Rolle geben oder entziehen. Diese Änderungen sind auf der Blockchain sichtbar und unveränderlich protokolliert.",
       "you": "(Du)",
       "checking": "Prüfe Rolle..."
+    },
+    "systemStatus": {
+      "title": "System-Status",
+      "description": "Übersicht über den aktuellen Zustand des Backend-Wallets und der Blockchain-Verbindung.",
+      "balance": "Guthaben",
+      "minterAddress": "Backend-Wallet",
+      "gasPrice": "Gas-Preis",
+      "network": "Netzwerk",
+      "blockNumber": "Block",
+      "claimsRemaining": "Verbleibende Claims",
+      "registrationsRemaining": "Verbleibende Registrierungen",
+      "costPerClaim": "Kosten pro Claim",
+      "costPerRegistration": "Kosten pro Registrierung",
+      "lowBalanceWarning": "Niedriges Guthaben! Bitte lade das Backend-Wallet auf, um den Betrieb sicherzustellen.",
+      "statusOk": "Ausreichend",
+      "statusLow": "Niedrig",
+      "loadError": "Status konnte nicht geladen werden",
+      "infoTip": "Das Backend-Wallet bezahlt alle Transaktionskosten (Gas-Fees) auf der Blockchain. Wenn das Guthaben aufgebraucht ist, können keine neuen Claims oder Umfragen mehr verarbeitet werden. Lade rechtzeitig ETH auf die angezeigte Adresse nach."
     }
   },
   "infoTips": {
