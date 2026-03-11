@@ -84,3 +84,24 @@ jobs:
 
       - name: Run tests
         run: pnpm --filter @vpp/backend run test
+
+  frontend:
+    name: Frontend Build & Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Type check & build
+        run: pnpm --filter @vpp/frontend run build
+
+      - name: Run tests
+        run: pnpm --filter @vpp/frontend run test
