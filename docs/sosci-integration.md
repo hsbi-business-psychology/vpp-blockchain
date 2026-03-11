@@ -37,39 +37,32 @@ In the VPP Admin Dashboard (`/admin`):
 
 ### 2. Import Template into SoSci Survey
 
-The downloaded XML template contains the redirect configuration. To use it:
+The downloaded XML file is a native SoSci Survey project export. Only the goodbye page has been pre-configured with the VPP redirect:
 
-1. Open your SoSci Survey project
-2. Navigate to **Questionnaire** → **Final Page**
-3. Configure the redirect URL:
-   ```
-   https://your-vpp-domain.edu/claim?surveyId=42&secret=VPP-x8k2m9
-   ```
-4. Enable **automatic redirect** at the end of the survey
+1. Open **SoSci Survey** and go to **Survey Projects**
+2. Click **Import project** and upload the downloaded XML file
+3. SoSci creates a new survey project with the VPP goodbye page already set up
+4. Add your questions to the questionnaire as usual
+5. When participants complete the survey, they see a styled "Punkte jetzt einlösen" button with automatic redirect
 
 ### 3. Template Format
 
-The generated template is a standard XML file:
+The generated XML uses the native SoSci Survey project format (`<surveyProject>`). The only modification is the goodbye page, which contains:
+
+- A styled HTML button linking to the VPP claim URL
+- An automatic redirect (meta-refresh) after 8 seconds
+- A fallback link for manual navigation
 
 ```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<survey>
-  <config>
-    <surveyId>42</surveyId>
-    <points>2</points>
-    <redirectUrl><![CDATA[https://vpp.example.de/claim?surveyId=42&secret=VPP-x8k2m9]]></redirectUrl>
-  </config>
-
-  <finalPage>
-    <redirect url="https://vpp.example.de/claim?surveyId=42&secret=VPP-x8k2m9" />
-    <text>
-      Thank you for completing this survey!
-      You are being redirected to claim your participation points.
-      If you are not redirected automatically, please click the link below:
-      https://vpp.example.de/claim?surveyId=42&secret=VPP-x8k2m9
-    </text>
-  </finalPage>
-</survey>
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE surveyProject SYSTEM "doctype.survey.dtd">
+<surveyProject version="2.4" ...>
+  ...
+  <attr id="goodbye">
+    <!-- VPP claim button + auto-redirect -->
+  </attr>
+  ...
+</surveyProject>
 ```
 
 ### 4. Test the Integration
