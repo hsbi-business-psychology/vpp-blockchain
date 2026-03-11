@@ -33,9 +33,11 @@ export function createApp(): Express {
   return app
 }
 
-// Start the server when this file is run directly
-const app = createApp()
-app.listen(config.port, () => {
-  console.log(`VPP Backend listening on port ${config.port}`)
-  console.log(`  Health: http://localhost:${config.port}/api/health`)
-})
+// Start the server only when this file is the entry point (not during tests)
+if (process.env.NODE_ENV !== 'test') {
+  const app = createApp()
+  app.listen(config.port, () => {
+    console.log(`VPP Backend listening on port ${config.port}`)
+    console.log(`  Health: http://localhost:${config.port}/api/health`)
+  })
+}
