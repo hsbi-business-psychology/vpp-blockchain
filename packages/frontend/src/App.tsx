@@ -4,27 +4,27 @@ import { ThemeProvider } from '@/components/layout/theme-provider'
 import { AppLayout } from '@/components/layout/app-layout'
 import { Toaster } from '@/components/ui/sonner'
 import HomePage from '@/pages/home'
-import WalletPage from '@/pages/wallet'
 import ClaimPage from '@/pages/claim'
 import PointsPage from '@/pages/points'
-import ExplorerPage from '@/pages/explorer'
 import AdminPage from '@/pages/admin'
-
-const APP_NAME = import.meta.env.VITE_APP_NAME || 'VPP Blockchain'
+import ImprintPage from '@/pages/impressum'
+import PrivacyPage from '@/pages/datenschutz'
+import AccessibilityPage from '@/pages/barrierefreiheit'
 
 function AppRoutes() {
   const navigate = useNavigate()
   const location = useLocation()
 
   return (
-    <AppLayout currentPath={location.pathname} onNavigate={(href) => navigate(href)} appName={APP_NAME}>
+    <AppLayout currentPath={location.pathname} onNavigate={(href) => navigate(href)}>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/wallet" element={<WalletPage />} />
         <Route path="/claim" element={<ClaimPage />} />
         <Route path="/points" element={<PointsPage />} />
-        <Route path="/explorer" element={<ExplorerPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/impressum" element={<ImprintPage />} />
+        <Route path="/datenschutz" element={<PrivacyPage />} />
+        <Route path="/barrierefreiheit" element={<AccessibilityPage />} />
       </Routes>
     </AppLayout>
   )

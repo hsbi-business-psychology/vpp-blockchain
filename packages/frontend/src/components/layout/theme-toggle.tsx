@@ -20,7 +20,7 @@ export function ThemeToggle() {
           <span className="sr-only">Toggle theme</span>
         </Button>
       </TooltipTrigger>
-      <TooltipContent side="right">Toggle theme</TooltipContent>
+      <TooltipContent side="bottom">Toggle theme</TooltipContent>
     </Tooltip>
   )
 }
