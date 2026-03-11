@@ -19,10 +19,6 @@ export const config = {
   contractAddress: required('CONTRACT_ADDRESS'),
   minterPrivateKey: required('MINTER_PRIVATE_KEY'),
 
-  adminWallets: required('ADMIN_WALLETS')
-    .split(',')
-    .map((addr) => addr.trim().toLowerCase()),
-
   explorerBaseUrl: optional('EXPLORER_BASE_URL', 'https://sepolia.basescan.org'),
   frontendUrl: optional('FRONTEND_URL', 'http://localhost:5173'),
 

@@ -1,13 +1,13 @@
 import type { Request, Response, NextFunction } from 'express'
 import { ethers } from 'ethers'
-import { config } from '../config.js'
+import { isAdmin as checkAdmin } from '../services/blockchain.js'
 
 /**
  * Express middleware that verifies an EIP-191 signed message from an admin
  * wallet. The request body must contain `adminSignature` and `adminMessage`.
- * The recovered signer must be in the configured ADMIN_WALLETS list.
+ * The recovered signer must hold ADMIN_ROLE on the smart contract.
  */
-export function requireAdmin(req: Request, res: Response, next: NextFunction): void {
+export async function requireAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
   const { adminSignature, adminMessage } = req.body as {
     adminSignature?: string
     adminMessage?: string
@@ -23,13 +23,14 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction): v
   }
 
   try {
-    const recoveredAddress = ethers.verifyMessage(adminMessage, adminSignature).toLowerCase()
+    const recoveredAddress = ethers.verifyMessage(adminMessage, adminSignature)
 
-    if (!config.adminWallets.includes(recoveredAddress)) {
+    const hasRole = await checkAdmin(recoveredAddress)
+    if (!hasRole) {
       res.status(403).json({
         success: false,
         error: 'FORBIDDEN',
-        message: 'Signer is not an authorized admin wallet',
+        message: 'Signer does not hold ADMIN_ROLE on the contract',
       })
       return
     }

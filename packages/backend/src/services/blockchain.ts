@@ -142,6 +142,10 @@ export async function getSurveyRegisteredEvents(): Promise<SurveyRegisteredEvent
   return results
 }
 
+export async function isAdmin(address: string): Promise<boolean> {
+  return readOnlyContract.isAdmin(address)
+}
+
 export async function getBlockNumber(): Promise<number> {
   return provider.getBlockNumber()
 }

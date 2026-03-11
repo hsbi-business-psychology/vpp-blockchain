@@ -20,7 +20,7 @@ const registerSchema = z.object({
 })
 
 // POST /api/surveys — register a new survey (admin only)
-router.post('/', requireAdmin as RequestHandler, async (req, res, next) => {
+router.post('/', requireAdmin as unknown as RequestHandler, async (req, res, next) => {
   try {
     const parsed = registerSchema.safeParse(req.body)
     if (!parsed.success) {
