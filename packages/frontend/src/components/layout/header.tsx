@@ -15,6 +15,7 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
 
   const navLinks = [
     { href: '/points', label: t('nav.points') },
+    { href: '/docs', label: t('nav.docs') },
     { href: '/admin', label: t('nav.admin') },
   ]
 
@@ -41,7 +42,7 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
                 key={href}
                 onClick={() => handleNav(href)}
                 className={`relative px-3 py-2 text-base font-semibold transition-colors hover:text-primary ${
-                  currentPath === href
+                  currentPath === href || currentPath.startsWith(href + '/')
                     ? 'text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary'
                     : 'text-foreground'
                 }`}
@@ -97,7 +98,7 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
                 key={href}
                 onClick={() => handleNav(href)}
                 className={`rounded-md px-4 py-3 text-left text-base font-semibold ${
-                  currentPath === href ? 'bg-accent text-primary' : ''
+                  currentPath === href || currentPath.startsWith(href + '/') ? 'bg-accent text-primary' : ''
                 }`}
               >
                 {label}

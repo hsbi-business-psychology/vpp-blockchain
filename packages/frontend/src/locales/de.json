@@ -22,7 +22,8 @@
   "nav": {
     "home": "Startseite",
     "points": "Meine Punkte",
-    "admin": "Lehrenden-Bereich"
+    "admin": "Lehrenden-Bereich",
+    "docs": "Docs"
   },
   "footer": {
     "title": "Versuchspersonenpunkte – Blockchain-Projekt",

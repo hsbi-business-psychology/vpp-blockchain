@@ -10,6 +10,7 @@ import AdminPage from '@/pages/admin'
 import ImprintPage from '@/pages/impressum'
 import PrivacyPage from '@/pages/datenschutz'
 import AccessibilityPage from '@/pages/barrierefreiheit'
+import DocsPage from '@/pages/docs'
 
 function AppRoutes() {
   const navigate = useNavigate()
@@ -22,6 +23,8 @@ function AppRoutes() {
         <Route path="/claim" element={<ClaimPage />} />
         <Route path="/points" element={<PointsPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/docs" element={<DocsPage />} />
+        <Route path="/docs/:slug" element={<DocsPage />} />
         <Route path="/impressum" element={<ImprintPage />} />
         <Route path="/datenschutz" element={<PrivacyPage />} />
         <Route path="/barrierefreiheit" element={<AccessibilityPage />} />

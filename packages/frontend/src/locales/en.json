@@ -22,7 +22,8 @@
   "nav": {
     "home": "Home",
     "points": "My Points",
-    "admin": "Lecturers' Area"
+    "admin": "Lecturers' Area",
+    "docs": "Docs"
   },
   "footer": {
     "title": "Participant Points – Blockchain Project",
