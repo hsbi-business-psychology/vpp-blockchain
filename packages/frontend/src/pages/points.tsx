@@ -264,7 +264,6 @@ export default function PointsPage() {
                 ) : (
                   <div className="space-y-1.5">
                     <Button variant="outline" disabled size="sm" className="opacity-50 md:w-full">
-                      <Shield className="mr-2 size-4" aria-hidden="true" />
                       {t('wallet.metamask.notInstalled')}
                     </Button>
                     <p className="hidden text-center text-xs text-muted-foreground md:block">
