@@ -1,0 +1,22 @@
+{
+  "name": "@vpp/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "VPP SurveyPoints smart contract for Base L2",
+  "license": "MIT",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "coverage": "hardhat coverage",
+    "deploy:local": "hardhat run scripts/deploy.ts --network localhost",
+    "deploy:sepolia": "hardhat run scripts/deploy.ts --network baseSepolia",
+    "deploy:mainnet": "hardhat run scripts/deploy.ts --network baseMainnet",
+    "clean": "hardhat clean && rm -rf coverage coverage.json"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.1.0",
+    "hardhat": "^2.22.0",
+    "dotenv": "^16.4.0"
+  }
+}
