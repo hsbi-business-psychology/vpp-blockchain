@@ -281,11 +281,11 @@
       },
       "templateDialog": {
         "title": "Download SoSci Template",
-        "description": "Enter the secret for this survey to generate the SoSci Survey template file with the correct claim link.",
+        "description": "The secret is needed because it must be part of the claim link — it is only stored as a hash on the blockchain and cannot be read back.",
         "secretLabel": "Survey Secret",
-        "secretPlaceholder": "Enter secret",
+        "secretPlaceholder": "Enter secret (e.g. vpp-...)",
         "download": "Download Template",
-        "hint": "You received the secret when registering the survey. It is needed to create the claim link."
+        "hint": "You received the secret when registering the survey. If you registered it on this device, it is saved automatically and you won't need to enter it again."
       },
       "filter": {
         "all": "All",

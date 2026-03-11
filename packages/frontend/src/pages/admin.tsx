@@ -23,6 +23,7 @@ import { RoleManagement } from '@/components/admin/role-management'
 import { useWallet } from '@/hooks/use-wallet'
 import { useApi } from '@/hooks/use-api'
 import { SURVEY_POINTS_ABI } from '@/lib/contract-abi'
+import { storeSecret, getSecret } from '@/lib/survey-secrets'
 
 interface SurveyRow {
   surveyId: number
@@ -124,6 +125,20 @@ export default function AdminPage() {
     }
   }, [authenticated, fetchSurveys])
 
+  const triggerTemplateDownload = async (surveyId: number, secret: string) => {
+    try {
+      const blob = await downloadTemplate(surveyId, secret)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `vpp-survey-${surveyId}.xml`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      // Non-critical — survey was registered successfully
+    }
+  }
+
   const handleRegister = async (data: { surveyId: number; points: number; secret: string; maxClaims: number; title: string }) => {
     if (!authCredentials) return
     try {
@@ -136,15 +151,24 @@ export default function AdminPage() {
         adminSignature: signature,
         adminMessage: message,
       })
+
+      storeSecret(data.surveyId, data.secret)
       toast.success(t('admin.register.success'))
       await fetchSurveys()
+
+      triggerTemplateDownload(data.surveyId, data.secret)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('admin.register.error'))
       throw err
     }
   }
 
-  const handleDownloadTemplate = (surveyId: number) => {
+  const handleDownloadTemplate = async (surveyId: number) => {
+    const stored = getSecret(surveyId)
+    if (stored) {
+      await triggerTemplateDownload(surveyId, stored)
+      return
+    }
     const survey = surveys.find((s) => s.surveyId === surveyId)
     if (survey) {
       setTemplateTarget(survey)
@@ -152,17 +176,12 @@ export default function AdminPage() {
     }
   }
 
-  const handleTemplateDownload = async () => {
+  const handleTemplateDialogDownload = async () => {
     if (!templateTarget || !templateSecret.trim()) return
     setTemplateLoading(true)
     try {
-      const blob = await downloadTemplate(templateTarget.surveyId, templateSecret.trim())
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `vpp-survey-${templateTarget.surveyId}.xml`
-      a.click()
-      URL.revokeObjectURL(url)
+      storeSecret(templateTarget.surveyId, templateSecret.trim())
+      await triggerTemplateDownload(templateTarget.surveyId, templateSecret.trim())
       setTemplateTarget(null)
     } catch {
       toast.error(t('common.error'))
@@ -419,7 +438,7 @@ export default function AdminPage() {
             <Button variant="outline" onClick={() => setTemplateTarget(null)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleTemplateDownload} disabled={!templateSecret.trim() || templateLoading}>
+            <Button onClick={handleTemplateDialogDownload} disabled={!templateSecret.trim() || templateLoading}>
               {templateLoading ? (
                 <Loader2 className="mr-1.5 size-4 animate-spin" />
               ) : (

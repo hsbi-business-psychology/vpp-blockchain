@@ -281,11 +281,11 @@
       },
       "templateDialog": {
         "title": "SoSci-Template herunterladen",
-        "description": "Gib das Secret dieser Umfrage ein, um die SoSci-Survey-Vorlagendatei mit dem korrekten Claim-Link zu generieren.",
+        "description": "Das Secret wird benötigt, weil es im Claim-Link enthalten sein muss – es ist auf der Blockchain nur als Hash gespeichert und kann nicht ausgelesen werden.",
         "secretLabel": "Umfrage-Secret",
-        "secretPlaceholder": "Secret eingeben",
+        "secretPlaceholder": "Secret eingeben (z. B. vpp-...)",
         "download": "Template herunterladen",
-        "hint": "Du hast das Secret bei der Registrierung erhalten. Es wird benötigt, um den Claim-Link zu erstellen."
+        "hint": "Du hast das Secret bei der Registrierung erhalten. Falls du es auf diesem Gerät registriert hast, wird es automatisch gespeichert und du musst es nicht erneut eingeben."
       },
       "filter": {
         "all": "Alle",
