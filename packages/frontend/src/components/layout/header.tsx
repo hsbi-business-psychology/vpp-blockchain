@@ -29,12 +29,10 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
         <div className="mx-auto flex max-w-[1100px] items-center justify-between px-4 py-4 md:px-6">
           <button
             onClick={() => handleNav('/')}
-            className="flex items-center gap-2 text-lg font-bold tracking-tight"
+            className="flex items-center"
           >
-            <span className="flex size-8 items-center justify-center rounded bg-primary text-sm font-bold text-primary-foreground">
-              V
-            </span>
-            <span className="hidden sm:inline">VPP</span>
+            <img src="/hsbi-logo-light.png" alt="HSBI" className="h-7 dark:hidden" />
+            <img src="/hsbi-logo-dark.png" alt="HSBI" className="hidden h-7 dark:block" />
           </button>
 
           <nav className="hidden items-center gap-1 md:flex">
@@ -42,7 +40,7 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
               <button
                 key={href}
                 onClick={() => handleNav(href)}
-                className={`relative px-3 py-2 text-sm font-semibold transition-colors hover:text-primary ${
+                className={`relative px-3 py-2 text-base font-semibold transition-colors hover:text-primary ${
                   currentPath === href
                     ? 'text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary'
                     : 'text-foreground'
@@ -72,12 +70,10 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
           <div className="flex items-center justify-between border-b border-border px-4 py-4">
             <button
               onClick={() => handleNav('/')}
-              className="flex items-center gap-2 text-lg font-bold"
+              className="flex items-center"
             >
-              <span className="flex size-8 items-center justify-center rounded bg-primary text-sm font-bold text-primary-foreground">
-                V
-              </span>
-              VPP
+              <img src="/hsbi-logo-light.png" alt="HSBI" className="h-7 dark:hidden" />
+              <img src="/hsbi-logo-dark.png" alt="HSBI" className="hidden h-7 dark:block" />
             </button>
             <button
               onClick={() => setMenuOpen(false)}

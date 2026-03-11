@@ -54,7 +54,7 @@ export function MetricsCards({ totalSurveys, activeSurveys, totalClaims, totalPo
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{value.toLocaleString()}</p>
+            <p className="text-4xl font-bold">{value.toLocaleString()}</p>
           </CardContent>
         </Card>
       ))}

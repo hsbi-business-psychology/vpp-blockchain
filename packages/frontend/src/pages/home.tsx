@@ -58,7 +58,7 @@ export default function HomePage() {
       {/* Intro */}
       <section className="mx-auto max-w-3xl">
         <h2 className="mb-4 text-2xl font-bold">{t('home.intro.title')}</h2>
-        <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
+        <p className="text-base leading-relaxed text-muted-foreground md:text-lg">
           {t('home.intro.text')}
         </p>
       </section>
@@ -72,14 +72,14 @@ export default function HomePage() {
               <GraduationCap className="size-5 text-primary" />
             </div>
             <h3 className="mb-2 text-lg font-semibold">{t('home.highlights.student.title')}</h3>
-            <p className="text-sm text-muted-foreground">{t('home.highlights.student.text')}</p>
+            <p className="text-base text-muted-foreground">{t('home.highlights.student.text')}</p>
           </div>
           <div className="border border-border p-6">
             <div className="mb-3 flex size-10 items-center justify-center bg-primary/10">
               <Users className="size-5 text-primary" />
             </div>
             <h3 className="mb-2 text-lg font-semibold">{t('home.highlights.lecturer.title')}</h3>
-            <p className="text-sm text-muted-foreground">{t('home.highlights.lecturer.text')}</p>
+            <p className="text-base text-muted-foreground">{t('home.highlights.lecturer.text')}</p>
           </div>
         </div>
       </section>
@@ -90,8 +90,8 @@ export default function HomePage() {
         <Accordion type="single" collapsible className="border border-border">
           {faqItems.map((item, i) => (
             <AccordionItem key={i} value={`faq-${i}`} className="px-6">
-              <AccordionTrigger>{item.q}</AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
+              <AccordionTrigger className="text-base">{item.q}</AccordionTrigger>
+              <AccordionContent className="text-base text-muted-foreground">
                 {item.a}
               </AccordionContent>
             </AccordionItem>

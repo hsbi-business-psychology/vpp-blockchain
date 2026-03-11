@@ -28,13 +28,13 @@ export default function PrivacyPage() {
   return (
     <div className="mx-auto max-w-[800px]">
       <h1 className="mb-1 text-3xl font-bold">{t('privacy.title')}</h1>
-      <p className="mb-8 text-sm text-muted-foreground">{t('privacy.lastUpdated')}</p>
+      <p className="mb-8 text-base text-muted-foreground">{t('privacy.lastUpdated')}</p>
 
       <nav className="mb-8 border border-border p-6">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <h2 className="mb-3 text-base font-semibold uppercase tracking-wide text-muted-foreground">
           {t('privacy.toc')}
         </h2>
-        <ol className="list-inside list-decimal space-y-1 text-sm">
+        <ol className="list-inside list-decimal space-y-1 text-base">
           {sections.map((id) => (
             <li key={id}>
               <a href={`#${id}`} className="text-primary underline-offset-2 hover:underline">
@@ -47,19 +47,19 @@ export default function PrivacyPage() {
 
       <section id="intro" className="mb-8 border border-border p-6">
         <h2 className="mb-3 text-lg font-semibold">{t('privacy.sections.intro.title')}</h2>
-        <p className="mb-2 text-sm">{t('privacy.sections.intro.text1')}</p>
-        <p className="text-sm">{t('privacy.sections.intro.text2')}</p>
+        <p className="mb-2 text-base">{t('privacy.sections.intro.text1')}</p>
+        <p className="text-base">{t('privacy.sections.intro.text2')}</p>
       </section>
 
       <section id="controller" className="mb-8 border border-border p-6">
         <h2 className="mb-3 text-lg font-semibold">{t('privacy.sections.controller.title')}</h2>
-        <p className="mb-3 text-sm">{t('privacy.sections.controller.text')}</p>
-        <div className="mb-3 space-y-0.5 text-sm">
+        <p className="mb-3 text-base">{t('privacy.sections.controller.text')}</p>
+        <div className="mb-3 space-y-0.5 text-base">
           {controllerAddr.map((line, i) => (
             <p key={i}>{line}</p>
           ))}
         </div>
-        <p className="text-sm">
+        <p className="text-base">
           E-Mail:{' '}
           <a
             href={`mailto:${t('privacy.sections.controller.email')}`}
@@ -72,50 +72,50 @@ export default function PrivacyPage() {
 
       <section id="serverLogs" className="mb-8 border border-border p-6">
         <h2 className="mb-3 text-lg font-semibold">{t('privacy.sections.serverLogs.title')}</h2>
-        <p className="mb-3 text-sm">{t('privacy.sections.serverLogs.text')}</p>
-        <ul className="mb-3 list-inside list-disc space-y-1 text-sm">
+        <p className="mb-3 text-base">{t('privacy.sections.serverLogs.text')}</p>
+        <ul className="mb-3 list-inside list-disc space-y-1 text-base">
           {logItems.map((item, i) => (
             <li key={i}>{item}</li>
           ))}
         </ul>
-        <p className="text-sm text-muted-foreground">{t('privacy.sections.serverLogs.legal')}</p>
+        <p className="text-base text-muted-foreground">{t('privacy.sections.serverLogs.legal')}</p>
       </section>
 
       <section id="cookies" className="mb-8 border border-border p-6">
         <h2 className="mb-3 text-lg font-semibold">{t('privacy.sections.cookies.title')}</h2>
-        <p className="mb-2 text-sm">{t('privacy.sections.cookies.text1')}</p>
-        <p className="text-sm">{t('privacy.sections.cookies.text2')}</p>
+        <p className="mb-2 text-base">{t('privacy.sections.cookies.text1')}</p>
+        <p className="text-base">{t('privacy.sections.cookies.text2')}</p>
       </section>
 
       <section id="web3" className="mb-8 border border-border p-6">
         <h2 className="mb-3 text-lg font-semibold">{t('privacy.sections.web3.title')}</h2>
-        <p className="mb-2 text-sm">{t('privacy.sections.web3.text1')}</p>
-        <p className="mb-2 text-sm">{t('privacy.sections.web3.text2')}</p>
-        <p className="text-sm">{t('privacy.sections.web3.text3')}</p>
+        <p className="mb-2 text-base">{t('privacy.sections.web3.text1')}</p>
+        <p className="mb-2 text-base">{t('privacy.sections.web3.text2')}</p>
+        <p className="text-base">{t('privacy.sections.web3.text3')}</p>
       </section>
 
       <section id="fonts" className="mb-8 border border-border p-6">
         <h2 className="mb-3 text-lg font-semibold">{t('privacy.sections.fonts.title')}</h2>
-        <p className="text-sm">{t('privacy.sections.fonts.text')}</p>
+        <p className="text-base">{t('privacy.sections.fonts.text')}</p>
       </section>
 
       <section id="rights" className="mb-8 border border-border p-6">
         <h2 className="mb-3 text-lg font-semibold">{t('privacy.sections.rights.title')}</h2>
-        <p className="mb-3 text-sm">{t('privacy.sections.rights.text')}</p>
+        <p className="mb-3 text-base">{t('privacy.sections.rights.text')}</p>
         <dl className="mb-3 space-y-2">
           {rights.map((r, i) => (
             <div key={i}>
-              <dt className="text-sm font-semibold">{r.name}</dt>
-              <dd className="text-sm text-muted-foreground">{r.desc}</dd>
+              <dt className="text-base font-semibold">{r.name}</dt>
+              <dd className="text-base text-muted-foreground">{r.desc}</dd>
             </div>
           ))}
         </dl>
-        <p className="text-sm">{t('privacy.sections.rights.complaint')}</p>
+        <p className="text-base">{t('privacy.sections.rights.complaint')}</p>
       </section>
 
       <section id="security" className="mb-8 border border-border p-6">
         <h2 className="mb-3 text-lg font-semibold">{t('privacy.sections.security.title')}</h2>
-        <p className="text-sm">{t('privacy.sections.security.text')}</p>
+        <p className="text-base">{t('privacy.sections.security.text')}</p>
       </section>
     </div>
   )
