@@ -28,6 +28,7 @@ contract SurveyPoints is AccessControl, ReentrancyGuard {
         uint256 claimCount;
         bool active;
         uint256 registeredAt;
+        string title;
     }
 
     // ---------------------------------------------------------------
@@ -46,7 +47,8 @@ contract SurveyPoints is AccessControl, ReentrancyGuard {
     event SurveyRegistered(
         uint256 indexed surveyId,
         uint8 points,
-        uint256 maxClaims
+        uint256 maxClaims,
+        string title
     );
 
     event PointsAwarded(
@@ -97,11 +99,13 @@ contract SurveyPoints is AccessControl, ReentrancyGuard {
     /// @param secretHash keccak256 hash of the survey secret.
     /// @param points     Points awarded per claim (1–255).
     /// @param maxClaims  Maximum number of claims (0 = unlimited).
+    /// @param title      Human-readable survey title.
     function registerSurvey(
         uint256 surveyId,
         bytes32 secretHash,
         uint8 points,
-        uint256 maxClaims
+        uint256 maxClaims,
+        string calldata title
     ) external onlyRole(ADMIN_ROLE) {
         if (surveyId == 0) revert InvalidSurveyId();
         if (points == 0) revert InvalidPoints();
@@ -113,10 +117,11 @@ contract SurveyPoints is AccessControl, ReentrancyGuard {
             maxClaims: maxClaims,
             claimCount: 0,
             active: true,
-            registeredAt: block.timestamp
+            registeredAt: block.timestamp,
+            title: title
         });
 
-        emit SurveyRegistered(surveyId, points, maxClaims);
+        emit SurveyRegistered(surveyId, points, maxClaims, title);
     }
 
     /// @notice Award points to a student for completing a survey.
@@ -219,7 +224,8 @@ contract SurveyPoints is AccessControl, ReentrancyGuard {
             uint256 maxClaims,
             uint256 claimCount,
             bool active,
-            uint256 registeredAt
+            uint256 registeredAt,
+            string memory title
         )
     {
         Survey storage survey = _surveys[surveyId];
@@ -229,7 +235,8 @@ contract SurveyPoints is AccessControl, ReentrancyGuard {
             survey.maxClaims,
             survey.claimCount,
             survey.active,
-            survey.registeredAt
+            survey.registeredAt,
+            survey.title
         );
     }
 }

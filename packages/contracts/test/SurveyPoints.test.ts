@@ -15,6 +15,7 @@ describe('SurveyPoints', () => {
   const SURVEY_SECRET = 'VPP-test-secret-42'
   const SURVEY_POINTS = 2
   const MAX_CLAIMS = 100
+  const SURVEY_TITLE = 'Test Survey Alpha'
 
   let secretHash: string
 
@@ -71,7 +72,7 @@ describe('SurveyPoints', () => {
     it('should register a survey with correct parameters', async () => {
       await contract
         .connect(admin)
-        .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS)
+        .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS, SURVEY_TITLE)
 
       const info = await contract.getSurveyInfo(SURVEY_ID)
       expect(info.secretHash).to.equal(secretHash)
@@ -80,20 +81,30 @@ describe('SurveyPoints', () => {
       expect(info.claimCount).to.equal(0)
       expect(info.active).to.be.true
       expect(info.registeredAt).to.be.greaterThan(0)
+      expect(info.title).to.equal(SURVEY_TITLE)
+    })
+
+    it('should store and return the survey title', async () => {
+      await contract
+        .connect(admin)
+        .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS, SURVEY_TITLE)
+
+      const info = await contract.getSurveyInfo(SURVEY_ID)
+      expect(info.title).to.equal(SURVEY_TITLE)
     })
 
     it('should emit SurveyRegistered event', async () => {
       await expect(
         contract
           .connect(admin)
-          .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS),
+          .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS, SURVEY_TITLE),
       )
         .to.emit(contract, 'SurveyRegistered')
-        .withArgs(SURVEY_ID, SURVEY_POINTS, MAX_CLAIMS)
+        .withArgs(SURVEY_ID, SURVEY_POINTS, MAX_CLAIMS, SURVEY_TITLE)
     })
 
     it('should allow registering a survey with unlimited claims (maxClaims = 0)', async () => {
-      await contract.connect(admin).registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, 0)
+      await contract.connect(admin).registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, 0, SURVEY_TITLE)
 
       const info = await contract.getSurveyInfo(SURVEY_ID)
       expect(info.maxClaims).to.equal(0)
@@ -101,25 +112,25 @@ describe('SurveyPoints', () => {
 
     it('should revert when surveyId is 0', async () => {
       await expect(
-        contract.connect(admin).registerSurvey(0, secretHash, SURVEY_POINTS, MAX_CLAIMS),
+        contract.connect(admin).registerSurvey(0, secretHash, SURVEY_POINTS, MAX_CLAIMS, SURVEY_TITLE),
       ).to.be.revertedWithCustomError(contract, 'InvalidSurveyId')
     })
 
     it('should revert when points is 0', async () => {
       await expect(
-        contract.connect(admin).registerSurvey(SURVEY_ID, secretHash, 0, MAX_CLAIMS),
+        contract.connect(admin).registerSurvey(SURVEY_ID, secretHash, 0, MAX_CLAIMS, SURVEY_TITLE),
       ).to.be.revertedWithCustomError(contract, 'InvalidPoints')
     })
 
     it('should revert when survey already exists', async () => {
       await contract
         .connect(admin)
-        .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS)
+        .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS, SURVEY_TITLE)
 
       await expect(
         contract
           .connect(admin)
-          .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS),
+          .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS, SURVEY_TITLE),
       ).to.be.revertedWithCustomError(contract, 'SurveyAlreadyExists')
     })
 
@@ -127,17 +138,17 @@ describe('SurveyPoints', () => {
       await expect(
         contract
           .connect(outsider)
-          .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS),
+          .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS, SURVEY_TITLE),
       ).to.be.reverted
     })
 
     it('should allow registering multiple surveys', async () => {
       await contract
         .connect(admin)
-        .registerSurvey(1, secretHash, 2, MAX_CLAIMS)
+        .registerSurvey(1, secretHash, 2, MAX_CLAIMS, 'Survey One')
       await contract
         .connect(admin)
-        .registerSurvey(2, secretHash, 3, MAX_CLAIMS)
+        .registerSurvey(2, secretHash, 3, MAX_CLAIMS, 'Survey Two')
 
       const info1 = await contract.getSurveyInfo(1)
       const info2 = await contract.getSurveyInfo(2)
@@ -154,7 +165,7 @@ describe('SurveyPoints', () => {
     beforeEach(async () => {
       await contract
         .connect(admin)
-        .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS)
+        .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS, SURVEY_TITLE)
     })
 
     it('should award points to a student', async () => {
@@ -189,7 +200,7 @@ describe('SurveyPoints', () => {
     it('should accumulate total points across surveys', async () => {
       const secret2 = 'VPP-second-secret'
       const hash2 = ethers.keccak256(ethers.toUtf8Bytes(secret2))
-      await contract.connect(admin).registerSurvey(2, hash2, 3, MAX_CLAIMS)
+      await contract.connect(admin).registerSurvey(2, hash2, 3, MAX_CLAIMS, 'Second Survey')
 
       await contract
         .connect(minter)
@@ -279,7 +290,7 @@ describe('SurveyPoints', () => {
     beforeEach(async () => {
       await contract
         .connect(admin)
-        .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, LIMITED_MAX)
+        .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, LIMITED_MAX, SURVEY_TITLE)
     })
 
     it('should allow claims up to the limit', async () => {
@@ -313,7 +324,7 @@ describe('SurveyPoints', () => {
     it('should allow unlimited claims when maxClaims is 0', async () => {
       await contract
         .connect(admin)
-        .registerSurvey(2, secretHash, SURVEY_POINTS, 0)
+        .registerSurvey(2, secretHash, SURVEY_POINTS, 0, 'Unlimited Survey')
 
       const signers = await ethers.getSigners()
       for (let i = 0; i < 5; i++) {
@@ -335,7 +346,7 @@ describe('SurveyPoints', () => {
     beforeEach(async () => {
       await contract
         .connect(admin)
-        .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS)
+        .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS, SURVEY_TITLE)
     })
 
     it('should deactivate a survey', async () => {
@@ -440,7 +451,7 @@ describe('SurveyPoints', () => {
 
       await contract
         .connect(outsider)
-        .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS)
+        .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS, SURVEY_TITLE)
 
       const info = await contract.getSurveyInfo(SURVEY_ID)
       expect(info.points).to.equal(SURVEY_POINTS)
@@ -476,7 +487,7 @@ describe('SurveyPoints', () => {
       await contract.connect(admin).addAdmin(outsider.address)
       await contract
         .connect(outsider)
-        .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS)
+        .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS, SURVEY_TITLE)
       const info = await contract.getSurveyInfo(SURVEY_ID)
       expect(info.points).to.equal(SURVEY_POINTS)
     })
