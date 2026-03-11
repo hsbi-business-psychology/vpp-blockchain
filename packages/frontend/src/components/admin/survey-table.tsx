@@ -93,62 +93,32 @@ export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate, onSelec
 
   const getStatus = (s: SurveyRow) => (s.active ? 'active' : 'inactive')
 
-  const statusLabel: Record<StatusFilter, string> = {
-    all: t('admin.surveys.filter.all'),
-    active: t('admin.surveys.filter.activeOnly'),
-    inactive: t('admin.surveys.filter.inactiveOnly'),
-  }
-
-  const sortLabel: Record<SortOrder, string> = {
-    newest: t('admin.surveys.filter.newestFirst'),
-    oldest: t('admin.surveys.filter.oldestFirst'),
-  }
-
   return (
-    <div className="space-y-4">
-      {/* ─── Toolbar: Filters + Sort ─── */}
+    <div className="space-y-3">
+      {/* ─── Inline Filters (same line, compact) ─── */}
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-1.5">
-          <Filter className="size-3.5 text-muted-foreground" />
-          <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as StatusFilter); setPage(0) }}>
-            <SelectTrigger size="sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{statusLabel.all}</SelectItem>
-              <SelectItem value="active">{statusLabel.active}</SelectItem>
-              <SelectItem value="inactive">{statusLabel.inactive}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as StatusFilter); setPage(0) }}>
+          <SelectTrigger size="sm">
+            <Filter className="size-3.5 text-muted-foreground" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('admin.surveys.filter.all')}</SelectItem>
+            <SelectItem value="active">{t('admin.surveys.filter.activeOnly')}</SelectItem>
+            <SelectItem value="inactive">{t('admin.surveys.filter.inactiveOnly')}</SelectItem>
+          </SelectContent>
+        </Select>
 
-        <div className="flex items-center gap-1.5">
-          <ArrowUpDown className="size-3.5 text-muted-foreground" />
-          <Select value={sortOrder} onValueChange={(v) => { setSortOrder(v as SortOrder); setPage(0) }}>
-            <SelectTrigger size="sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">{sortLabel.newest}</SelectItem>
-              <SelectItem value="oldest">{sortLabel.oldest}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="ml-auto flex items-center gap-1.5">
-          <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setPage(0) }}>
-            <SelectTrigger size="sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PAGE_SIZES.map((size) => (
-                <SelectItem key={size} value={String(size)}>
-                  {size} {t('admin.surveys.pagination.perPage')}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <Select value={sortOrder} onValueChange={(v) => { setSortOrder(v as SortOrder); setPage(0) }}>
+          <SelectTrigger size="sm">
+            <ArrowUpDown className="size-3.5 text-muted-foreground" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="newest">{t('admin.surveys.filter.newestFirst')}</SelectItem>
+            <SelectItem value="oldest">{t('admin.surveys.filter.oldestFirst')}</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {filtered.length === 0 ? (
@@ -275,36 +245,50 @@ export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate, onSelec
           </div>
 
           {/* ─── Pagination Footer ─── */}
-          {filtered.length > pageSize && (
-            <div className="flex flex-col items-center gap-3 border-t border-border pt-4 sm:flex-row sm:justify-between">
-              <p className="text-xs text-muted-foreground">
-                {t('admin.surveys.pagination.showing', { from, to, total: filtered.length })}
-              </p>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={safePage === 0}
-                  onClick={() => setPage(safePage - 1)}
-                >
-                  <ChevronLeft className="mr-1 size-3.5" />
-                  {t('admin.surveys.pagination.previous')}
-                </Button>
-                <span className="text-xs text-muted-foreground">
-                  {t('admin.surveys.pagination.page', { current: safePage + 1, total: totalPages })}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={safePage >= totalPages - 1}
-                  onClick={() => setPage(safePage + 1)}
-                >
-                  {t('admin.surveys.pagination.next')}
-                  <ChevronRight className="ml-1 size-3.5" />
-                </Button>
-              </div>
+          <div className="flex flex-col items-center gap-3 border-t border-border pt-3 sm:flex-row sm:justify-between">
+            <p className="text-xs text-muted-foreground">
+              {t('admin.surveys.pagination.showing', { from, to, total: filtered.length })}
+            </p>
+            <div className="flex items-center gap-2">
+              <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setPage(0) }}>
+                <SelectTrigger size="sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PAGE_SIZES.map((size) => (
+                    <SelectItem key={size} value={String(size)}>
+                      {size} {t('admin.surveys.pagination.perPage')}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {totalPages > 1 && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="size-8"
+                    disabled={safePage === 0}
+                    onClick={() => setPage(safePage - 1)}
+                  >
+                    <ChevronLeft className="size-4" />
+                  </Button>
+                  <span className="text-xs tabular-nums text-muted-foreground">
+                    {safePage + 1}/{totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="size-8"
+                    disabled={safePage >= totalPages - 1}
+                    onClick={() => setPage(safePage + 1)}
+                  >
+                    <ChevronRight className="size-4" />
+                  </Button>
+                </>
+              )}
             </div>
-          )}
+          </div>
         </>
       )}
     </div>

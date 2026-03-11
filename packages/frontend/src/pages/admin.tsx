@@ -283,7 +283,7 @@ export default function AdminPage() {
         <CardHeader>
           <CardTitle className="text-lg">{t('admin.surveys.title')}</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="size-6 animate-spin text-muted-foreground" />
