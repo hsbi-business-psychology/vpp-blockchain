@@ -11,21 +11,22 @@ function renderWithRouter(ui: React.ReactElement) {
 describe('HomePage', () => {
   it('renders the hero title', () => {
     renderWithRouter(<HomePage />)
-    expect(screen.getByText('Verifiable Participant Points')).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 1 }),
+    ).toBeInTheDocument()
   })
 
-  it('renders feature cards', () => {
+  it('renders highlight cards for students and lecturers', () => {
     renderWithRouter(<HomePage />)
-    expect(screen.getByText('Transparent')).toBeInTheDocument()
-    expect(screen.getByText('Open Source')).toBeInTheDocument()
-    expect(screen.getByText('Cost Efficient')).toBeInTheDocument()
+    expect(screen.getByText(/For students|Für Studierende/i)).toBeInTheDocument()
+    expect(screen.getByText(/For lecturers|Für Lehrende/i)).toBeInTheDocument()
   })
 
-  it('renders the how-it-works section', () => {
+  it('renders the FAQ section', () => {
     renderWithRouter(<HomePage />)
-    expect(screen.getAllByText('Create Wallet').length).toBeGreaterThanOrEqual(1)
-    expect(screen.getByText('Complete Survey')).toBeInTheDocument()
-    expect(screen.getAllByText('Claim Points').length).toBeGreaterThanOrEqual(1)
+    expect(
+      screen.getByText(/Frequently asked questions|Häufige Fragen/i),
+    ).toBeInTheDocument()
   })
 
   it('renders CTA buttons', () => {
