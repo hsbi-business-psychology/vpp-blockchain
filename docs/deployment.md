@@ -59,7 +59,6 @@ docker run -d \
   -e RPC_URL=https://mainnet.base.org \
   -e CONTRACT_ADDRESS=0x_YOUR_CONTRACT \
   -e MINTER_PRIVATE_KEY=0x_YOUR_KEY \
-  -e ADMIN_WALLETS=0x_ADMIN_ADDRESS \
   -e EXPLORER_BASE_URL=https://basescan.org \
   -e FRONTEND_URL=https://vpp.your-university.edu \
   vpp-backend
@@ -155,7 +154,6 @@ cp -r packages/frontend/dist/* /var/www/vpp-frontend/
 | `RPC_URL` | Yes | Base RPC endpoint |
 | `CONTRACT_ADDRESS` | Yes | Deployed SurveyPoints address |
 | `MINTER_PRIVATE_KEY` | Yes | Backend wallet private key (MINTER_ROLE) |
-| `ADMIN_WALLETS` | Yes | Comma-separated admin wallet addresses |
 | `EXPLORER_BASE_URL` | Yes | Block explorer URL |
 | `FRONTEND_URL` | Yes | Frontend URL (CORS + template redirects) |
 | `CLAIM_RATE_LIMIT_WINDOW_MS` | No | Rate limit window for claims (default: `60000`) |

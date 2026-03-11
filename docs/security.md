@@ -56,7 +56,7 @@ This document describes the security model of VPP Blockchain, including threat m
 
 ### Admin Keys
 
-- Admin wallets are configured in `ADMIN_WALLETS` environment variable
+- Admin wallets are verified on-chain via `ADMIN_ROLE` on the smart contract
 - Admin actions require EIP-191 signature verification
 - Admins can register surveys and manage the system
 - Admin role can be granted/revoked via the contract's `AccessControl`

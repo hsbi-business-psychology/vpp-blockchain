@@ -17,10 +17,12 @@ The `SurveyPoints` contract is the core on-chain component of VPP. It manages su
 | Role | Constant | Purpose |
 |---|---|---|
 | Default Admin | `DEFAULT_ADMIN_ROLE` | Can grant and revoke all roles |
-| Admin | `ADMIN_ROLE` | Can register and deactivate surveys |
+| Admin | `ADMIN_ROLE` | Can register/deactivate surveys and manage other admins |
 | Minter | `MINTER_ROLE` | Can award points (assigned to the backend wallet) |
 
 The deployer address receives `DEFAULT_ADMIN_ROLE` and `ADMIN_ROLE`. The backend wallet receives `MINTER_ROLE`.
+
+**Role admin configuration:** `ADMIN_ROLE` is its own role admin (`_setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE)`), meaning any wallet with `ADMIN_ROLE` can grant or revoke `ADMIN_ROLE` for other wallets — no need to involve the deployer. The same applies to `MINTER_ROLE`, which is also managed by `ADMIN_ROLE`.
 
 ## Data Structures
 
@@ -89,6 +91,18 @@ Deactivate a survey to prevent further claims. Requires `ADMIN_ROLE`.
 
 Emits `SurveyDeactivated(surveyId)`.
 
+#### `addAdmin(account)`
+
+Grant `ADMIN_ROLE` to another address. Requires `ADMIN_ROLE`. Reverts on zero address.
+
+Emits `RoleGranted(ADMIN_ROLE, account, sender)` (from OpenZeppelin AccessControl).
+
+#### `removeAdmin(account)`
+
+Revoke `ADMIN_ROLE` from an address. Requires `ADMIN_ROLE`. Reverts on zero address.
+
+Emits `RoleRevoked(ADMIN_ROLE, account, sender)` (from OpenZeppelin AccessControl).
+
 ### Read Functions
 
 | Function | Returns | Description |
@@ -97,6 +111,7 @@ Emits `SurveyDeactivated(surveyId)`.
 | `surveyPoints(wallet, surveyId)` | `uint8` | Points earned for a specific survey |
 | `claimed(wallet, surveyId)` | `bool` | Whether a wallet has claimed a survey |
 | `getSurveyInfo(surveyId)` | `(bytes32, uint8, uint256, uint256, bool, uint256)` | Full survey details |
+| `isAdmin(account)` | `bool` | Whether an address holds `ADMIN_ROLE` |
 
 ## Events
 
@@ -105,6 +120,8 @@ Emits `SurveyDeactivated(surveyId)`.
 | `SurveyRegistered` | `surveyId (indexed)`, `points`, `maxClaims` | New survey created |
 | `PointsAwarded` | `wallet (indexed)`, `surveyId (indexed)`, `points` | Points awarded |
 | `SurveyDeactivated` | `surveyId (indexed)` | Survey deactivated |
+| `RoleGranted` | `role (indexed)`, `account (indexed)`, `sender (indexed)` | Role assigned (from OpenZeppelin) |
+| `RoleRevoked` | `role (indexed)`, `account (indexed)`, `sender (indexed)` | Role revoked (from OpenZeppelin) |
 
 ## Custom Errors
 

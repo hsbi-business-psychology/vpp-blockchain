@@ -76,7 +76,6 @@ Edit `packages/backend/.env` with your values:
 | `RPC_URL` | Base RPC endpoint |
 | `CONTRACT_ADDRESS` | Deployed SurveyPoints contract address |
 | `MINTER_PRIVATE_KEY` | Backend wallet private key (must have MINTER_ROLE) |
-| `ADMIN_WALLETS` | Comma-separated admin wallet addresses |
 | `EXPLORER_BASE_URL` | Block explorer URL for transaction links |
 | `FRONTEND_URL` | Frontend URL for CORS and template redirects |
 
@@ -122,36 +121,34 @@ pnpm --filter @vpp/frontend preview
 
 The dev server proxies `/api` requests to `http://localhost:3000` automatically.
 
-## Full Local Stack
+## Full Local Stack (with Test Data)
 
-To run the complete system locally:
+The easiest way to run the complete system locally with pre-seeded test data:
 
-1. **Terminal 1** — Start a local Hardhat node:
-   ```bash
-   pnpm --filter @vpp/contracts hardhat node
-   ```
+```bash
+# Terminal 1 — Start local blockchain
+pnpm dev:node
 
-2. **Terminal 2** — Deploy the contract locally:
-   ```bash
-   pnpm --filter @vpp/contracts run deploy:local
-   # Note the deployed contract address from the output
-   ```
+# Terminal 2 — Deploy contract + seed 3 surveys + 15 student points
+pnpm dev:deploy
 
-3. **Terminal 3** — Start the backend:
-   ```bash
-   # Set CONTRACT_ADDRESS in packages/backend/.env to the deployed address
-   # Set RPC_URL to http://127.0.0.1:8545
-   pnpm --filter @vpp/backend dev
-   ```
+# Terminal 3 — Start backend (auto-copies .env.development → .env)
+pnpm dev:backend
 
-4. **Terminal 4** — Start the frontend:
-   ```bash
-   # Set VITE_CONTRACT_ADDRESS in packages/frontend/.env
-   # Set VITE_RPC_URL to http://127.0.0.1:8545
-   pnpm --filter @vpp/frontend dev
-   ```
+# Terminal 4 — Start frontend (uses .env.development automatically)
+pnpm dev:frontend
+```
 
-5. Open [http://localhost:5173](http://localhost:5173)
+Open [http://localhost:5173](http://localhost:5173) and import one of the test wallets:
+
+| Role | Private Key |
+|---|---|
+| **Admin** | `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80` |
+| **Student** (15 pts) | `0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d` |
+
+Admin access is verified **on-chain** — only wallets with `ADMIN_ROLE` on the smart contract can access the Lecturers' Area. Admins can grant/revoke `ADMIN_ROLE` for other wallets directly from the dashboard.
+
+See the main [README](../README.md#local-development-with-test-data) for detailed testing instructions.
 
 ## Linting & Formatting
 

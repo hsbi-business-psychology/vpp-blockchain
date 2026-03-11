@@ -14,7 +14,7 @@ Admin endpoints require an **EIP-191 wallet signature**. The request body must i
 - `adminSignature` — The signed message
 - `adminMessage` — The plain-text message that was signed
 
-The recovered signer address must be in the server's `ADMIN_WALLETS` configuration.
+The recovered signer address must hold `ADMIN_ROLE` on the smart contract (verified on-chain).
 
 ## Rate Limiting
 

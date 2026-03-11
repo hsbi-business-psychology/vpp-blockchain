@@ -38,7 +38,7 @@ Deploy the entire system (frontend + backend + your own contract). This gives yo
    ```bash
    cp packages/backend/.env.example packages/backend/.env
    ```
-   Set `CONTRACT_ADDRESS` to your deployed contract, `MINTER_PRIVATE_KEY` to your backend wallet, and `ADMIN_WALLETS` to your admin addresses.
+   Set `CONTRACT_ADDRESS` to your deployed contract and `MINTER_PRIVATE_KEY` to your backend wallet. Admin access is managed on-chain — use `addAdmin()` on the smart contract to grant `ADMIN_ROLE` to lecturer wallets.
 
 4. **Configure the frontend:**
    ```bash

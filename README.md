@@ -41,6 +41,7 @@ VPP lets students earn points for completing surveys. Points are recorded on a p
                                 │  SurveyPoints Smart Contract     │
                                 │  └─ registerSurvey()             │
                                 │  └─ awardPoints()                │
+                                │  └─ addAdmin() / removeAdmin()   │
                                 │  └─ totalPoints() / surveyPoints │
                                 └──────────────────────────────────┘
 ```
@@ -84,23 +85,54 @@ pnpm install
 pnpm test
 ```
 
-### Local Development
+### Local Development with Test Data
+
+The fastest way to explore the full application locally, including the admin dashboard and on-chain role management:
 
 ```bash
-# Start the frontend dev server
-pnpm --filter @vpp/frontend dev
+# Terminal 1 — Start the local blockchain
+pnpm dev:node
 
-# Start the backend dev server (requires .env)
-cp packages/backend/.env.example packages/backend/.env
-# Edit .env with your configuration
-pnpm --filter @vpp/backend dev
+# Terminal 2 — Deploy contract + seed test data (surveys, points)
+pnpm dev:deploy
 
-# Start a local Hardhat node
-pnpm --filter @vpp/contracts hardhat node
+# Terminal 3 — Start the backend API
+pnpm dev:backend
 
-# Deploy contracts locally
-pnpm --filter @vpp/contracts run deploy:local
+# Terminal 4 — Start the frontend
+pnpm dev:frontend
 ```
+
+The deploy script creates **3 test surveys** and awards **15 points** to a test student. It prints all private keys and secrets you need.
+
+#### Test Accounts (Hardhat Defaults)
+
+| Role | Address | Private Key |
+|---|---|---|
+| **Admin** (ADMIN_ROLE) | `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266` | `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80` |
+| **Student** (has 15 pts) | `0x70997970C51812dc3A010C7d01b50e0d17dc79C8` | `0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d` |
+
+#### Testing the Admin Flow
+
+1. Open `http://localhost:5173` and create a **new wallet** (or import any key)
+2. Navigate to **Lecturers' Area** — you will see an "Access Denied" message because the new wallet has no ADMIN_ROLE
+3. Delete the wallet and **import the Admin private key** from the table above
+4. Navigate to **Lecturers' Area** — the on-chain check passes, sign in to see the dashboard
+5. In the **Admin Role Management** section at the bottom, you can grant ADMIN_ROLE to any other wallet address
+
+#### Testing the Student Flow
+
+1. Import the **Student private key** from the table above
+2. Navigate to **My Points** — you will see 15 points and the claim history
+3. To test a new claim, visit: `http://localhost:5173/claim?surveyId=3&secret=test-secret-gamma`
+
+#### Test Secrets
+
+| Survey | Secret | Points |
+|---|---|---|
+| #1 | `test-secret-alpha` | 5 |
+| #2 | `test-secret-beta` | 10 |
+| #3 | `test-secret-gamma` | 3 |
 
 ## Documentation
 
