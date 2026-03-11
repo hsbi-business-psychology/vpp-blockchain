@@ -77,8 +77,9 @@ export function useBlockchain() {
     setError(null)
     try {
       const contract = getContract()
+      const fromBlock = config.contractDeployBlock || 0
       const filter = contract.filters.PointsAwarded(address)
-      const events = await contract.queryFilter(filter)
+      const events = await contract.queryFilter(filter, fromBlock)
       return events.map((event) => {
         const log = event as ethers.EventLog
         return {

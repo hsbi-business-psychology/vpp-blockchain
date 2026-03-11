@@ -3,6 +3,7 @@ export const config = {
   apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:3000',
   rpcUrl: import.meta.env.VITE_RPC_URL || 'https://sepolia.base.org',
   contractAddress: import.meta.env.VITE_CONTRACT_ADDRESS || '',
+  contractDeployBlock: parseInt(import.meta.env.VITE_CONTRACT_DEPLOY_BLOCK || '0', 10),
   explorerUrl: import.meta.env.VITE_EXPLORER_URL || 'https://sepolia.basescan.org',
   defaultLocale: import.meta.env.VITE_DEFAULT_LOCALE || 'en',
 } as const

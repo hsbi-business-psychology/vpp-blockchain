@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { SURVEY_POINTS_ABI } from '@/lib/contract-abi'
+import { config } from '@/lib/config'
 
 interface RoleManagementProps {
   walletAddress: string
@@ -36,9 +37,10 @@ export function RoleManagement({ walletAddress, signer }: RoleManagementProps) {
       const grantedFilter = contract.filters.RoleGranted(adminRole)
       const revokedFilter = contract.filters.RoleRevoked(adminRole)
 
+      const fromBlock = config.contractDeployBlock || 0
       const [grantedEvents, revokedEvents] = await Promise.all([
-        contract.queryFilter(grantedFilter),
-        contract.queryFilter(revokedFilter),
+        contract.queryFilter(grantedFilter, fromBlock),
+        contract.queryFilter(revokedFilter, fromBlock),
       ])
 
       const adminSet = new Set<string>()

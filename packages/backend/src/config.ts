@@ -19,6 +19,8 @@ export const config = {
   contractAddress: required('CONTRACT_ADDRESS'),
   minterPrivateKey: required('MINTER_PRIVATE_KEY'),
 
+  contractDeployBlock: parseInt(optional('CONTRACT_DEPLOY_BLOCK', '0'), 10),
+
   explorerBaseUrl: optional('EXPLORER_BASE_URL', 'https://sepolia.basescan.org'),
   frontendUrl: optional('FRONTEND_URL', 'http://localhost:5173'),
 

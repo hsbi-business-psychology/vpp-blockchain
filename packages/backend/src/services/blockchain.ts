@@ -104,8 +104,9 @@ export interface PointsAwardedEvent {
 export async function getPointsAwardedEvents(
   walletAddress: string,
 ): Promise<PointsAwardedEvent[]> {
+  const fromBlock = config.contractDeployBlock || 0
   const filter = readOnlyContract.filters.PointsAwarded(walletAddress)
-  const events = await readOnlyContract.queryFilter(filter)
+  const events = await readOnlyContract.queryFilter(filter, fromBlock)
 
   const results: PointsAwardedEvent[] = []
   for (const event of events) {
@@ -134,8 +135,9 @@ export interface SurveyRegisteredEvent {
 }
 
 export async function getSurveyRegisteredEvents(): Promise<SurveyRegisteredEvent[]> {
+  const fromBlock = config.contractDeployBlock || 0
   const filter = readOnlyContract.filters.SurveyRegistered()
-  const events = await readOnlyContract.queryFilter(filter)
+  const events = await readOnlyContract.queryFilter(filter, fromBlock)
 
   const results: SurveyRegisteredEvent[] = []
   for (const event of events) {

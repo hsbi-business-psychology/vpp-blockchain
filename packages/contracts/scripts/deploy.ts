@@ -46,17 +46,27 @@ async function main() {
     }
   }
 
+  const deployTx = contract.deploymentTransaction()
+  const deployBlock = deployTx ? (await deployTx.wait())?.blockNumber ?? 0 : 0
+
   console.log('\n--- Deployment Summary ---')
-  console.log(`Contract: ${address}`)
-  console.log(`Admin:    ${adminAddress}`)
-  console.log(`Minter:   ${minterAddress}`)
-  console.log(`Network:  ${network.name}`)
+  console.log(`Contract:     ${address}`)
+  console.log(`Deploy Block: ${deployBlock}`)
+  console.log(`Admin:        ${adminAddress}`)
+  console.log(`Minter:       ${minterAddress}`)
+  console.log(`Network:      ${network.name}`)
 
   if (network.name === 'baseSepolia') {
-    console.log(`Explorer: https://sepolia.basescan.org/address/${address}`)
+    console.log(`Explorer:     https://sepolia.basescan.org/address/${address}`)
   } else if (network.name === 'baseMainnet') {
-    console.log(`Explorer: https://basescan.org/address/${address}`)
+    console.log(`Explorer:     https://basescan.org/address/${address}`)
   }
+
+  console.log('\n--- Environment Variables ---')
+  console.log(`CONTRACT_ADDRESS=${address}`)
+  console.log(`CONTRACT_DEPLOY_BLOCK=${deployBlock}`)
+  console.log(`VITE_CONTRACT_ADDRESS=${address}`)
+  console.log(`VITE_CONTRACT_DEPLOY_BLOCK=${deployBlock}`)
 }
 
 main().catch((error) => {
