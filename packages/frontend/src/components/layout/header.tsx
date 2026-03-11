@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from 'next-themes'
 import { Menu, X, Home, Coins, BookOpen, ShieldCheck, Sun, Moon, Globe } from 'lucide-react'
@@ -31,6 +31,11 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
     onNavigate(href)
     setMenuOpen(false)
   }
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [menuOpen])
 
   function changeLanguage(code: string) {
     i18n.changeLanguage(code)
@@ -86,55 +91,53 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
       </header>
 
       {menuOpen && (
-        <div className="fixed inset-0 z-50 bg-background md:hidden" role="dialog" aria-label={t('nav.mobileMenu')}>
-          <div className="flex h-full flex-col">
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-5">
-              <button
-                onClick={() => handleNav('/')}
-                className="flex items-center"
-                aria-label={t('nav.home')}
-              >
-                <img src="/hsbi-logo-light.png" alt="HSBI – Startseite" width={262} height={192} className="h-12 w-auto dark:hidden" />
-                <img src="/hsbi-logo-dark.png" alt="" width={262} height={192} className="hidden h-12 w-auto dark:block" aria-hidden="true" />
-              </button>
-              <button
-                onClick={() => setMenuOpen(false)}
-                className="flex size-9 items-center justify-center rounded-md hover:bg-accent"
-                aria-label={t('nav.closeMenu')}
-              >
-                <X className="size-5" aria-hidden="true" />
-              </button>
+        <div className="fixed inset-0 z-50 overflow-hidden bg-background md:hidden" role="dialog" aria-label={t('nav.mobileMenu')}>
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-5">
+            <button
+              onClick={() => handleNav('/')}
+              className="flex items-center"
+              aria-label={t('nav.home')}
+            >
+              <img src="/hsbi-logo-light.png" alt="HSBI – Startseite" width={262} height={192} className="h-12 w-auto dark:hidden" />
+              <img src="/hsbi-logo-dark.png" alt="" width={262} height={192} className="hidden h-12 w-auto dark:block" aria-hidden="true" />
+            </button>
+            <button
+              onClick={() => setMenuOpen(false)}
+              className="flex size-9 items-center justify-center rounded-md hover:bg-accent"
+              aria-label={t('nav.closeMenu')}
+            >
+              <X className="size-5" aria-hidden="true" />
+            </button>
+          </div>
+
+          {/* Navigation + Settings */}
+          <nav className="px-4 pt-2" aria-label={t('nav.main')}>
+            <div className="space-y-1">
+              {navLinks.map(({ href, label, icon: Icon }) => {
+                const isActive = href === '/'
+                  ? currentPath === '/'
+                  : currentPath === href || currentPath.startsWith(href + '/')
+                return (
+                  <button
+                    key={href}
+                    onClick={() => handleNav(href)}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={`flex w-full items-center gap-3 rounded-lg px-4 py-3.5 text-left text-base font-semibold transition-colors ${
+                      isActive
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-foreground hover:bg-accent'
+                    }`}
+                  >
+                    <Icon className={`size-5 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} aria-hidden="true" />
+                    {label}
+                  </button>
+                )
+              })}
             </div>
 
-            {/* Navigation */}
-            <nav className="flex-1 px-4 pt-2" aria-label={t('nav.main')}>
-              <div className="space-y-1">
-                {navLinks.map(({ href, label, icon: Icon }) => {
-                  const isActive = href === '/'
-                    ? currentPath === '/'
-                    : currentPath === href || currentPath.startsWith(href + '/')
-                  return (
-                    <button
-                      key={href}
-                      onClick={() => handleNav(href)}
-                      aria-current={isActive ? 'page' : undefined}
-                      className={`flex w-full items-center gap-3 rounded-lg px-4 py-3.5 text-left text-base font-semibold transition-colors ${
-                        isActive
-                          ? 'bg-primary/10 text-primary'
-                          : 'text-foreground hover:bg-accent'
-                      }`}
-                    >
-                      <Icon className={`size-5 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} aria-hidden="true" />
-                      {label}
-                    </button>
-                  )
-                })}
-              </div>
-            </nav>
-
-            {/* Settings Footer */}
-            <div className="border-t border-border px-4 py-5">
+            {/* Settings */}
+            <div className="mt-6 space-y-3 border-t border-border pt-5">
               {/* Language */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5 text-sm font-medium text-muted-foreground">
@@ -161,7 +164,7 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
               </div>
 
               {/* Theme */}
-              <div className="mt-4 flex items-center justify-between">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5 text-sm font-medium text-muted-foreground">
                   {theme === 'dark'
                     ? <Moon className="size-4" aria-hidden="true" />
@@ -198,7 +201,7 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
                 </div>
               </div>
             </div>
-          </div>
+          </nav>
         </div>
       )}
     </>
