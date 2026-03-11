@@ -10,7 +10,8 @@ export interface SurveyRegisterRequest {
   surveyId: number
   secret: string
   points: number
-  maxClaims: number
+  maxClaims?: number
+  title?: string
   adminSignature: string
   adminMessage: string
 }
@@ -49,6 +50,7 @@ export interface SurveyClaimEntry {
 
 export interface SurveyInfo {
   surveyId: number
+  title: string
   points: number
   maxClaims: number
   claimCount: number

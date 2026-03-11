@@ -30,6 +30,7 @@ describe('POST /api/claim', () => {
       claimCount: 5n,
       active: true,
       registeredAt: 1710000000n,
+      title: '',
     })
     vi.mocked(blockchain.hasClaimed).mockResolvedValue(false)
     vi.mocked(blockchain.awardPoints).mockResolvedValue({
@@ -65,6 +66,7 @@ describe('POST /api/claim', () => {
       claimCount: 0n,
       active: true,
       registeredAt: 1710000000n,
+      title: '',
     })
 
     const res = await request(app)
@@ -92,6 +94,7 @@ describe('POST /api/claim', () => {
       claimCount: 1n,
       active: true,
       registeredAt: 1710000000n,
+      title: '',
     })
     vi.mocked(blockchain.hasClaimed).mockResolvedValue(true)
 
@@ -120,6 +123,7 @@ describe('POST /api/claim', () => {
       claimCount: 0n,
       active: false,
       registeredAt: 0n,
+      title: '',
     })
 
     const res = await request(app)
@@ -175,6 +179,7 @@ describe('POST /api/claim', () => {
       claimCount: 0n,
       active: false,
       registeredAt: 1710000000n,
+      title: '',
     })
 
     const res = await request(app)

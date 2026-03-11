@@ -14,7 +14,8 @@ const registerSchema = z.object({
   surveyId: z.number().int().positive(),
   secret: z.string().min(1),
   points: z.number().int().min(1).max(255),
-  maxClaims: z.number().int().min(0),
+  maxClaims: z.number().int().min(0).default(0),
+  title: z.string().default(''),
   adminSignature: z.string().min(1),
   adminMessage: z.string().min(1),
 })
@@ -27,7 +28,7 @@ router.post('/', requireAdmin as unknown as RequestHandler, async (req, res, nex
       throw new AppError(400, 'VALIDATION_ERROR', parsed.error.issues[0].message)
     }
 
-    const { surveyId, secret, points, maxClaims } = parsed.data
+    const { surveyId, secret, points, maxClaims, title } = parsed.data
 
     // Check if survey already exists
     const existing = await blockchain.getSurveyInfo(surveyId)
@@ -36,7 +37,7 @@ router.post('/', requireAdmin as unknown as RequestHandler, async (req, res, nex
     }
 
     const secretHash = ethers.keccak256(ethers.toUtf8Bytes(secret))
-    const receipt = await blockchain.registerSurvey(surveyId, secretHash, points, maxClaims)
+    const receipt = await blockchain.registerSurvey(surveyId, secretHash, points, maxClaims, title)
 
     const result: SurveyRegisterResult = {
       txHash: receipt.hash,
@@ -60,6 +61,7 @@ router.get('/', async (_req, res, next) => {
         const info = await blockchain.getSurveyInfo(event.surveyId)
         return {
           surveyId: event.surveyId,
+          title: info.title,
           points: info.points,
           maxClaims: Number(info.maxClaims),
           claimCount: Number(info.claimCount),
@@ -69,7 +71,7 @@ router.get('/', async (_req, res, next) => {
       }),
     )
 
-    res.json({ success: true, data: { surveys } })
+    res.json({ success: true, data: surveys })
   } catch (err) {
     next(err)
   }

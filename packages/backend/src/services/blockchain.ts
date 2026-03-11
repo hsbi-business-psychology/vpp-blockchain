@@ -38,8 +38,9 @@ export async function registerSurvey(
   secretHash: string,
   points: number,
   maxClaims: number,
+  title: string,
 ): Promise<ethers.TransactionReceipt> {
-  const tx = await contract.registerSurvey(surveyId, secretHash, points, maxClaims)
+  const tx = await contract.registerSurvey(surveyId, secretHash, points, maxClaims, title)
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
   return receipt
@@ -52,6 +53,7 @@ export interface SurveyInfoRaw {
   claimCount: bigint
   active: boolean
   registeredAt: bigint
+  title: string
 }
 
 export async function getSurveyInfo(surveyId: number): Promise<SurveyInfoRaw> {
@@ -63,6 +65,7 @@ export async function getSurveyInfo(surveyId: number): Promise<SurveyInfoRaw> {
     claimCount: result[3],
     active: result[4],
     registeredAt: result[5],
+    title: result[6],
   }
 }
 

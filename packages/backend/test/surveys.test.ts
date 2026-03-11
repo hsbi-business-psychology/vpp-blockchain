@@ -20,6 +20,7 @@ describe('POST /api/surveys', () => {
     const adminMessage = `register:42:${timestamp}`
     const adminSignature = await ADMIN_WALLET.signMessage(adminMessage)
 
+    vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
     vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
       secretHash: ethers.ZeroHash,
       points: 0,
@@ -27,6 +28,7 @@ describe('POST /api/surveys', () => {
       claimCount: 0n,
       active: false,
       registeredAt: 0n,
+      title: '',
     })
     vi.mocked(blockchain.registerSurvey).mockResolvedValue({
       hash: '0xtxhash456',
@@ -54,6 +56,8 @@ describe('POST /api/surveys', () => {
     const timestamp = Math.floor(Date.now() / 1000)
     const adminMessage = `register:42:${timestamp}`
     const adminSignature = await nonAdmin.signMessage(adminMessage)
+
+    vi.mocked(blockchain.isAdmin).mockResolvedValue(false)
 
     const res = await request(app)
       .post('/api/surveys')
@@ -108,15 +112,16 @@ describe('GET /api/surveys', () => {
       claimCount: 37n,
       active: true,
       registeredAt: 1710000000n,
+      title: 'Test Survey',
     })
 
     const res = await request(app).get('/api/surveys')
 
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(true)
-    expect(res.body.data.surveys).toHaveLength(1)
-    expect(res.body.data.surveys[0].surveyId).toBe(1)
-    expect(res.body.data.surveys[0].claimCount).toBe(37)
+    expect(res.body.data).toHaveLength(1)
+    expect(res.body.data[0].surveyId).toBe(1)
+    expect(res.body.data[0].claimCount).toBe(37)
   })
 
   it('should return empty list when no surveys exist', async () => {
@@ -125,6 +130,6 @@ describe('GET /api/surveys', () => {
     const res = await request(app).get('/api/surveys')
 
     expect(res.status).toBe(200)
-    expect(res.body.data.surveys).toHaveLength(0)
+    expect(res.body.data).toHaveLength(0)
   })
 })
