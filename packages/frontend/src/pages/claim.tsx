@@ -52,8 +52,8 @@ export default function ClaimPage() {
     setLoading(true)
     setError(null)
     try {
-      const timestamp = Date.now()
-      const message = `Claim ${surveyId} for ${wallet!.address} at ${timestamp}`
+      const timestamp = Math.floor(Date.now() / 1000)
+      const message = `Claim:${surveyId}:${wallet!.address}:${timestamp}`
       const signature = await sign(message)
 
       setCurrentStep('submit')
