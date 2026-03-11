@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-green)](https://nodejs.org/)
-[![Solidity](https://img.shields.io/badge/Solidity-%5E0.8.20-363636)](https://soliditylang.org/)
+[![Solidity](https://img.shields.io/badge/Solidity-%5E0.8.24-363636)](https://soliditylang.org/)
 [![Base L2](https://img.shields.io/badge/Chain-Base%20L2-0052FF)](https://base.org/)
 
 ---
@@ -27,7 +27,7 @@ VPP lets students earn points for completing surveys. Points are recorded on a p
 ┌─────────────┐    Redirect     ┌──────────────────────────────────┐
 │ SoSci Survey │ ─────────────→ │  VPP Web App                     │
 │ (external)   │  surveyId +    │                                  │
-└─────────────┘  secret         │  Frontend (Vue 3 SPA)            │
+└─────────────┘  secret         │  Frontend (React + shadcn/ui)    │
                                 │  └─ Wallet · Claim · Points     │
                                 │                                  │
                                 │  Backend (Node.js API)           │
@@ -50,9 +50,18 @@ VPP lets students earn points for completing surveys. Points are recorded on a p
 | Package | Description |
 |---|---|
 | [`packages/contracts`](packages/contracts) | Solidity smart contract with Hardhat tooling |
-| [`packages/sdk`](packages/sdk) | Framework-agnostic TypeScript SDK (`@vpp/sdk`) |
-| [`packages/backend`](packages/backend) | Node.js/Express reference backend (transaction relayer) |
-| [`packages/frontend`](packages/frontend) | Vue 3 reference frontend |
+| [`packages/backend`](packages/backend) | Node.js/Express API server (transaction relayer) |
+| [`packages/frontend`](packages/frontend) | React + Vite + shadcn/ui reference frontend |
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Smart Contract | Solidity 0.8.24, Hardhat, OpenZeppelin, TypeChain |
+| Backend | Node.js 20+, Express, ethers.js v6, TypeScript |
+| Frontend | React 19, Vite 6, TypeScript, Tailwind CSS v4, shadcn/ui |
+| Testing | Hardhat + Chai, Vitest, React Testing Library |
+| CI/CD | GitHub Actions, Docker |
 
 ## Quick Start
 
@@ -78,6 +87,14 @@ pnpm test
 ### Local Development
 
 ```bash
+# Start the frontend dev server
+pnpm --filter @vpp/frontend dev
+
+# Start the backend dev server (requires .env)
+cp packages/backend/.env.example packages/backend/.env
+# Edit .env with your configuration
+pnpm --filter @vpp/backend dev
+
 # Start a local Hardhat node
 pnpm --filter @vpp/contracts hardhat node
 
@@ -85,34 +102,41 @@ pnpm --filter @vpp/contracts hardhat node
 pnpm --filter @vpp/contracts run deploy:local
 ```
 
+## Documentation
+
+Comprehensive documentation is available in the [`docs/`](docs/) directory:
+
+- [Architecture](docs/architecture.md) — System design and data flow
+- [Getting Started](docs/getting-started.md) — Development setup guide
+- [API Reference](docs/api-reference.md) — Backend REST API documentation
+- [Smart Contract](docs/smart-contract.md) — On-chain contract details
+- [SoSci Survey Integration](docs/sosci-integration.md) — Survey template setup
+- [Deployment](docs/deployment.md) — Production deployment guide
+- [Security](docs/security.md) — Security architecture and threat model
+- [For Universities](docs/for-universities.md) — Adoption guide for other institutions
+
 ## Integration Options
 
 VPP is designed as an open-source toolkit. Other universities can integrate at three levels:
 
 ### Level 1: Full Deployment
 
-Clone the repo, configure environment variables, and deploy everything with Docker Compose.
+Clone the repo, configure environment variables, and deploy everything.
 
 ```bash
 cp packages/backend/.env.example packages/backend/.env
 # Edit .env with your RPC URL, private key, and contract address
-docker-compose up
+docker build -t vpp-backend packages/backend
+docker run -p 3000:3000 --env-file packages/backend/.env vpp-backend
 ```
 
-### Level 2: SDK Integration
+### Level 2: Custom Frontend
 
-Install the SDK and build your own frontend.
+Use the backend API and smart contract, but build your own frontend.
 
 ```bash
-npm install @vpp/sdk
-```
-
-```typescript
-import { VPPWallet, VPPClient, VPPReader } from '@vpp/sdk'
-
-const wallet = VPPWallet.create()
-const client = new VPPClient({ backendUrl: 'https://vpp.your-university.edu/api' })
-const result = await client.claim(wallet, surveyId, secret)
+# Deploy the backend and contract, then point your frontend at the API
+VITE_API_URL=https://vpp.your-university.edu/api
 ```
 
 ### Level 3: Direct Contract Interaction

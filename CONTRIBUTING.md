@@ -93,7 +93,6 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 | Scope | Package |
 |---|---|
 | `contracts` | `packages/contracts` |
-| `sdk` | `packages/sdk` |
 | `backend` | `packages/backend` |
 | `frontend` | `packages/frontend` |
 
@@ -141,11 +140,9 @@ feat(contracts): add survey deactivation function
 vpp-blockchain/
 ├── packages/
 │   ├── contracts/    # Solidity smart contract (Hardhat)
-│   ├── sdk/          # TypeScript SDK (@vpp/sdk)
 │   ├── backend/      # Node.js/Express API server
-│   └── frontend/     # Vue 3 SPA
+│   └── frontend/     # React + Vite + shadcn/ui SPA
 ├── docs/             # Project documentation
-├── examples/         # Integration examples
 └── .github/          # CI workflows and templates
 ```
 
