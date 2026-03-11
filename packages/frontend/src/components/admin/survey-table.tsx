@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Download, XCircle, MoreHorizontal } from 'lucide-react'
+import { Download, XCircle, MoreHorizontal, ChevronRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils'
 
 interface SurveyRow {
   surveyId: number
+  title: string
   points: number
   maxClaims: number
   claimCount: number
@@ -24,21 +25,15 @@ interface SurveyTableProps {
   surveys: SurveyRow[]
   onDownloadTemplate: (surveyId: number) => void
   onDeactivate: (surveyId: number) => void
-}
-
-function getStatus(survey: SurveyRow): 'active' | 'inactive' | 'nearLimit' {
-  if (!survey.active) return 'inactive'
-  if (survey.claimCount >= survey.maxClaims * 0.8) return 'nearLimit'
-  return 'active'
+  onSelect?: (surveyId: number) => void
 }
 
 const statusVariant: Record<string, string> = {
   active: 'bg-success/10 text-success border-success/20',
   inactive: 'bg-destructive/10 text-destructive border-destructive/20',
-  nearLimit: 'bg-warning/10 text-warning border-warning/20',
 }
 
-export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate }: SurveyTableProps) {
+export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate, onSelect }: SurveyTableProps) {
   const { t } = useTranslation()
 
   if (surveys.length === 0) {
@@ -47,6 +42,8 @@ export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate }: Surve
     )
   }
 
+  const getStatus = (s: SurveyRow) => (s.active ? 'active' : 'inactive')
+
   return (
     <>
       {/* Desktop table */}
@@ -54,24 +51,30 @@ export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate }: Surve
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t('admin.surveys.table.id')}</TableHead>
+              <TableHead className="w-12">#</TableHead>
+              <TableHead>{t('admin.register.surveyTitle')}</TableHead>
               <TableHead className="text-right">{t('admin.surveys.table.points')}</TableHead>
               <TableHead className="text-right">{t('admin.surveys.table.claims')}</TableHead>
               <TableHead>{t('admin.surveys.table.status')}</TableHead>
               <TableHead>{t('admin.surveys.table.created')}</TableHead>
-              <TableHead className="text-right">{t('admin.surveys.table.actions')}</TableHead>
+              <TableHead className="w-12"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {surveys.map((survey) => {
               const status = getStatus(survey)
               return (
-                <TableRow key={survey.surveyId}>
-                  <TableCell className="font-medium">{survey.surveyId}</TableCell>
-                  <TableCell className="text-right">{survey.points}</TableCell>
-                  <TableCell className="text-right">
-                    {survey.claimCount} / {survey.maxClaims}
+                <TableRow
+                  key={survey.surveyId}
+                  className={cn(onSelect && 'cursor-pointer hover:bg-muted/50')}
+                  onClick={() => onSelect?.(survey.surveyId)}
+                >
+                  <TableCell className="font-mono text-muted-foreground">{survey.surveyId}</TableCell>
+                  <TableCell className="font-medium">
+                    {survey.title || `Survey #${survey.surveyId}`}
                   </TableCell>
+                  <TableCell className="text-right">{survey.points}</TableCell>
+                  <TableCell className="text-right">{survey.claimCount}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className={cn('border', statusVariant[status])}>
                       {t(`admin.surveys.status.${status}`)}
@@ -80,10 +83,15 @@ export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate }: Surve
                   <TableCell className="text-muted-foreground">
                     {new Date(survey.registeredAt).toLocaleDateString()}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="size-8">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <MoreHorizontal className="size-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -116,45 +124,41 @@ export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate }: Surve
         {surveys.map((survey) => {
           const status = getStatus(survey)
           return (
-            <div key={survey.surveyId} className="rounded-lg border p-4 space-y-3">
+            <div
+              key={survey.surveyId}
+              className={cn(
+                'rounded-lg border p-4 space-y-3',
+                onSelect && 'cursor-pointer hover:bg-muted/50',
+              )}
+              onClick={() => onSelect?.(survey.surveyId)}
+            >
               <div className="flex items-center justify-between">
-                <span className="font-medium">#{survey.surveyId}</span>
-                <Badge variant="outline" className={cn('border', statusVariant[status])}>
-                  {t(`admin.surveys.status.${status}`)}
-                </Badge>
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium truncate">
+                    {survey.title || `Survey #${survey.surveyId}`}
+                  </p>
+                  <p className="text-xs text-muted-foreground">ID: {survey.surveyId}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className={cn('border', statusVariant[status])}>
+                    {t(`admin.surveys.status.${status}`)}
+                  </Badge>
+                  <ChevronRight className="size-4 text-muted-foreground" />
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="grid grid-cols-3 gap-2 text-sm">
                 <div>
                   <p className="text-muted-foreground">{t('admin.surveys.table.points')}</p>
                   <p className="font-medium">{survey.points}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">{t('admin.surveys.table.claims')}</p>
-                  <p className="font-medium">
-                    {survey.claimCount} / {survey.maxClaims}
-                  </p>
+                  <p className="font-medium">{survey.claimCount}</p>
                 </div>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onDownloadTemplate(survey.surveyId)}
-                  className="flex-1"
-                >
-                  <Download className="mr-1 size-3" />
-                  Template
-                </Button>
-                {survey.active && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onDeactivate(survey.surveyId)}
-                    className="text-destructive"
-                  >
-                    <XCircle className="mr-1 size-3" />
-                  </Button>
-                )}
+                <div>
+                  <p className="text-muted-foreground">{t('admin.surveys.table.created')}</p>
+                  <p className="font-medium">{new Date(survey.registeredAt).toLocaleDateString()}</p>
+                </div>
               </div>
             </div>
           )

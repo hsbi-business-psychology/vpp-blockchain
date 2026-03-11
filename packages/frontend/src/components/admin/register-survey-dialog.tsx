@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Loader2, Info } from 'lucide-react'
+import { Plus, Loader2, Info, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
 import {
   Tooltip,
   TooltipContent,
@@ -19,25 +20,51 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 
+function generateSecret(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'
+  let result = 'vpp-'
+  for (let i = 0; i < 12; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return result
+}
+
 interface RegisterSurveyDialogProps {
   onRegister: (data: {
     surveyId: number
     points: number
     secret: string
     maxClaims: number
+    title: string
   }) => Promise<void>
+  nextSurveyId: number
 }
 
-export function RegisterSurveyDialog({ onRegister }: RegisterSurveyDialogProps) {
+export function RegisterSurveyDialog({ onRegister, nextSurveyId }: RegisterSurveyDialogProps) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
+    title: '',
     surveyId: '',
     points: '',
     secret: '',
-    maxClaims: '',
   })
+
+  useEffect(() => {
+    if (open) {
+      setForm({
+        title: '',
+        surveyId: String(nextSurveyId),
+        points: '1',
+        secret: generateSecret(),
+      })
+    }
+  }, [open, nextSurveyId])
+
+  const regenerateSecret = () => {
+    setForm((f) => ({ ...f, secret: generateSecret() }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -47,18 +74,22 @@ export function RegisterSurveyDialog({ onRegister }: RegisterSurveyDialogProps) 
         surveyId: Number(form.surveyId),
         points: Number(form.points),
         secret: form.secret,
-        maxClaims: Number(form.maxClaims),
+        maxClaims: 0,
+        title: form.title,
       })
       setOpen(false)
-      setForm({ surveyId: '', points: '', secret: '', maxClaims: '' })
     } finally {
       setLoading(false)
     }
   }
 
   const isValid =
-    form.surveyId && form.points && form.secret && form.maxClaims !== '' &&
-    Number(form.surveyId) > 0 && Number(form.points) > 0 && Number(form.maxClaims) >= 0
+    form.title.trim() &&
+    form.surveyId &&
+    form.points &&
+    form.secret &&
+    Number(form.surveyId) > 0 &&
+    Number(form.points) > 0
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -77,15 +108,15 @@ export function RegisterSurveyDialog({ onRegister }: RegisterSurveyDialogProps) 
           <div className="mt-4 space-y-4">
             <div className="space-y-2">
               <div className="flex items-center gap-1">
-                <Label htmlFor="reg-surveyId">{t('admin.register.surveyId')}</Label>
-                <InfoTip text={t('admin.info.surveyId')} />
+                <Label htmlFor="reg-title">{t('admin.register.surveyTitle')}</Label>
+                <InfoTip text={t('admin.info.title')} />
               </div>
               <Input
-                id="reg-surveyId"
-                type="number"
-                min="1"
-                value={form.surveyId}
-                onChange={(e) => setForm((f) => ({ ...f, surveyId: e.target.value }))}
+                id="reg-title"
+                type="text"
+                placeholder={t('admin.register.surveyTitlePlaceholder')}
+                value={form.title}
+                onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                 required
               />
             </div>
@@ -104,17 +135,25 @@ export function RegisterSurveyDialog({ onRegister }: RegisterSurveyDialogProps) 
               </div>
               <div className="space-y-2">
                 <div className="flex items-center gap-1">
-                  <Label htmlFor="reg-maxClaims">{t('admin.register.maxClaims')}</Label>
-                  <InfoTip text={t('admin.info.maxClaims')} />
+                  <Label htmlFor="reg-surveyId">{t('admin.register.surveyId')}</Label>
+                  <InfoTip text={t('admin.info.surveyId')} />
                 </div>
-                <Input
-                  id="reg-maxClaims"
-                  type="number"
-                  min="0"
-                  value={form.maxClaims}
-                  onChange={(e) => setForm((f) => ({ ...f, maxClaims: e.target.value }))}
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="reg-surveyId"
+                    type="number"
+                    min="1"
+                    value={form.surveyId}
+                    onChange={(e) => setForm((f) => ({ ...f, surveyId: e.target.value }))}
+                    required
+                  />
+                  <Badge
+                    variant="secondary"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px]"
+                  >
+                    {t('admin.register.autoGenerated')}
+                  </Badge>
+                </div>
               </div>
             </div>
             <div className="space-y-2">
@@ -122,13 +161,27 @@ export function RegisterSurveyDialog({ onRegister }: RegisterSurveyDialogProps) 
                 <Label htmlFor="reg-secret">{t('admin.register.secret')}</Label>
                 <InfoTip text={t('admin.info.secret')} />
               </div>
-              <Input
-                id="reg-secret"
-                type="text"
-                value={form.secret}
-                onChange={(e) => setForm((f) => ({ ...f, secret: e.target.value }))}
-                required
-              />
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    id="reg-secret"
+                    type="text"
+                    value={form.secret}
+                    onChange={(e) => setForm((f) => ({ ...f, secret: e.target.value }))}
+                    className="font-mono pr-24"
+                    required
+                  />
+                  <Badge
+                    variant="secondary"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px]"
+                  >
+                    {t('admin.register.autoGenerated')}
+                  </Badge>
+                </div>
+                <Button type="button" variant="outline" size="icon" onClick={regenerateSecret}>
+                  <RefreshCw className="size-4" />
+                </Button>
+              </div>
             </div>
           </div>
           <DialogFooter className="mt-6">

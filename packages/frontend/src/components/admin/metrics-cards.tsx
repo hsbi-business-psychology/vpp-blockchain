@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
 import { BarChart3, CheckCircle2, Award, Activity } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface MetricsCardsProps {
   totalSurveys: number
@@ -44,19 +43,20 @@ export function MetricsCards({ totalSurveys, activeSurveys, totalClaims, totalPo
   ]
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {metrics.map(({ label, value, icon: Icon, color, bgColor }) => (
-        <Card key={label}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
-            <div className={`rounded-md p-2 ${bgColor}`}>
-              <Icon className={`size-4 ${color}`} />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-4xl font-bold">{value.toLocaleString()}</p>
-          </CardContent>
-        </Card>
+        <div
+          key={label}
+          className="flex items-center gap-3 rounded-lg border border-border bg-card p-3"
+        >
+          <div className={`flex size-9 shrink-0 items-center justify-center rounded-md ${bgColor}`}>
+            <Icon className={`size-4 ${color}`} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-2xl font-bold leading-none">{value.toLocaleString()}</p>
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">{label}</p>
+          </div>
+        </div>
       ))}
     </div>
   )

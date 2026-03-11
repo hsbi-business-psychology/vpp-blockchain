@@ -9,6 +9,7 @@ interface ClaimResult {
 
 interface SurveyInfo {
   surveyId: number
+  title: string
   points: number
   maxClaims: number
   claimCount: number
@@ -95,7 +96,8 @@ export function useApi() {
       surveyId: number
       secret: string
       points: number
-      maxClaims: number
+      maxClaims?: number
+      title?: string
       adminSignature: string
       adminMessage: string
     }): Promise<SurveyRegisterResult> => {

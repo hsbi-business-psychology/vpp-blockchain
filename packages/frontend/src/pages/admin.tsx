@@ -17,6 +17,7 @@ import { SURVEY_POINTS_ABI } from '@/lib/contract-abi'
 
 interface SurveyRow {
   surveyId: number
+  title: string
   points: number
   maxClaims: number
   claimCount: number
@@ -107,7 +108,7 @@ export default function AdminPage() {
     }
   }, [authenticated, fetchSurveys])
 
-  const handleRegister = async (data: { surveyId: number; points: number; secret: string; maxClaims: number }) => {
+  const handleRegister = async (data: { surveyId: number; points: number; secret: string; maxClaims: number; title: string }) => {
     if (!authCredentials) return
     try {
       const timestamp = Date.now()
@@ -259,7 +260,10 @@ export default function AdminPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('admin.title')}</h1>
         <div className="flex items-center gap-2">
-          <RegisterSurveyDialog onRegister={handleRegister} />
+          <RegisterSurveyDialog
+            onRegister={handleRegister}
+            nextSurveyId={surveys.length > 0 ? Math.max(...surveys.map((s) => s.surveyId)) + 1 : 1}
+          />
           <Button variant="ghost" size="icon" onClick={handleLogout}>
             <LogOut className="size-4" />
           </Button>
