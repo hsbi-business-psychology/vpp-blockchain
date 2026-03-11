@@ -762,48 +762,49 @@ export default function PointsPage() {
 
       {/* ─── Create Wallet Info Dialog ─── */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <div className="mb-2 flex size-12 items-center justify-center rounded-lg bg-primary/10">
-              <Wallet className="size-6 text-primary" />
+        <DialogContent className="max-w-2xl gap-0 p-0">
+          <div className="flex items-center justify-between border-b border-border px-6 py-4">
+            <div>
+              <DialogTitle className="text-lg">{t('wallet.create.dialogTitle')}</DialogTitle>
+              <DialogDescription className="mt-0.5">{t('wallet.create.dialogDescription')}</DialogDescription>
             </div>
-            <DialogTitle>{t('wallet.create.dialogTitle')}</DialogTitle>
-            <DialogDescription>{t('wallet.create.dialogDescription')}</DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-3 py-1">
-            {[
-              { title: t('wallet.create.dialogInfo1Title'), text: t('wallet.create.dialogInfo1Text') },
-              { title: t('wallet.create.dialogInfo2Title'), text: t('wallet.create.dialogInfo2Text') },
-              { title: t('wallet.create.dialogInfo3Title'), text: t('wallet.create.dialogInfo3Text') },
-              { title: t('wallet.create.dialogInfo4Title'), text: t('wallet.create.dialogInfo4Text') },
-            ].map(({ title, text }) => (
-              <div key={title} className="rounded-lg border border-border p-3">
-                <p className="text-sm font-semibold">{title}</p>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{text}</p>
-              </div>
-            ))}
           </div>
 
-          <div className="space-y-2 border-t border-border pt-3">
-            {[t('wallet.create.dialogCheck1'), t('wallet.create.dialogCheck2'), t('wallet.create.dialogCheck3')].map((text, i) => (
-              <label key={i} className="flex cursor-pointer items-start gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50">
-                <input
-                  type="checkbox"
-                  checked={createChecks[i]}
-                  onChange={() => {
-                    const next = [...createChecks]
-                    next[i] = !next[i]
-                    setCreateChecks(next)
-                  }}
-                  className="mt-0.5 size-4 shrink-0 rounded accent-primary"
-                />
-                <span className="text-sm">{text}</span>
-              </label>
-            ))}
+          <div className="max-h-[60vh] overflow-y-auto px-6 py-5">
+            <div className="space-y-5">
+              {[
+                { title: t('wallet.create.dialogInfo1Title'), text: t('wallet.create.dialogInfo1Text') },
+                { title: t('wallet.create.dialogInfo2Title'), text: t('wallet.create.dialogInfo2Text') },
+                { title: t('wallet.create.dialogInfo3Title'), text: t('wallet.create.dialogInfo3Text') },
+                { title: t('wallet.create.dialogInfo4Title'), text: t('wallet.create.dialogInfo4Text') },
+              ].map(({ title, text }) => (
+                <div key={title}>
+                  <p className="text-sm font-semibold">{title}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{text}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 space-y-1">
+              {[t('wallet.create.dialogCheck1'), t('wallet.create.dialogCheck2'), t('wallet.create.dialogCheck3')].map((text, i) => (
+                <label key={i} className="flex cursor-pointer items-start gap-3 rounded-lg p-2.5 transition-colors hover:bg-muted/50">
+                  <input
+                    type="checkbox"
+                    checked={createChecks[i]}
+                    onChange={() => {
+                      const next = [...createChecks]
+                      next[i] = !next[i]
+                      setCreateChecks(next)
+                    }}
+                    className="mt-0.5 size-4 shrink-0 rounded accent-primary"
+                  />
+                  <span className="text-sm">{text}</span>
+                </label>
+              ))}
+            </div>
           </div>
 
-          <DialogFooter>
+          <div className="flex items-center justify-end gap-3 border-t border-border px-6 py-4">
             <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
               {t('common.cancel')}
             </Button>
@@ -814,7 +815,7 @@ export default function PointsPage() {
               <Wallet className="mr-1.5 size-4" />
               {t('wallet.create.dialogConfirm')}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
