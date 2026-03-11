@@ -10,9 +10,10 @@ http://localhost:3000/api
 
 ## Authentication
 
-Admin endpoints require an **EIP-191 wallet signature**. The request body must include:
-- `adminSignature` — The signed message
-- `adminMessage` — The plain-text message that was signed
+Admin endpoints require an **EIP-191 wallet signature**. The credentials can be passed either in the request body or as HTTP headers:
+
+- Body: `adminSignature` and `adminMessage`
+- Headers: `X-Admin-Signature` and `X-Admin-Message`
 
 The recovered signer address must hold `ADMIN_ROLE` on the smart contract (verified on-chain).
 
@@ -46,7 +47,7 @@ Claim survey participation points for a wallet.
   "surveyId": 42,
   "secret": "VPP-x8k2m9",
   "signature": "0xabcd...1234",
-  "message": "claim:42:VPP-x8k2m9:1710000000"
+  "message": "Claim:42:0x1234...abcd:1710000000"
 }
 ```
 
@@ -56,7 +57,7 @@ Claim survey participation points for a wallet.
 | `surveyId` | `number` | Positive integer identifying the survey |
 | `secret` | `string` | Survey secret (received via redirect URL) |
 | `signature` | `string` | EIP-191 signature over `message` |
-| `message` | `string` | Format: `claim:{surveyId}:{secret}:{unixTimestamp}` |
+| `message` | `string` | Format: `Claim:{surveyId}:{walletAddress}:{unixTimestamp}` |
 
 **Success Response (200):**
 

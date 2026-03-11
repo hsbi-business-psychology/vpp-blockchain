@@ -26,7 +26,7 @@ See [Getting Started](getting-started.md#full-local-stack) for the full setup in
 | 6 | Create a new wallet | Wallet created, address and private key shown |
 | 7 | Click "Claim Points" | Loading state → success confirmation with TX hash |
 | 8 | Navigate to Points page (`/points`) | Shows 2 total points, 1 claim entry |
-| 9 | Open Explorer (`/explorer`), enter wallet address | Shows same 2 points |
+| 9 | On the Points page (`/points`), use the Wallet Search section and enter the wallet address | Shows same 2 points |
 | 10 | Verify on local Hardhat node | `totalPoints(wallet) == 2` |
 
 ### 2. Double Claim Prevention

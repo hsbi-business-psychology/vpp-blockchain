@@ -16,6 +16,41 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://vpstunden.hsbi.de/docs/getting-started</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://vpstunden.hsbi.de/docs/claim-process</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://vpstunden.hsbi.de/docs/wallet-security</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://vpstunden.hsbi.de/docs/what-is-blockchain</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://vpstunden.hsbi.de/docs/faq</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://vpstunden.hsbi.de/docs/for-universities</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://vpstunden.hsbi.de/docs/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://vpstunden.hsbi.de/impressum</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
