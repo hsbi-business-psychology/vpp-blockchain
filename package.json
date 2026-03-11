@@ -18,9 +18,13 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "clean": "pnpm -r run clean",
+    "dev": "bash scripts/dev.sh",
     "dev:node": "pnpm --filter @vpp/contracts node",
     "dev:deploy": "pnpm --filter @vpp/contracts deploy:dev",
     "dev:backend": "cp -n packages/backend/.env.development packages/backend/.env 2>/dev/null; pnpm --filter @vpp/backend dev",
     "dev:frontend": "pnpm --filter @vpp/frontend dev"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }

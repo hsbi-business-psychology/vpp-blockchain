@@ -90,17 +90,17 @@ pnpm test
 The fastest way to explore the full application locally, including the admin dashboard and on-chain role management:
 
 ```bash
-# Terminal 1 — Start the local blockchain
-pnpm dev:node
+# Single command — starts blockchain, deploys, backend, and frontend
+pnpm dev
+```
 
-# Terminal 2 — Deploy contract + seed test data (surveys, points)
-pnpm dev:deploy
+Or manually in separate terminals:
 
-# Terminal 3 — Start the backend API
-pnpm dev:backend
-
-# Terminal 4 — Start the frontend
-pnpm dev:frontend
+```bash
+pnpm dev:node        # Terminal 1 — Local blockchain
+pnpm dev:deploy      # Terminal 2 — Deploy + seed test data
+pnpm dev:backend     # Terminal 3 — Backend API
+pnpm dev:frontend    # Terminal 4 — Frontend
 ```
 
 The deploy script creates **3 test surveys** and awards **15 points** to a test student. It prints all private keys and secrets you need.
