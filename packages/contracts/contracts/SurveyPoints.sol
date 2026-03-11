@@ -83,6 +83,9 @@ contract SurveyPoints is AccessControl, ReentrancyGuard {
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(ADMIN_ROLE, admin);
         _grantRole(MINTER_ROLE, minter);
+
+        _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
+        _setRoleAdmin(MINTER_ROLE, ADMIN_ROLE);
     }
 
     // ---------------------------------------------------------------
@@ -159,8 +162,29 @@ contract SurveyPoints is AccessControl, ReentrancyGuard {
     }
 
     // ---------------------------------------------------------------
+    //  Admin role management
+    // ---------------------------------------------------------------
+
+    /// @notice Grant ADMIN_ROLE to another address.
+    function addAdmin(address account) external onlyRole(ADMIN_ROLE) {
+        if (account == address(0)) revert ZeroAddress();
+        grantRole(ADMIN_ROLE, account);
+    }
+
+    /// @notice Revoke ADMIN_ROLE from an address.
+    function removeAdmin(address account) external onlyRole(ADMIN_ROLE) {
+        if (account == address(0)) revert ZeroAddress();
+        revokeRole(ADMIN_ROLE, account);
+    }
+
+    // ---------------------------------------------------------------
     //  Read functions
     // ---------------------------------------------------------------
+
+    /// @notice Check whether an address has ADMIN_ROLE.
+    function isAdmin(address account) external view returns (bool) {
+        return hasRole(ADMIN_ROLE, account);
+    }
 
     /// @notice Get the total points accumulated by a wallet.
     function totalPoints(address wallet) external view returns (uint256) {

@@ -453,4 +453,70 @@ describe('SurveyPoints', () => {
       ).to.be.reverted
     })
   })
+
+  // -------------------------------------------------------------------
+  //  Convenience admin functions
+  // -------------------------------------------------------------------
+
+  describe('isAdmin / addAdmin / removeAdmin', () => {
+    it('isAdmin returns true for admin', async () => {
+      expect(await contract.isAdmin(admin.address)).to.be.true
+    })
+
+    it('isAdmin returns false for non-admin', async () => {
+      expect(await contract.isAdmin(outsider.address)).to.be.false
+    })
+
+    it('addAdmin grants ADMIN_ROLE', async () => {
+      await contract.connect(admin).addAdmin(outsider.address)
+      expect(await contract.isAdmin(outsider.address)).to.be.true
+    })
+
+    it('new admin added via addAdmin can register surveys', async () => {
+      await contract.connect(admin).addAdmin(outsider.address)
+      await contract
+        .connect(outsider)
+        .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, MAX_CLAIMS)
+      const info = await contract.getSurveyInfo(SURVEY_ID)
+      expect(info.points).to.equal(SURVEY_POINTS)
+    })
+
+    it('new admin can add another admin', async () => {
+      await contract.connect(admin).addAdmin(outsider.address)
+      await contract.connect(outsider).addAdmin(student1.address)
+      expect(await contract.isAdmin(student1.address)).to.be.true
+    })
+
+    it('removeAdmin revokes ADMIN_ROLE', async () => {
+      await contract.connect(admin).addAdmin(outsider.address)
+      expect(await contract.isAdmin(outsider.address)).to.be.true
+
+      await contract.connect(admin).removeAdmin(outsider.address)
+      expect(await contract.isAdmin(outsider.address)).to.be.false
+    })
+
+    it('non-admin cannot call addAdmin', async () => {
+      await expect(
+        contract.connect(outsider).addAdmin(student1.address),
+      ).to.be.reverted
+    })
+
+    it('non-admin cannot call removeAdmin', async () => {
+      await expect(
+        contract.connect(outsider).removeAdmin(admin.address),
+      ).to.be.reverted
+    })
+
+    it('addAdmin reverts for zero address', async () => {
+      await expect(
+        contract.connect(admin).addAdmin(ethers.ZeroAddress),
+      ).to.be.revertedWithCustomError(contract, 'ZeroAddress')
+    })
+
+    it('removeAdmin reverts for zero address', async () => {
+      await expect(
+        contract.connect(admin).removeAdmin(ethers.ZeroAddress),
+      ).to.be.revertedWithCustomError(contract, 'ZeroAddress')
+    })
+  })
 })
