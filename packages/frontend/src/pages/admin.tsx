@@ -427,7 +427,7 @@ export default function AdminPage() {
               placeholder={t('admin.surveys.templateDialog.secretPlaceholder')}
               type="password"
               className="font-mono text-xs"
-              onKeyDown={(e) => e.key === 'Enter' && templateSecret.trim() && handleTemplateDownload()}
+              onKeyDown={(e) => e.key === 'Enter' && templateSecret.trim() && handleTemplateDialogDownload()}
             />
             <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
               <Info className="mt-0.5 size-3 shrink-0" />

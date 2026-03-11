@@ -41,8 +41,9 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.svg" />
     <link rel="manifest" href="/site.webmanifest" />
 
-    <!-- Preconnect for performance -->
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <!-- Preload LCP image -->
+    <link rel="preload" as="image" href="/hsbi-logo-light.png" media="(prefers-color-scheme: light)" fetchpriority="high" />
+    <link rel="preload" as="image" href="/hsbi-logo-dark.png" media="(prefers-color-scheme: dark)" fetchpriority="high" />
 
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">

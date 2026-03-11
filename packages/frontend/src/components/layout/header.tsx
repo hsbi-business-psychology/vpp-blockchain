@@ -33,8 +33,8 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
             className="flex items-center"
             aria-label={t('nav.home')}
           >
-            <img src="/hsbi-logo-light.png" alt="HSBI – Startseite" className="h-12 dark:hidden md:h-16" />
-            <img src="/hsbi-logo-dark.png" alt="HSBI – Startseite" className="hidden h-12 dark:block md:h-16" aria-hidden="true" />
+            <img src="/hsbi-logo-light.png" alt="HSBI – Startseite" width={262} height={192} fetchPriority="high" className="h-12 w-auto dark:hidden md:h-16" />
+            <img src="/hsbi-logo-dark.png" alt="" width={262} height={192} fetchPriority="high" className="hidden h-12 w-auto dark:block md:h-16" aria-hidden="true" />
           </button>
 
           <nav className="hidden items-center gap-1 md:flex" aria-label={t('nav.main', 'Hauptnavigation')}>
@@ -80,8 +80,8 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
               className="flex items-center"
               aria-label={t('nav.home')}
             >
-              <img src="/hsbi-logo-light.png" alt="HSBI – Startseite" className="h-12 dark:hidden" />
-              <img src="/hsbi-logo-dark.png" alt="" className="hidden h-12 dark:block" aria-hidden="true" />
+              <img src="/hsbi-logo-light.png" alt="HSBI – Startseite" width={262} height={192} className="h-12 w-auto dark:hidden" />
+              <img src="/hsbi-logo-dark.png" alt="" width={262} height={192} className="hidden h-12 w-auto dark:block" aria-hidden="true" />
             </button>
             <button
               onClick={() => setMenuOpen(false)}

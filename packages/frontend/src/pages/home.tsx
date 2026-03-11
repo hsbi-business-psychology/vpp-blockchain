@@ -43,6 +43,8 @@ function MacBookMockup() {
           <img
             src="/screenshots/student-transactions.png"
             alt="VPP Blockchain – Transaktionsverlauf"
+            width={678}
+            height={541}
             className="block w-full"
             loading="eager"
           />
