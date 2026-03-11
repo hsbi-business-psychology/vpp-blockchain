@@ -206,6 +206,12 @@
       "description": "Sign a message with your admin wallet to access the dashboard.",
       "button": "Sign In"
     },
+    "accessDenied": {
+      "title": "Access Denied",
+      "description": "This area is restricted to lecturers who hold the ADMIN_ROLE on the smart contract. Your wallet does not currently have this role.",
+      "hint": "If you are a lecturer, please contact an existing admin to have the role assigned to your wallet.",
+      "back": "Back to Home"
+    },
     "metrics": {
       "totalSurveys": "Total Surveys",
       "activeSurveys": "Active Surveys",

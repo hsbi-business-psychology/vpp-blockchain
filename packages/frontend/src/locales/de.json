@@ -206,6 +206,12 @@
       "description": "Signiere eine Nachricht mit deinem Admin-Wallet, um auf das Dashboard zuzugreifen.",
       "button": "Anmelden"
     },
+    "accessDenied": {
+      "title": "Kein Zugriff",
+      "description": "Dieser Bereich ist ausschließlich für Lehrende mit Admin-Rolle vorgesehen. Dein Wallet besitzt aktuell keine ADMIN_ROLE im Smart Contract.",
+      "hint": "Falls du Lehrende:r bist, wende dich an eine:n bestehende:n Admin, damit dir die Rolle zugewiesen wird.",
+      "back": "Zur Startseite"
+    },
     "metrics": {
       "totalSurveys": "Umfragen gesamt",
       "activeSurveys": "Aktive Umfragen",

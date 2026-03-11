@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { ethers } from 'ethers'
-import { ShieldCheck, Loader2, LogOut } from 'lucide-react'
+import { ShieldCheck, ShieldX, Loader2, LogOut } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,6 +13,7 @@ import { RegisterSurveyDialog } from '@/components/admin/register-survey-dialog'
 import { RoleManagement } from '@/components/admin/role-management'
 import { useWallet } from '@/hooks/use-wallet'
 import { useApi } from '@/hooks/use-api'
+import { SURVEY_POINTS_ABI } from '@/lib/contract-abi'
 
 interface SurveyRow {
   surveyId: number
@@ -29,11 +30,47 @@ export default function AdminPage() {
   const { wallet, hasWallet, sign } = useWallet()
   const { getSurveys, registerSurvey, downloadTemplate } = useApi()
 
+  const [adminCheck, setAdminCheck] = useState<'loading' | 'admin' | 'denied'>('loading')
   const [authenticated, setAuthenticated] = useState(false)
   const [authLoading, setAuthLoading] = useState(false)
   const [authCredentials, setAuthCredentials] = useState<{ signature: string; message: string } | null>(null)
   const [surveys, setSurveys] = useState<SurveyRow[]>([])
   const [loading, setLoading] = useState(false)
+
+  const rpcUrl = import.meta.env.VITE_RPC_URL || ''
+  const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS || ''
+
+  const signer = useMemo(() => {
+    if (!wallet || !rpcUrl) return null
+    try {
+      const provider = new ethers.JsonRpcProvider(rpcUrl)
+      return new ethers.Wallet(wallet.privateKey, provider)
+    } catch {
+      return null
+    }
+  }, [wallet, rpcUrl])
+
+  useEffect(() => {
+    if (!wallet || !rpcUrl || !contractAddress) {
+      setAdminCheck('loading')
+      return
+    }
+
+    let cancelled = false
+    const check = async () => {
+      setAdminCheck('loading')
+      try {
+        const provider = new ethers.JsonRpcProvider(rpcUrl)
+        const contract = new ethers.Contract(contractAddress, SURVEY_POINTS_ABI, provider)
+        const result = await contract.isAdmin(wallet.address)
+        if (!cancelled) setAdminCheck(result ? 'admin' : 'denied')
+      } catch {
+        if (!cancelled) setAdminCheck('denied')
+      }
+    }
+    check()
+    return () => { cancelled = true }
+  }, [wallet, rpcUrl, contractAddress])
 
   const handleAuth = async () => {
     if (!wallet) return
@@ -114,7 +151,6 @@ export default function AdminPage() {
     setSurveys([])
   }
 
-  // No wallet -> redirect to wallet page
   if (!hasWallet) {
     return (
       <div className="mx-auto max-w-lg space-y-6 py-8">
@@ -132,7 +168,51 @@ export default function AdminPage() {
     )
   }
 
-  // Not authenticated -> sign in
+  if (adminCheck === 'loading') {
+    return (
+      <div className="mx-auto max-w-lg space-y-6 py-8">
+        <h1 className="text-2xl font-bold">{t('admin.title')}</h1>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-4 py-8">
+            <Loader2 className="size-8 animate-spin text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">{t('admin.roles.checking')}</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (adminCheck === 'denied') {
+    return (
+      <div className="mx-auto max-w-lg space-y-6 py-8">
+        <h1 className="text-2xl font-bold">{t('admin.title')}</h1>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-5 py-8 text-center">
+            <div className="flex size-14 items-center justify-center rounded-full bg-destructive/10">
+              <ShieldX className="size-7 text-destructive" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-lg font-semibold">{t('admin.accessDenied.title')}</h2>
+              <p className="text-base text-muted-foreground">
+                {t('admin.accessDenied.description')}
+              </p>
+            </div>
+            <div className="rounded-lg bg-muted p-3 w-full">
+              <p className="text-xs text-muted-foreground">Wallet</p>
+              <p className="truncate font-mono text-sm">{wallet?.address}</p>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {t('admin.accessDenied.hint')}
+            </p>
+            <Button variant="outline" onClick={() => navigate('/')}>
+              {t('admin.accessDenied.back')}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   if (!authenticated) {
     return (
       <div className="mx-auto max-w-lg space-y-6 py-8">
@@ -169,19 +249,7 @@ export default function AdminPage() {
     )
   }
 
-  const rpcUrl = import.meta.env.VITE_RPC_URL || ''
-
-  const signer = useMemo(() => {
-    if (!wallet) return null
-    try {
-      const provider = new ethers.JsonRpcProvider(rpcUrl)
-      return new ethers.Wallet(wallet.privateKey, provider)
-    } catch {
-      return null
-    }
-  }, [wallet, rpcUrl])
-
-  // Authenticated -> dashboard
+  // Authenticated dashboard
   const totalClaims = surveys.reduce((sum, s) => sum + s.claimCount, 0)
   const totalPointsAwarded = surveys.reduce((sum, s) => sum + s.claimCount * s.points, 0)
   const activeSurveys = surveys.filter((s) => s.active).length
