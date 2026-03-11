@@ -27,16 +27,16 @@ async function main() {
 
   // Seed test surveys
   const surveys = [
-    { id: 1, secret: 'test-secret-alpha', points: 5, maxClaims: 100 },
-    { id: 2, secret: 'test-secret-beta', points: 10, maxClaims: 50 },
-    { id: 3, secret: 'test-secret-gamma', points: 3, maxClaims: 0 },
+    { id: 1, secret: 'test-secret-alpha', points: 5, maxClaims: 0, title: 'Persönlichkeitstest WS 2025' },
+    { id: 2, secret: 'test-secret-beta', points: 10, maxClaims: 0, title: 'Stresswahrnehmung Studie' },
+    { id: 3, secret: 'test-secret-gamma', points: 3, maxClaims: 0, title: 'Entscheidungsfindung Experiment' },
   ]
 
   for (const s of surveys) {
     const secretHash = ethers.keccak256(ethers.toUtf8Bytes(s.secret))
-    const tx = await contract.registerSurvey(s.id, secretHash, s.points, s.maxClaims)
+    const tx = await contract.registerSurvey(s.id, secretHash, s.points, s.maxClaims, s.title)
     await tx.wait()
-    console.log(`Survey #${s.id} registered (${s.points} pts, max ${s.maxClaims || '∞'} claims, secret: "${s.secret}")`)
+    console.log(`Survey #${s.id} "${s.title}" registered (${s.points} pts, secret: "${s.secret}")`)
   }
 
   // Award test points to student for surveys 1 and 2
