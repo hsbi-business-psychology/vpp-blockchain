@@ -62,18 +62,18 @@ This document describes the security model of VPP Blockchain, including threat m
 
 ## Threat Model
 
-| Threat | Mitigation |
-|---|---|
-| Fake claims (no survey completed) | Survey secret is required; only known to actual participants |
-| Duplicate claims | On-chain `_claimed` mapping prevents re-claiming |
-| Impersonation (claiming for another wallet) | EIP-191 signature verification proves wallet ownership |
-| Secret brute-forcing | Rate limiting (5 claims per minute per IP); secrets should be long/random |
-| Unauthorized point distribution | `MINTER_ROLE` access control on `awardPoints()` |
-| Backend key compromise | Damage limited to point distribution; can revoke `MINTER_ROLE` and redeploy |
-| Replay attacks | Signed messages include a timestamp; expired messages are rejected |
-| XSS / injection | Helmet security headers; React's built-in XSS protection; Zod input validation |
-| CSRF | No cookies used; authentication via signed messages |
-| DDoS | Rate limiting on all API endpoints |
+| Threat                                      | Mitigation                                                                     |
+| ------------------------------------------- | ------------------------------------------------------------------------------ |
+| Fake claims (no survey completed)           | Survey secret is required; only known to actual participants                   |
+| Duplicate claims                            | On-chain `_claimed` mapping prevents re-claiming                               |
+| Impersonation (claiming for another wallet) | EIP-191 signature verification proves wallet ownership                         |
+| Secret brute-forcing                        | Rate limiting (5 claims per minute per IP); secrets should be long/random      |
+| Unauthorized point distribution             | `MINTER_ROLE` access control on `awardPoints()`                                |
+| Backend key compromise                      | Damage limited to point distribution; can revoke `MINTER_ROLE` and redeploy    |
+| Replay attacks                              | Signed messages include a timestamp; expired messages are rejected             |
+| XSS / injection                             | Helmet security headers; React's built-in XSS protection; Zod input validation |
+| CSRF                                        | No cookies used; authentication via signed messages                            |
+| DDoS                                        | Rate limiting on all API endpoints                                             |
 
 ## Pseudonymity
 

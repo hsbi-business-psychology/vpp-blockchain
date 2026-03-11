@@ -37,9 +37,24 @@ type ArticleSection = TextSection | StepsSection | CalloutSection | ListSection 
 
 const calloutStyles = {
   info: { icon: Info, bg: 'bg-primary/5', border: 'border-primary/20', text: 'text-primary' },
-  warning: { icon: AlertTriangle, bg: 'bg-amber-500/5', border: 'border-amber-500/20', text: 'text-amber-600 dark:text-amber-400' },
-  tip: { icon: Lightbulb, bg: 'bg-emerald-500/5', border: 'border-emerald-500/20', text: 'text-emerald-600 dark:text-emerald-400' },
-  success: { icon: CheckCircle2, bg: 'bg-emerald-500/5', border: 'border-emerald-500/20', text: 'text-emerald-600 dark:text-emerald-400' },
+  warning: {
+    icon: AlertTriangle,
+    bg: 'bg-amber-500/5',
+    border: 'border-amber-500/20',
+    text: 'text-amber-600 dark:text-amber-400',
+  },
+  tip: {
+    icon: Lightbulb,
+    bg: 'bg-emerald-500/5',
+    border: 'border-emerald-500/20',
+    text: 'text-emerald-600 dark:text-emerald-400',
+  },
+  success: {
+    icon: CheckCircle2,
+    bg: 'bg-emerald-500/5',
+    border: 'border-emerald-500/20',
+    text: 'text-emerald-600 dark:text-emerald-400',
+  },
 }
 
 function RenderSection({ section, index }: { section: ArticleSection; index: number }) {

@@ -16,7 +16,15 @@ import {
   Coins,
 } from 'lucide-react'
 
-function DiagramBox({ icon: Icon, label, color = 'primary' }: { icon: React.ElementType; label: string; color?: string }) {
+function DiagramBox({
+  icon: Icon,
+  label,
+  color = 'primary',
+}: {
+  icon: React.ElementType
+  label: string
+  color?: string
+}) {
   const colorMap: Record<string, string> = {
     primary: 'bg-primary/10 text-primary border-primary/20',
     emerald: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
@@ -25,7 +33,11 @@ function DiagramBox({ icon: Icon, label, color = 'primary' }: { icon: React.Elem
     sky: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20',
   }
   return (
-    <div className={`flex flex-col items-center gap-1.5 rounded-lg border p-3 ${colorMap[color] || colorMap.primary}`}>
+    <div
+      className={`flex flex-col items-center gap-1.5 rounded-lg border p-3 ${
+        colorMap[color] || colorMap.primary
+      }`}
+    >
       <Icon className="size-5" />
       <span className="text-center text-xs font-medium leading-tight">{label}</span>
     </div>
@@ -60,7 +72,9 @@ function BlockchainChainDiagram() {
   const { t } = useTranslation()
   return (
     <div className="rounded-lg border border-border bg-card p-4 md:p-6">
-      <h3 className="mb-4 text-center text-sm font-semibold">{t('docs.diagrams.blockchainChain')}</h3>
+      <h3 className="mb-4 text-center text-sm font-semibold">
+        {t('docs.diagrams.blockchainChain')}
+      </h3>
       <div className="flex items-stretch justify-center gap-1 overflow-x-auto md:gap-2">
         {[0, 1, 2, 3].map((i) => (
           <div key={i} className="flex items-center gap-1 md:gap-2">
@@ -76,7 +90,9 @@ function BlockchainChainDiagram() {
           </div>
         ))}
       </div>
-      <p className="mt-3 text-center text-[11px] text-muted-foreground">{t('docs.diagrams.blockchainCaption')}</p>
+      <p className="mt-3 text-center text-[11px] text-muted-foreground">
+        {t('docs.diagrams.blockchainCaption')}
+      </p>
     </div>
   )
 }
@@ -90,7 +106,9 @@ function PublicPrivateKeyDiagram() {
         <div className="space-y-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4">
           <div className="flex items-center gap-2">
             <Unlock className="size-5 text-emerald-600 dark:text-emerald-400" />
-            <h4 className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Public Key</h4>
+            <h4 className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+              Public Key
+            </h4>
           </div>
           <p className="font-mono text-xs text-muted-foreground">0x71C7...4Fe2</p>
           <ul className="space-y-1 text-xs text-muted-foreground">
@@ -135,7 +153,9 @@ function Layer2Diagram() {
         <div className="flex w-full max-w-sm items-center justify-center gap-3 rounded-lg border border-violet-500/20 bg-violet-500/5 p-3">
           <Blocks className="size-5 text-violet-500" />
           <div>
-            <p className="text-sm font-semibold text-violet-600 dark:text-violet-400">Ethereum (Layer 1)</p>
+            <p className="text-sm font-semibold text-violet-600 dark:text-violet-400">
+              Ethereum (Layer 1)
+            </p>
             <p className="text-[11px] text-muted-foreground">{t('docs.diagrams.l1Desc')}</p>
           </div>
         </div>

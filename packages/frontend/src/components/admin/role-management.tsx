@@ -137,7 +137,11 @@ export function RoleManagement({ walletAddress, signer }: RoleManagementProps) {
             autoComplete="off"
           />
           <div className="flex gap-2">
-            <Button onClick={handleAddAdmin} disabled={loading || !address} className="flex-1 sm:flex-none">
+            <Button
+              onClick={handleAddAdmin}
+              disabled={loading || !address}
+              className="flex-1 sm:flex-none"
+            >
               {loading ? (
                 <Loader2 className="mr-2 size-4 animate-spin" />
               ) : (

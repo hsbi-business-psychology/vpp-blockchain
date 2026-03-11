@@ -10,7 +10,9 @@ globalThis.IntersectionObserver = class IntersectionObserver {
   }
   unobserve() {}
   disconnect() {}
-  takeRecords(): IntersectionObserverEntry[] { return [] }
+  takeRecords(): IntersectionObserverEntry[] {
+    return []
+  }
 } as unknown as typeof IntersectionObserver
 
 const localStorageMock = (() => {

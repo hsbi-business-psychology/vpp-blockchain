@@ -76,15 +76,16 @@ The `SurveyPoints` contract is the single source of truth for all point data.
 
 **On-chain state:**
 
-| Mapping | Purpose |
-|---|---|
-| `_surveys` | Survey configuration (secretHash, points, maxClaims, claimCount, active) |
-| `_surveyPoints` | Points per wallet per survey |
-| `_totalPoints` | Accumulated points per wallet |
-| `_claimed` | Boolean: has wallet claimed survey? |
-| `_walletSubmitted` | Boolean: has wallet been presented for thesis admission? |
+| Mapping            | Purpose                                                                  |
+| ------------------ | ------------------------------------------------------------------------ |
+| `_surveys`         | Survey configuration (secretHash, points, maxClaims, claimCount, active) |
+| `_surveyPoints`    | Points per wallet per survey                                             |
+| `_totalPoints`     | Accumulated points per wallet                                            |
+| `_claimed`         | Boolean: has wallet claimed survey?                                      |
+| `_walletSubmitted` | Boolean: has wallet been presented for thesis admission?                 |
 
 **Access control** uses OpenZeppelin `AccessControl`:
+
 - `ADMIN_ROLE` — Can register/deactivate surveys, manage admins, mark wallet submissions
 - `MINTER_ROLE` — Can award points (assigned to the backend wallet)
 
@@ -95,6 +96,7 @@ The `SurveyPoints` contract is the single source of truth for all point data.
 A stateless API relayer. It holds no database — all persistent data lives on-chain.
 
 **Core responsibilities:**
+
 1. Verify EIP-191 wallet signatures (prove the request comes from the wallet owner)
 2. Verify survey secrets (hash comparison with on-chain data)
 3. Check for duplicate claims
@@ -106,6 +108,7 @@ A stateless API relayer. It holds no database — all persistent data lives on-c
 A React single-page application built with Vite, Tailwind CSS v4, and shadcn/ui.
 
 **Features:**
+
 - Flexible wallet connection: Browser wallet (built-in), MetaMask, or private key import
 - Claim flow with URL query parameters from SoSci Survey redirect
 - Points dashboard with on-chain data (read directly from blockchain, no backend needed)
@@ -184,6 +187,7 @@ Browser (Frontend)                                  Blockchain
 ### Why Base L2?
 
 Base is an Ethereum Layer 2 (Optimistic Rollup) operated by Coinbase. It provides:
+
 - Extremely low transaction costs (~$0.002 per claim)
 - Security inherited from Ethereum mainnet
 - Full Solidity/EVM compatibility
@@ -215,13 +219,13 @@ Students should not need to hold ETH or pay gas fees. The backend wallet (MINTER
 
 ## Cost Model
 
-| Operation | Estimated Gas | USD Cost |
-|---|---|---|
-| Contract deployment | ~500,000 | ~$0.50 |
-| `registerSurvey()` | ~80,000 | ~$0.005 |
-| `awardPoints()` (first claim) | ~65,000 | ~$0.003 |
-| `awardPoints()` (subsequent) | ~45,000 | ~$0.002 |
-| Read operations | 0 | Free |
+| Operation                     | Estimated Gas | USD Cost |
+| ----------------------------- | ------------- | -------- |
+| Contract deployment           | ~500,000      | ~$0.50   |
+| `registerSurvey()`            | ~80,000       | ~$0.005  |
+| `awardPoints()` (first claim) | ~65,000       | ~$0.003  |
+| `awardPoints()` (subsequent)  | ~45,000       | ~$0.002  |
+| Read operations               | 0             | Free     |
 
 **Example semester:** 200 participants × 3 surveys = 600 claims ≈ $1.20.
 A $10 deposit covers ~8 semesters.

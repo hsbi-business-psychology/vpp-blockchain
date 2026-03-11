@@ -34,25 +34,25 @@ The app runs at [http://localhost:5173](http://localhost:5173). API requests are
 
 Copy `.env.example` to `.env` and adjust the values:
 
-| Variable | Description | Default |
-|---|---|---|
-| `VITE_APP_NAME` | Display name in the UI | `VPP Blockchain` |
-| `VITE_API_URL` | Backend API base URL | `http://localhost:3000` |
-| `VITE_RPC_URL` | Base L2 RPC endpoint | `https://sepolia.base.org` |
-| `VITE_CONTRACT_ADDRESS` | Deployed SurveyPoints contract | — |
-| `VITE_EXPLORER_URL` | Block explorer base URL | `https://sepolia.basescan.org` |
-| `VITE_CONTRACT_DEPLOY_BLOCK` | Block number of contract deployment (optimizes queries) | `0` |
-| `VITE_DEFAULT_LOCALE` | Default language (`en` or `de`) | `en` |
+| Variable                     | Description                                             | Default                        |
+| ---------------------------- | ------------------------------------------------------- | ------------------------------ |
+| `VITE_APP_NAME`              | Display name in the UI                                  | `VPP Blockchain`               |
+| `VITE_API_URL`               | Backend API base URL                                    | `http://localhost:3000`        |
+| `VITE_RPC_URL`               | Base L2 RPC endpoint                                    | `https://sepolia.base.org`     |
+| `VITE_CONTRACT_ADDRESS`      | Deployed SurveyPoints contract                          | —                              |
+| `VITE_EXPLORER_URL`          | Block explorer base URL                                 | `https://sepolia.basescan.org` |
+| `VITE_CONTRACT_DEPLOY_BLOCK` | Block number of contract deployment (optimizes queries) | `0`                            |
+| `VITE_DEFAULT_LOCALE`        | Default language (`en` or `de`)                         | `en`                           |
 
 ## Wallet Options
 
 The frontend supports three wallet connection methods:
 
-| Method | Description | Use Case |
-|---|---|---|
-| **Browser Wallet** | Generated and stored in `localStorage` | Beginners, no install needed |
-| **MetaMask** | Connected via `window.ethereum` (EIP-1193) | Advanced users, encrypted key storage |
-| **Import** | Paste an existing private key | Restoring access on a new device |
+| Method             | Description                                | Use Case                              |
+| ------------------ | ------------------------------------------ | ------------------------------------- |
+| **Browser Wallet** | Generated and stored in `localStorage`     | Beginners, no install needed          |
+| **MetaMask**       | Connected via `window.ethereum` (EIP-1193) | Advanced users, encrypted key storage |
+| **Import**         | Paste an existing private key              | Restoring access on a new device      |
 
 All three methods use EIP-191 message signing. The backend cannot distinguish between wallet types — signatures are verified identically.
 

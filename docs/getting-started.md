@@ -4,11 +4,11 @@ This guide walks you through setting up the VPP Blockchain development environme
 
 ## Prerequisites
 
-| Tool | Version | Install |
-|---|---|---|
-| Node.js | >= 20 | [nodejs.org](https://nodejs.org/) or `nvm install` |
-| pnpm | >= 9 | `corepack enable && corepack prepare pnpm@latest --activate` |
-| Git | any recent | [git-scm.com](https://git-scm.com/) |
+| Tool    | Version    | Install                                                      |
+| ------- | ---------- | ------------------------------------------------------------ |
+| Node.js | >= 20      | [nodejs.org](https://nodejs.org/) or `nvm install`           |
+| pnpm    | >= 9       | `corepack enable && corepack prepare pnpm@latest --activate` |
+| Git     | any recent | [git-scm.com](https://git-scm.com/)                          |
 
 ## Installation
 
@@ -70,14 +70,14 @@ cp packages/backend/.env.example packages/backend/.env
 
 Edit `packages/backend/.env` with your values:
 
-| Variable | Description |
-|---|---|
-| `PORT` | Server port (default: 3000) |
-| `RPC_URL` | Base RPC endpoint |
-| `CONTRACT_ADDRESS` | Deployed SurveyPoints contract address |
+| Variable             | Description                                        |
+| -------------------- | -------------------------------------------------- |
+| `PORT`               | Server port (default: 3000)                        |
+| `RPC_URL`            | Base RPC endpoint                                  |
+| `CONTRACT_ADDRESS`   | Deployed SurveyPoints contract address             |
 | `MINTER_PRIVATE_KEY` | Backend wallet private key (must have MINTER_ROLE) |
-| `EXPLORER_BASE_URL` | Block explorer URL for transaction links |
-| `FRONTEND_URL` | Frontend URL for CORS and template redirects |
+| `EXPLORER_BASE_URL`  | Block explorer URL for transaction links           |
+| `FRONTEND_URL`       | Frontend URL for CORS and template redirects       |
 
 ```bash
 # Start the dev server (hot-reload)
@@ -99,14 +99,14 @@ cp packages/frontend/.env.example packages/frontend/.env
 
 Edit `packages/frontend/.env`:
 
-| Variable | Description |
-|---|---|
-| `VITE_APP_NAME` | Application name shown in the UI |
-| `VITE_API_URL` | Backend API base URL |
-| `VITE_RPC_URL` | Base RPC endpoint for direct blockchain reads |
-| `VITE_CONTRACT_ADDRESS` | Deployed SurveyPoints contract address |
-| `VITE_EXPLORER_URL` | Block explorer base URL |
-| `VITE_DEFAULT_LOCALE` | Default language (`en` or `de`) |
+| Variable                | Description                                   |
+| ----------------------- | --------------------------------------------- |
+| `VITE_APP_NAME`         | Application name shown in the UI              |
+| `VITE_API_URL`          | Backend API base URL                          |
+| `VITE_RPC_URL`          | Base RPC endpoint for direct blockchain reads |
+| `VITE_CONTRACT_ADDRESS` | Deployed SurveyPoints contract address        |
+| `VITE_EXPLORER_URL`     | Block explorer base URL                       |
+| `VITE_DEFAULT_LOCALE`   | Default language (`en` or `de`)               |
 
 ```bash
 # Start the Vite dev server (port 5173)
@@ -141,9 +141,9 @@ pnpm dev:frontend
 
 Open [http://localhost:5173](http://localhost:5173) and import one of the test wallets:
 
-| Role | Private Key |
-|---|---|
-| **Admin** | `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80` |
+| Role                 | Private Key                                                          |
+| -------------------- | -------------------------------------------------------------------- |
+| **Admin**            | `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80` |
 | **Student** (15 pts) | `0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d` |
 
 Admin access is verified **on-chain** — only wallets with `ADMIN_ROLE` on the smart contract can access the Lecturers' Area. Admins can grant/revoke `ADMIN_ROLE` for other wallets directly from the dashboard.

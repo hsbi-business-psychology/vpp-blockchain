@@ -71,7 +71,10 @@ export default function DocsPage() {
   const allArticles = DOCS_CATEGORIES.flatMap(getArticlesByCategory)
   const currentIndex = article ? allArticles.findIndex((a) => a.slug === article.slug) : -1
   const prevArticle = currentIndex > 0 ? allArticles[currentIndex - 1] : null
-  const nextArticle = currentIndex >= 0 && currentIndex < allArticles.length - 1 ? allArticles[currentIndex + 1] : null
+  const nextArticle =
+    currentIndex >= 0 && currentIndex < allArticles.length - 1
+      ? allArticles[currentIndex + 1]
+      : null
 
   return (
     <div className="flex gap-8">
@@ -104,7 +107,9 @@ export default function DocsPage() {
                     {t(`docs.articles.${prevArticle.slug}.title`)}
                   </p>
                 </button>
-              ) : <div />}
+              ) : (
+                <div />
+              )}
               {nextArticle ? (
                 <button
                   onClick={() => handleNavigate(nextArticle.slug)}
@@ -115,7 +120,9 @@ export default function DocsPage() {
                     {t(`docs.articles.${nextArticle.slug}.title`)}
                   </p>
                 </button>
-              ) : <div />}
+              ) : (
+                <div />
+              )}
             </div>
           </div>
         ) : (

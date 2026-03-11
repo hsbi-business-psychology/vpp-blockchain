@@ -10,7 +10,13 @@ interface MetricsCardsProps {
   loading?: boolean
 }
 
-export function MetricsCards({ totalSurveys, activeSurveys, totalClaims, totalPoints, loading }: MetricsCardsProps) {
+export function MetricsCards({
+  totalSurveys,
+  activeSurveys,
+  totalClaims,
+  totalPoints,
+  loading,
+}: MetricsCardsProps) {
   const { t } = useTranslation()
 
   const metrics = [

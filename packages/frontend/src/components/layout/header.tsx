@@ -38,7 +38,9 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
     } else {
       document.documentElement.classList.remove('menu-open')
     }
-    return () => { document.documentElement.classList.remove('menu-open') }
+    return () => {
+      document.documentElement.classList.remove('menu-open')
+    }
   }, [menuOpen])
 
   function changeLanguage(code: string) {
@@ -55,8 +57,23 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
             className="flex items-center"
             aria-label={t('nav.home')}
           >
-            <img src="/hsbi-logo-light.png" alt="HSBI – Startseite" width={262} height={192} fetchPriority="high" className="h-12 w-auto dark:hidden md:h-16" />
-            <img src="/hsbi-logo-dark.png" alt="" width={262} height={192} fetchPriority="high" className="hidden h-12 w-auto dark:block md:h-16" aria-hidden="true" />
+            <img
+              src="/hsbi-logo-light.png"
+              alt="HSBI – Startseite"
+              width={262}
+              height={192}
+              fetchPriority="high"
+              className="h-12 w-auto dark:hidden md:h-16"
+            />
+            <img
+              src="/hsbi-logo-dark.png"
+              alt=""
+              width={262}
+              height={192}
+              fetchPriority="high"
+              className="hidden h-12 w-auto dark:block md:h-16"
+              aria-hidden="true"
+            />
           </button>
 
           <nav className="hidden items-center gap-1 md:flex" aria-label={t('nav.main')}>
@@ -89,13 +106,21 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
             aria-label={menuOpen ? t('nav.closeMenu') : t('nav.openMenu')}
             aria-expanded={menuOpen}
           >
-            {menuOpen ? <X className="size-5" aria-hidden="true" /> : <Menu className="size-5" aria-hidden="true" />}
+            {menuOpen ? (
+              <X className="size-5" aria-hidden="true" />
+            ) : (
+              <Menu className="size-5" aria-hidden="true" />
+            )}
           </button>
         </div>
       </header>
 
       {menuOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden bg-background md:hidden" role="dialog" aria-label={t('nav.mobileMenu')}>
+        <div
+          className="fixed inset-0 z-50 overflow-hidden bg-background md:hidden"
+          role="dialog"
+          aria-label={t('nav.mobileMenu')}
+        >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-5">
             <button
@@ -103,8 +128,21 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
               className="flex items-center"
               aria-label={t('nav.home')}
             >
-              <img src="/hsbi-logo-light.png" alt="HSBI – Startseite" width={262} height={192} className="h-12 w-auto dark:hidden" />
-              <img src="/hsbi-logo-dark.png" alt="" width={262} height={192} className="hidden h-12 w-auto dark:block" aria-hidden="true" />
+              <img
+                src="/hsbi-logo-light.png"
+                alt="HSBI – Startseite"
+                width={262}
+                height={192}
+                className="h-12 w-auto dark:hidden"
+              />
+              <img
+                src="/hsbi-logo-dark.png"
+                alt=""
+                width={262}
+                height={192}
+                className="hidden h-12 w-auto dark:block"
+                aria-hidden="true"
+              />
             </button>
             <button
               onClick={() => setMenuOpen(false)}
@@ -119,21 +157,23 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
           <nav className="px-4 pt-2" aria-label={t('nav.main')}>
             <div className="space-y-1">
               {navLinks.map(({ href, label, icon: Icon }) => {
-                const isActive = href === '/'
-                  ? currentPath === '/'
-                  : currentPath === href || currentPath.startsWith(href + '/')
+                const isActive =
+                  href === '/'
+                    ? currentPath === '/'
+                    : currentPath === href || currentPath.startsWith(href + '/')
                 return (
                   <button
                     key={href}
                     onClick={() => handleNav(href)}
                     aria-current={isActive ? 'page' : undefined}
                     className={`flex w-full items-center gap-3 rounded-lg px-4 py-3.5 text-left text-base font-semibold transition-colors ${
-                      isActive
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-foreground hover:bg-accent'
+                      isActive ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-accent'
                     }`}
                   >
-                    <Icon className={`size-5 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} aria-hidden="true" />
+                    <Icon
+                      className={`size-5 ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
+                      aria-hidden="true"
+                    />
                     {label}
                   </button>
                 )
@@ -148,7 +188,11 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
                   <Globe className="size-4" aria-hidden="true" />
                   {t('nav.language')}
                 </div>
-                <div className="flex overflow-hidden rounded-lg border border-border" role="radiogroup" aria-label={t('nav.language')}>
+                <div
+                  className="flex overflow-hidden rounded-lg border border-border"
+                  role="radiogroup"
+                  aria-label={t('nav.language')}
+                >
                   {LANGUAGES.map(({ code, label }) => (
                     <button
                       key={code}
@@ -170,12 +214,18 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
               {/* Theme */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5 text-sm font-medium text-muted-foreground">
-                  {theme === 'dark'
-                    ? <Moon className="size-4" aria-hidden="true" />
-                    : <Sun className="size-4" aria-hidden="true" />}
+                  {theme === 'dark' ? (
+                    <Moon className="size-4" aria-hidden="true" />
+                  ) : (
+                    <Sun className="size-4" aria-hidden="true" />
+                  )}
                   {t('nav.theme')}
                 </div>
-                <div className="flex overflow-hidden rounded-lg border border-border" role="radiogroup" aria-label={t('nav.theme')}>
+                <div
+                  className="flex overflow-hidden rounded-lg border border-border"
+                  role="radiogroup"
+                  aria-label={t('nav.theme')}
+                >
                   <button
                     role="radio"
                     aria-checked={theme === 'light'}

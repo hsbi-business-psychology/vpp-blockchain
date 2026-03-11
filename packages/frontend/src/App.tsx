@@ -47,7 +47,17 @@ function AppRoutes() {
   return (
     <AppLayout currentPath={location.pathname} onNavigate={(href) => navigate(href)}>
       <ScrollToTop />
-      <Suspense fallback={<div className="flex min-h-[50vh] items-center justify-center" role="status" aria-label={t('common.loading')}><div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
+      <Suspense
+        fallback={
+          <div
+            className="flex min-h-[50vh] items-center justify-center"
+            role="status"
+            aria-label={t('common.loading')}
+          >
+            <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          </div>
+        }
+      >
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/claim" element={<ClaimPage />} />

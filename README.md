@@ -52,22 +52,22 @@ VPP lets students earn points for completing surveys. Points are recorded on a p
 
 ## Monorepo Structure
 
-| Package | Description |
-|---|---|
-| [`packages/contracts`](packages/contracts) | Solidity smart contract with Hardhat tooling |
-| [`packages/backend`](packages/backend) | Node.js/Express API server (transaction relayer) |
-| [`packages/frontend`](packages/frontend) | React + Vite + shadcn/ui reference frontend |
+| Package                                    | Description                                      |
+| ------------------------------------------ | ------------------------------------------------ |
+| [`packages/contracts`](packages/contracts) | Solidity smart contract with Hardhat tooling     |
+| [`packages/backend`](packages/backend)     | Node.js/Express API server (transaction relayer) |
+| [`packages/frontend`](packages/frontend)   | React + Vite + shadcn/ui reference frontend      |
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Smart Contract | Solidity 0.8.24, Hardhat, OpenZeppelin, TypeChain |
-| Backend | Node.js 20+, Express, ethers.js v6, TypeScript |
-| Frontend | React 19, Vite 6, TypeScript, Tailwind CSS v4, shadcn/ui, i18next |
-| Wallet | Browser wallet (built-in) or MetaMask (optional) |
-| Testing | Hardhat + Chai, Vitest, React Testing Library |
-| CI/CD | GitHub Actions |
+| Layer          | Technology                                                        |
+| -------------- | ----------------------------------------------------------------- |
+| Smart Contract | Solidity 0.8.24, Hardhat, OpenZeppelin, TypeChain                 |
+| Backend        | Node.js 20+, Express, ethers.js v6, TypeScript                    |
+| Frontend       | React 19, Vite 6, TypeScript, Tailwind CSS v4, shadcn/ui, i18next |
+| Wallet         | Browser wallet (built-in) or MetaMask (optional)                  |
+| Testing        | Hardhat + Chai, Vitest, React Testing Library                     |
+| CI/CD          | GitHub Actions                                                    |
 
 ## Quick Start
 
@@ -112,9 +112,9 @@ The deploy script creates **3 test surveys** and awards **15 points** to a test 
 
 #### Test Accounts (Hardhat Defaults)
 
-| Role | Address | Private Key |
-|---|---|---|
-| **Admin** (ADMIN_ROLE) | `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266` | `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80` |
+| Role                     | Address                                      | Private Key                                                          |
+| ------------------------ | -------------------------------------------- | -------------------------------------------------------------------- |
+| **Admin** (ADMIN_ROLE)   | `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266` | `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80` |
 | **Student** (has 15 pts) | `0x70997970C51812dc3A010C7d01b50e0d17dc79C8` | `0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d` |
 
 #### Testing the Admin Flow
@@ -133,11 +133,11 @@ The deploy script creates **3 test surveys** and awards **15 points** to a test 
 
 #### Test Secrets
 
-| Survey | Secret | Points |
-|---|---|---|
-| #1 | `test-secret-alpha` | 5 |
-| #2 | `test-secret-beta` | 10 |
-| #3 | `test-secret-gamma` | 3 |
+| Survey | Secret              | Points |
+| ------ | ------------------- | ------ |
+| #1     | `test-secret-alpha` | 5      |
+| #2     | `test-secret-beta`  | 10     |
+| #3     | `test-secret-gamma` | 3      |
 
 ## Documentation
 
@@ -184,12 +184,12 @@ Interact with the verified smart contract on Base directly using any Ethereum-co
 
 VPP runs on Base L2, where transaction costs are minimal:
 
-| Operation | Estimated Cost |
-|---|---|
-| Contract deployment | ~$0.50 |
-| Register a survey | ~$0.005 |
-| Award points (claim) | ~$0.002 |
-| Read points | Free |
+| Operation            | Estimated Cost |
+| -------------------- | -------------- |
+| Contract deployment  | ~$0.50         |
+| Register a survey    | ~$0.005        |
+| Award points (claim) | ~$0.002        |
+| Read points          | Free           |
 
 A single $10 deposit covers thousands of claims across multiple semesters.
 

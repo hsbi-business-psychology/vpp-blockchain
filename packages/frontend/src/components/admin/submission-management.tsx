@@ -88,9 +88,7 @@ export function SubmissionManagement() {
       setResult(updated)
     } catch (err) {
       const key =
-        confirmAction === 'mark'
-          ? 'admin.submissions.markError'
-          : 'admin.submissions.unmarkError'
+        confirmAction === 'mark' ? 'admin.submissions.markError' : 'admin.submissions.unmarkError'
       toast.error(err instanceof Error ? err.message : t(key))
     } finally {
       setActionLoading(false)
@@ -139,7 +137,11 @@ export function SubmissionManagement() {
             </Button>
           </div>
 
-          {searchError && <p className="text-sm text-destructive" role="alert">{searchError}</p>}
+          {searchError && (
+            <p className="text-sm text-destructive" role="alert">
+              {searchError}
+            </p>
+          )}
 
           {result && (
             <div className="rounded-lg border border-border">
@@ -151,7 +153,9 @@ export function SubmissionManagement() {
                     }`}
                   >
                     <GraduationCap
-                      className={`size-5 ${result.submitted ? 'text-green-500' : 'text-muted-foreground'}`}
+                      className={`size-5 ${
+                        result.submitted ? 'text-green-500' : 'text-muted-foreground'
+                      }`}
                     />
                   </div>
                   <div className="min-w-0">
@@ -160,11 +164,17 @@ export function SubmissionManagement() {
                       <span className="flex items-center gap-1 text-sm">
                         <Award className="size-3.5 text-primary" />
                         <span className="font-semibold">{result.totalPoints}</span>
-                        <span className="text-muted-foreground">{t('admin.submissions.points')}</span>
+                        <span className="text-muted-foreground">
+                          {t('admin.submissions.points')}
+                        </span>
                       </span>
                       <Badge
                         variant={result.submitted ? 'default' : 'secondary'}
-                        className={`text-xs ${result.submitted ? 'bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/20' : ''}`}
+                        className={`text-xs ${
+                          result.submitted
+                            ? 'bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/20'
+                            : ''
+                        }`}
                       >
                         {result.submitted ? (
                           <CheckCircle2 className="mr-1 size-3" />
@@ -181,11 +191,7 @@ export function SubmissionManagement() {
 
                 <div className="shrink-0">
                   {result.submitted ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setConfirmAction('unmark')}
-                    >
+                    <Button variant="outline" size="sm" onClick={() => setConfirmAction('unmark')}>
                       <Undo2 className="mr-1.5 size-3.5" />
                       {t('admin.submissions.unmarkSubmitted')}
                     </Button>
@@ -247,16 +253,18 @@ export function SubmissionManagement() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmAction(null)} disabled={actionLoading}>
+            <Button
+              variant="outline"
+              onClick={() => setConfirmAction(null)}
+              disabled={actionLoading}
+            >
               {t('common.cancel')}
             </Button>
             <Button
               onClick={handleConfirm}
               disabled={actionLoading}
               className={
-                confirmAction === 'mark'
-                  ? 'bg-green-600 hover:bg-green-700 text-white'
-                  : ''
+                confirmAction === 'mark' ? 'bg-green-600 hover:bg-green-700 text-white' : ''
               }
               variant={confirmAction === 'unmark' ? 'default' : undefined}
             >

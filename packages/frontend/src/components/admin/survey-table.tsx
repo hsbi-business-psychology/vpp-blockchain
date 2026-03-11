@@ -24,7 +24,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 
 interface SurveyRow {
@@ -54,7 +61,12 @@ const statusVariant: Record<string, string> = {
   inactive: 'bg-destructive/10 text-destructive border-destructive/20',
 }
 
-export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate, onSelect }: SurveyTableProps) {
+export function SurveyTable({
+  surveys,
+  onDownloadTemplate,
+  onDeactivate,
+  onSelect,
+}: SurveyTableProps) {
   const { t } = useTranslation()
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
@@ -86,9 +98,7 @@ export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate, onSelec
   if (safePage !== page) setPage(safePage)
 
   if (surveys.length === 0) {
-    return (
-      <p className="py-8 text-center text-sm text-muted-foreground">{t('common.noResults')}</p>
-    )
+    return <p className="py-8 text-center text-sm text-muted-foreground">{t('common.noResults')}</p>
   }
 
   const getStatus = (s: SurveyRow) => (s.active ? 'active' : 'inactive')
@@ -97,7 +107,13 @@ export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate, onSelec
     <div className="space-y-3">
       {/* ─── Inline Filters (same line, compact) ─── */}
       <div className="flex flex-wrap items-center gap-2">
-        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as StatusFilter); setPage(0) }}>
+        <Select
+          value={statusFilter}
+          onValueChange={(v) => {
+            setStatusFilter(v as StatusFilter)
+            setPage(0)
+          }}
+        >
           <SelectTrigger size="sm">
             <Filter className="size-3.5 text-muted-foreground" />
             <SelectValue />
@@ -109,7 +125,13 @@ export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate, onSelec
           </SelectContent>
         </Select>
 
-        <Select value={sortOrder} onValueChange={(v) => { setSortOrder(v as SortOrder); setPage(0) }}>
+        <Select
+          value={sortOrder}
+          onValueChange={(v) => {
+            setSortOrder(v as SortOrder)
+            setPage(0)
+          }}
+        >
           <SelectTrigger size="sm">
             <ArrowUpDown className="size-3.5 text-muted-foreground" />
             <SelectValue />
@@ -148,7 +170,9 @@ export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate, onSelec
                       className={cn(onSelect && 'cursor-pointer hover:bg-muted/50')}
                       onClick={() => onSelect?.(survey.surveyId)}
                     >
-                      <TableCell className="font-mono text-muted-foreground">{survey.surveyId}</TableCell>
+                      <TableCell className="font-mono text-muted-foreground">
+                        {survey.surveyId}
+                      </TableCell>
                       <TableCell className="font-medium">
                         {survey.title || `Survey #${survey.surveyId}`}
                       </TableCell>
@@ -237,7 +261,9 @@ export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate, onSelec
                     </div>
                     <div>
                       <p className="text-muted-foreground">{t('admin.surveys.table.created')}</p>
-                      <p className="font-medium">{new Date(survey.registeredAt).toLocaleDateString()}</p>
+                      <p className="font-medium">
+                        {new Date(survey.registeredAt).toLocaleDateString()}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -251,7 +277,13 @@ export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate, onSelec
               {t('admin.surveys.pagination.showing', { from, to, total: filtered.length })}
             </p>
             <div className="flex items-center gap-2">
-              <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setPage(0) }}>
+              <Select
+                value={String(pageSize)}
+                onValueChange={(v) => {
+                  setPageSize(Number(v))
+                  setPage(0)
+                }}
+              >
                 <SelectTrigger size="sm">
                   <SelectValue />
                 </SelectTrigger>

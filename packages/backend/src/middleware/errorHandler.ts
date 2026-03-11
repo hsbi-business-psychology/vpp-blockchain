@@ -12,11 +12,23 @@ export class AppError extends Error {
 }
 
 const REVERT_MAP: Record<string, { status: number; code: string; message: string }> = {
-  AlreadyClaimed: { status: 409, code: 'ALREADY_CLAIMED', message: 'This wallet has already claimed this survey' },
+  AlreadyClaimed: {
+    status: 409,
+    code: 'ALREADY_CLAIMED',
+    message: 'This wallet has already claimed this survey',
+  },
   SurveyNotActive: { status: 400, code: 'SURVEY_INACTIVE', message: 'Survey is no longer active' },
-  MaxClaimsReached: { status: 400, code: 'MAX_CLAIMS_REACHED', message: 'Maximum number of claims reached for this survey' },
+  MaxClaimsReached: {
+    status: 400,
+    code: 'MAX_CLAIMS_REACHED',
+    message: 'Maximum number of claims reached for this survey',
+  },
   InvalidSecret: { status: 400, code: 'INVALID_SECRET', message: 'Invalid survey secret' },
-  SurveyAlreadyExists: { status: 409, code: 'SURVEY_EXISTS', message: 'A survey with this ID already exists' },
+  SurveyAlreadyExists: {
+    status: 409,
+    code: 'SURVEY_EXISTS',
+    message: 'A survey with this ID already exists',
+  },
   InvalidSurveyId: { status: 400, code: 'INVALID_SURVEY_ID', message: 'Invalid survey ID' },
   InvalidPoints: { status: 400, code: 'INVALID_POINTS', message: 'Invalid point value' },
 }

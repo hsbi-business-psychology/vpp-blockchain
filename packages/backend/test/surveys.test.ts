@@ -35,16 +35,14 @@ describe('POST /api/surveys', () => {
       hash: '0xtxhash456',
     } as unknown as ethers.TransactionReceipt)
 
-    const res = await request(app)
-      .post('/api/surveys')
-      .send({
-        surveyId: 42,
-        secret: 'VPP-secret-42',
-        points: 2,
-        maxClaims: 100,
-        adminSignature,
-        adminMessage,
-      })
+    const res = await request(app).post('/api/surveys').send({
+      surveyId: 42,
+      secret: 'VPP-secret-42',
+      points: 2,
+      maxClaims: 100,
+      adminSignature,
+      adminMessage,
+    })
 
     expect(res.status).toBe(201)
     expect(res.body.success).toBe(true)
@@ -60,30 +58,26 @@ describe('POST /api/surveys', () => {
 
     vi.mocked(blockchain.isAdmin).mockResolvedValue(false)
 
-    const res = await request(app)
-      .post('/api/surveys')
-      .send({
-        surveyId: 42,
-        secret: 'VPP-secret-42',
-        points: 2,
-        maxClaims: 100,
-        adminSignature,
-        adminMessage,
-      })
+    const res = await request(app).post('/api/surveys').send({
+      surveyId: 42,
+      secret: 'VPP-secret-42',
+      points: 2,
+      maxClaims: 100,
+      adminSignature,
+      adminMessage,
+    })
 
     expect(res.status).toBe(403)
     expect(res.body.error).toBe('FORBIDDEN')
   })
 
   it('should reject a request without signature', async () => {
-    const res = await request(app)
-      .post('/api/surveys')
-      .send({
-        surveyId: 42,
-        secret: 'VPP-secret-42',
-        points: 2,
-        maxClaims: 100,
-      })
+    const res = await request(app).post('/api/surveys').send({
+      surveyId: 42,
+      secret: 'VPP-secret-42',
+      points: 2,
+      maxClaims: 100,
+    })
 
     expect(res.status).toBe(401)
     expect(res.body.error).toBe('UNAUTHORIZED')

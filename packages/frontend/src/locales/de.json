@@ -413,12 +413,20 @@
     "lastUpdated": "Stand: 14. Oktober 2025",
     "provider": {
       "title": "Anbieter",
-      "address": ["Hochschule Bielefeld", "Fachbereich Wirtschaft", "Interaktion 1", "D-33619 Bielefeld", "Deutschland", "Postfach: 10 11 13", "D-33511 Bielefeld"],
+      "address": [
+        "Hochschule Bielefeld",
+        "Fachbereich Wirtschaft",
+        "Interaktion 1",
+        "D-33619 Bielefeld",
+        "Deutschland",
+        "Postfach: 10 11 13",
+        "D-33511 Bielefeld"
+      ],
       "contact": [
-        {"label": "Telefon", "value": "+49 521 106-01", "href": "tel:+4952110601"},
-        {"label": "Telefax", "value": "+49 521 106-7790", "href": "tel:+495211067790"},
-        {"label": "E-Mail", "value": "info@hsbi.de", "href": "mailto:info@hsbi.de"},
-        {"label": "Web", "value": "www.hsbi.de", "href": "https://www.hsbi.de"}
+        { "label": "Telefon", "value": "+49 521 106-01", "href": "tel:+4952110601" },
+        { "label": "Telefax", "value": "+49 521 106-7790", "href": "tel:+495211067790" },
+        { "label": "E-Mail", "value": "info@hsbi.de", "href": "mailto:info@hsbi.de" },
+        { "label": "Web", "value": "www.hsbi.de", "href": "https://www.hsbi.de" }
       ]
     },
     "legalForm": {
@@ -439,7 +447,13 @@
     },
     "contentResp": {
       "title": "Inhaltlich Verantwortlich i.S.d. § 18 Abs. 2 MStV",
-      "address": ["Prof. Dr. Alexander Haubrock", "Hochschule Bielefeld – HSBI", "Interaktion 1", "D-33619 Bielefeld", "Deutschland"]
+      "address": [
+        "Prof. Dr. Alexander Haubrock",
+        "Hochschule Bielefeld – HSBI",
+        "Interaktion 1",
+        "D-33619 Bielefeld",
+        "Deutschland"
+      ]
     },
     "copyright": {
       "title": "Copyright",
@@ -472,13 +486,25 @@
       "controller": {
         "title": "Verantwortliche Stelle",
         "text": "Verantwortlich im Sinne der DSGVO ist:",
-        "address": ["Prof. Dr. rer. nat. Axel Schneider", "Hochschule Bielefeld – HSBI", "Interaktion 1", "D-33619 Bielefeld", "Deutschland"],
+        "address": [
+          "Prof. Dr. rer. nat. Axel Schneider",
+          "Hochschule Bielefeld – HSBI",
+          "Interaktion 1",
+          "D-33619 Bielefeld",
+          "Deutschland"
+        ],
         "email": "vpstunden@hsbi.de"
       },
       "serverLogs": {
         "title": "Server-Logdateien",
         "text": "Beim Aufruf unserer Website werden durch den Hosting-Provider automatisch Informationen in sog. Server-Logdateien gespeichert.",
-        "items": ["Datum und Uhrzeit des Abrufs", "IP-Adresse des anfragenden Geräts", "User-Agent (Browser und ggf. Betriebssystem)", "aufgerufene URL bzw. Ressource", "HTTP-Statuscode"],
+        "items": [
+          "Datum und Uhrzeit des Abrufs",
+          "IP-Adresse des anfragenden Geräts",
+          "User-Agent (Browser und ggf. Betriebssystem)",
+          "aufgerufene URL bzw. Ressource",
+          "HTTP-Statuscode"
+        ],
         "legal": "Die Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der sicheren Bereitstellung der Website)."
       },
       "cookies": {
@@ -500,13 +526,34 @@
         "title": "Ihre Rechte",
         "text": "Sie haben gegenüber uns folgende Rechte hinsichtlich der Sie betreffenden personenbezogenen Daten:",
         "items": [
-          {"name": "Auskunft (Art. 15 DSGVO)", "desc": "Sie erhalten Auskunft über die verarbeiteten Daten."},
-          {"name": "Berichtigung (Art. 16 DSGVO)", "desc": "Sie können die Berichtigung unrichtiger Daten verlangen."},
-          {"name": "Löschung (Art. 17 DSGVO)", "desc": "Sie können die Löschung Ihrer Daten verlangen."},
-          {"name": "Einschränkung (Art. 18 DSGVO)", "desc": "Sie können die Einschränkung der Verarbeitung verlangen."},
-          {"name": "Datenübertragbarkeit (Art. 20 DSGVO)", "desc": "Sie erhalten die Daten in einem maschinenlesbaren Format."},
-          {"name": "Widerspruch (Art. 21 DSGVO)", "desc": "Sie können gegen Verarbeitungen Widerspruch einlegen."},
-          {"name": "Widerruf (Art. 7 Abs. 3 DSGVO)", "desc": "Sie können eine erteilte Einwilligung jederzeit widerrufen."}
+          {
+            "name": "Auskunft (Art. 15 DSGVO)",
+            "desc": "Sie erhalten Auskunft über die verarbeiteten Daten."
+          },
+          {
+            "name": "Berichtigung (Art. 16 DSGVO)",
+            "desc": "Sie können die Berichtigung unrichtiger Daten verlangen."
+          },
+          {
+            "name": "Löschung (Art. 17 DSGVO)",
+            "desc": "Sie können die Löschung Ihrer Daten verlangen."
+          },
+          {
+            "name": "Einschränkung (Art. 18 DSGVO)",
+            "desc": "Sie können die Einschränkung der Verarbeitung verlangen."
+          },
+          {
+            "name": "Datenübertragbarkeit (Art. 20 DSGVO)",
+            "desc": "Sie erhalten die Daten in einem maschinenlesbaren Format."
+          },
+          {
+            "name": "Widerspruch (Art. 21 DSGVO)",
+            "desc": "Sie können gegen Verarbeitungen Widerspruch einlegen."
+          },
+          {
+            "name": "Widerruf (Art. 7 Abs. 3 DSGVO)",
+            "desc": "Sie können eine erteilte Einwilligung jederzeit widerrufen."
+          }
         ],
         "complaint": "Zudem haben Sie das Recht, sich bei einer Datenschutzaufsichtsbehörde zu beschweren."
       },

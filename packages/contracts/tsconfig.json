@@ -4,10 +4,5 @@
     "outDir": "dist",
     "rootDir": "."
   },
-  "include": [
-    "hardhat.config.ts",
-    "scripts/**/*.ts",
-    "test/**/*.ts",
-    "typechain-types/**/*.ts"
-  ]
+  "include": ["hardhat.config.ts", "scripts/**/*.ts", "test/**/*.ts", "typechain-types/**/*.ts"]
 }

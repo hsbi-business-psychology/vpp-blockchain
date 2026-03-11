@@ -56,9 +56,7 @@ export interface SurveyInfoRaw {
   title: string
 }
 
-export async function deactivateSurvey(
-  surveyId: number,
-): Promise<ethers.TransactionReceipt> {
+export async function deactivateSurvey(surveyId: number): Promise<ethers.TransactionReceipt> {
   const tx = await contract.deactivateSurvey(surveyId)
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
@@ -101,9 +99,7 @@ export interface PointsAwardedEvent {
   timestamp: number
 }
 
-export async function getPointsAwardedEvents(
-  walletAddress: string,
-): Promise<PointsAwardedEvent[]> {
+export async function getPointsAwardedEvents(walletAddress: string): Promise<PointsAwardedEvent[]> {
   const fromBlock = config.contractDeployBlock || 0
   const filter = readOnlyContract.filters.PointsAwarded(walletAddress)
   const events = await readOnlyContract.queryFilter(filter, fromBlock)

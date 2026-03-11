@@ -7,12 +7,10 @@ import { config } from '../config.js'
  * Only the goodbye page is customised — it shows a styled "claim your points"
  * button and auto-redirects to the VPP claim URL after 8 seconds.
  */
-export function generateSoSciTemplate(
-  surveyId: number,
-  secret: string,
-  points: number,
-): string {
-  const claimUrl = `${config.frontendUrl}/claim?surveyId=${surveyId}&secret=${encodeURIComponent(secret)}`
+export function generateSoSciTemplate(surveyId: number, secret: string, points: number): string {
+  const claimUrl = `${config.frontendUrl}/claim?surveyId=${surveyId}&secret=${encodeURIComponent(
+    secret,
+  )}`
   const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19)
   const pointLabel = points > 1 ? 'Versuchspersonenpunkte' : 'Versuchspersonenpunkt'
 

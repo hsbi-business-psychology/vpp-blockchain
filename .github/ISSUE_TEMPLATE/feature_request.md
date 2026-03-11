@@ -1,9 +1,9 @@
 ---
 name: Feature Request
 about: Suggest a new feature or improvement
-title: "feat: "
+title: 'feat: '
 labels: enhancement
-assignees: ""
+assignees: ''
 ---
 
 ## Problem
@@ -26,7 +26,7 @@ Describe any alternative solutions or features you've considered.
 - [ ] `packages/sdk`
 - [ ] `packages/backend`
 - [ ] `packages/frontend`
-- [ ] Other: ___
+- [ ] Other: \_\_\_
 
 ## Additional Context
 

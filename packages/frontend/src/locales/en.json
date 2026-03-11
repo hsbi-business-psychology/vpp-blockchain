@@ -413,12 +413,20 @@
     "lastUpdated": "Last updated: 14 October 2025",
     "provider": {
       "title": "Provider",
-      "address": ["Hochschule Bielefeld", "Faculty of Business", "Interaktion 1", "D-33619 Bielefeld", "Germany", "P.O. Box: 10 11 13", "D-33511 Bielefeld"],
+      "address": [
+        "Hochschule Bielefeld",
+        "Faculty of Business",
+        "Interaktion 1",
+        "D-33619 Bielefeld",
+        "Germany",
+        "P.O. Box: 10 11 13",
+        "D-33511 Bielefeld"
+      ],
       "contact": [
-        {"label": "Phone", "value": "+49 521 106-01", "href": "tel:+4952110601"},
-        {"label": "Fax", "value": "+49 521 106-7790", "href": "tel:+495211067790"},
-        {"label": "Email", "value": "info@hsbi.de", "href": "mailto:info@hsbi.de"},
-        {"label": "Website", "value": "www.hsbi.de", "href": "https://www.hsbi.de"}
+        { "label": "Phone", "value": "+49 521 106-01", "href": "tel:+4952110601" },
+        { "label": "Fax", "value": "+49 521 106-7790", "href": "tel:+495211067790" },
+        { "label": "Email", "value": "info@hsbi.de", "href": "mailto:info@hsbi.de" },
+        { "label": "Website", "value": "www.hsbi.de", "href": "https://www.hsbi.de" }
       ]
     },
     "legalForm": {
@@ -439,7 +447,13 @@
     },
     "contentResp": {
       "title": "Content Responsibility (Sec. 18(2) MStV)",
-      "address": ["Prof. Dr. Alexander Haubrock", "Hochschule Bielefeld – HSBI", "Interaktion 1", "D-33619 Bielefeld", "Germany"]
+      "address": [
+        "Prof. Dr. Alexander Haubrock",
+        "Hochschule Bielefeld – HSBI",
+        "Interaktion 1",
+        "D-33619 Bielefeld",
+        "Germany"
+      ]
     },
     "copyright": {
       "title": "Copyright",
@@ -472,13 +486,25 @@
       "controller": {
         "title": "Controller",
         "text": "The controller within the meaning of the GDPR is:",
-        "address": ["Prof. Dr. rer. nat. Axel Schneider", "Hochschule Bielefeld – HSBI", "Interaktion 1", "D-33619 Bielefeld", "Germany"],
+        "address": [
+          "Prof. Dr. rer. nat. Axel Schneider",
+          "Hochschule Bielefeld – HSBI",
+          "Interaktion 1",
+          "D-33619 Bielefeld",
+          "Germany"
+        ],
         "email": "vpstunden@hsbi.de"
       },
       "serverLogs": {
         "title": "Server Log Files",
         "text": "When accessing our website, the hosting provider automatically stores information in server log files.",
-        "items": ["Date and time of access", "IP address of the requesting device", "User agent (browser and operating system)", "Requested URL or resource", "HTTP status code"],
+        "items": [
+          "Date and time of access",
+          "IP address of the requesting device",
+          "User agent (browser and operating system)",
+          "Requested URL or resource",
+          "HTTP status code"
+        ],
         "legal": "The legal basis is Art. 6(1)(f) GDPR (legitimate interest in the secure provision of the website)."
       },
       "cookies": {
@@ -500,13 +526,28 @@
         "title": "Your Rights",
         "text": "You have the following rights regarding your personal data:",
         "items": [
-          {"name": "Information (Art. 15 GDPR)", "desc": "You may request information about your processed data."},
-          {"name": "Rectification (Art. 16 GDPR)", "desc": "You may request the correction of inaccurate data."},
-          {"name": "Erasure (Art. 17 GDPR)", "desc": "You may request the deletion of your data."},
-          {"name": "Restriction (Art. 18 GDPR)", "desc": "You may request the restriction of processing."},
-          {"name": "Data Portability (Art. 20 GDPR)", "desc": "You may receive your data in a machine-readable format."},
-          {"name": "Objection (Art. 21 GDPR)", "desc": "You may object to processing."},
-          {"name": "Withdrawal (Art. 7(3) GDPR)", "desc": "You may withdraw consent at any time."}
+          {
+            "name": "Information (Art. 15 GDPR)",
+            "desc": "You may request information about your processed data."
+          },
+          {
+            "name": "Rectification (Art. 16 GDPR)",
+            "desc": "You may request the correction of inaccurate data."
+          },
+          {
+            "name": "Erasure (Art. 17 GDPR)",
+            "desc": "You may request the deletion of your data."
+          },
+          {
+            "name": "Restriction (Art. 18 GDPR)",
+            "desc": "You may request the restriction of processing."
+          },
+          {
+            "name": "Data Portability (Art. 20 GDPR)",
+            "desc": "You may receive your data in a machine-readable format."
+          },
+          { "name": "Objection (Art. 21 GDPR)", "desc": "You may object to processing." },
+          { "name": "Withdrawal (Art. 7(3) GDPR)", "desc": "You may withdraw consent at any time." }
         ],
         "complaint": "You also have the right to lodge a complaint with a data protection supervisory authority."
       },

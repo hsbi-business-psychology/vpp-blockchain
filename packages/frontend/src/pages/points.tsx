@@ -48,11 +48,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useWallet } from '@/hooks/use-wallet'
 import { useBlockchain } from '@/hooks/use-blockchain'
 import { getTxUrl } from '@/lib/config'
@@ -62,8 +58,24 @@ import { ethers } from 'ethers'
 
 export default function PointsPage() {
   const { t } = useTranslation()
-  const { wallet, hasWallet, isMetaMask, hasMetaMask, loading: walletLoading, create, importKey, connectMetaMask, remove, downloadKey } = useWallet()
-  const { getTotalPoints, getClaimHistory, isWalletSubmitted: checkSubmitted, loading } = useBlockchain()
+  const {
+    wallet,
+    hasWallet,
+    isMetaMask,
+    hasMetaMask,
+    loading: walletLoading,
+    create,
+    importKey,
+    connectMetaMask,
+    remove,
+    downloadKey,
+  } = useWallet()
+  const {
+    getTotalPoints,
+    getClaimHistory,
+    isWalletSubmitted: checkSubmitted,
+    loading,
+  } = useBlockchain()
 
   const [totalPoints, setTotalPoints] = useState<number | null>(null)
   const [walletSubmitted, setWalletSubmitted] = useState(false)
@@ -200,10 +212,7 @@ export default function PointsPage() {
     setSearchError('')
     setSearchLoading(true)
     try {
-      const [pts, hist] = await Promise.all([
-        getTotalPoints(addr),
-        getClaimHistory(addr),
-      ])
+      const [pts, hist] = await Promise.all([getTotalPoints(addr), getClaimHistory(addr)])
       setSearchPoints(pts)
       setSearchHistory(hist)
     } catch {
@@ -244,7 +253,9 @@ export default function PointsPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold">{t('wallet.browser.title')}</p>
-                  <Badge variant="secondary" className="mt-0.5 text-[10px]">{t('wallet.browser.tag')}</Badge>
+                  <Badge variant="secondary" className="mt-0.5 text-[10px]">
+                    {t('wallet.browser.tag')}
+                  </Badge>
                 </div>
               </div>
               <p className="hidden flex-1 text-sm leading-relaxed text-muted-foreground md:block">
@@ -266,7 +277,12 @@ export default function PointsPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold">{t('wallet.metamask.title')}</p>
-                  <Badge variant="outline" className="mt-0.5 border-orange-500/30 text-[10px] text-orange-600 dark:text-orange-400">{t('wallet.metamask.tag')}</Badge>
+                  <Badge
+                    variant="outline"
+                    className="mt-0.5 border-orange-500/30 text-[10px] text-orange-600 dark:text-orange-400"
+                  >
+                    {t('wallet.metamask.tag')}
+                  </Badge>
                 </div>
               </div>
               <p className="hidden flex-1 text-sm leading-relaxed text-muted-foreground md:block">
@@ -274,7 +290,12 @@ export default function PointsPage() {
               </p>
               <div className="ml-auto shrink-0 md:ml-0 md:mt-3">
                 {hasMetaMask ? (
-                  <Button variant="outline" onClick={handleConnectMetaMask} size="sm" className="md:w-full">
+                  <Button
+                    variant="outline"
+                    onClick={handleConnectMetaMask}
+                    size="sm"
+                    className="md:w-full"
+                  >
                     <Shield className="mr-2 size-4" aria-hidden="true" />
                     {t('wallet.metamask.button')}
                   </Button>
@@ -285,7 +306,12 @@ export default function PointsPage() {
                     </Button>
                     <p className="hidden text-center text-xs text-muted-foreground md:block">
                       {t('wallet.metamask.installHint')}{' '}
-                      <a href="https://metamask.io" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                      <a
+                        href="https://metamask.io"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
                         {t('wallet.metamask.installLink')}
                       </a>
                     </p>
@@ -302,14 +328,24 @@ export default function PointsPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold">{t('wallet.import.title')}</p>
-                  <Badge variant="secondary" className="mt-0.5 text-[10px]">{t('wallet.import.tag')}</Badge>
+                  <Badge variant="secondary" className="mt-0.5 text-[10px]">
+                    {t('wallet.import.tag')}
+                  </Badge>
                 </div>
               </div>
               <p className="hidden flex-1 text-sm leading-relaxed text-muted-foreground md:block">
                 {t('wallet.import.description')}
               </p>
               <div className="ml-auto shrink-0 md:ml-0 md:mt-3">
-                <Button variant="outline" onClick={() => { setImportValue(''); setShowImportDialog(true) }} size="sm" className="md:w-full">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setImportValue('')
+                    setShowImportDialog(true)
+                  }}
+                  size="sm"
+                  className="md:w-full"
+                >
                   <Upload className="mr-2 size-4" aria-hidden="true" />
                   {t('wallet.import.button')}
                 </Button>
@@ -324,8 +360,16 @@ export default function PointsPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className={`flex size-9 shrink-0 items-center justify-center rounded-md ${isMetaMask ? 'bg-orange-500/10' : 'bg-primary/10'}`}>
-                    {isMetaMask ? <Shield className="size-4 text-orange-500" aria-hidden="true" /> : <Wallet className="size-4 text-primary" aria-hidden="true" />}
+                  <div
+                    className={`flex size-9 shrink-0 items-center justify-center rounded-md ${
+                      isMetaMask ? 'bg-orange-500/10' : 'bg-primary/10'
+                    }`}
+                  >
+                    {isMetaMask ? (
+                      <Shield className="size-4 text-orange-500" aria-hidden="true" />
+                    ) : (
+                      <Wallet className="size-4 text-primary" aria-hidden="true" />
+                    )}
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
@@ -341,9 +385,17 @@ export default function PointsPage() {
                       <button
                         onClick={() => handleCopy(wallet!.address)}
                         className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                        aria-label={copied ? t('common.copied', 'Kopiert') : t('wallet.copy', 'Adresse kopieren')}
+                        aria-label={
+                          copied
+                            ? t('common.copied', 'Kopiert')
+                            : t('wallet.copy', 'Adresse kopieren')
+                        }
                       >
-                        {copied ? <Check className="size-3" aria-hidden="true" /> : <Copy className="size-3" aria-hidden="true" />}
+                        {copied ? (
+                          <Check className="size-3" aria-hidden="true" />
+                        ) : (
+                          <Copy className="size-3" aria-hidden="true" />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -357,7 +409,11 @@ export default function PointsPage() {
                   aria-label={t('wallet.manage')}
                 >
                   <span className="hidden sm:inline">{t('wallet.manage')}</span>
-                  {walletExpanded ? <ChevronUp className="size-4 sm:ml-1 sm:size-3.5" aria-hidden="true" /> : <ChevronDown className="size-4 sm:ml-1 sm:size-3.5" aria-hidden="true" />}
+                  {walletExpanded ? (
+                    <ChevronUp className="size-4 sm:ml-1 sm:size-3.5" aria-hidden="true" />
+                  ) : (
+                    <ChevronDown className="size-4 sm:ml-1 sm:size-3.5" aria-hidden="true" />
+                  )}
                 </Button>
               </div>
 
@@ -372,8 +428,22 @@ export default function PointsPage() {
                       <code className="flex-1 truncate rounded-md bg-muted px-3 py-2 font-mono text-xs">
                         {wallet!.address}
                       </code>
-                      <Button variant="ghost" size="icon" className="size-8" onClick={() => handleCopy(wallet!.address)} aria-label={copied ? t('common.copied', 'Kopiert') : t('wallet.copy', 'Adresse kopieren')}>
-                        {copied ? <Check className="size-3.5" aria-hidden="true" /> : <Copy className="size-3.5" aria-hidden="true" />}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        onClick={() => handleCopy(wallet!.address)}
+                        aria-label={
+                          copied
+                            ? t('common.copied', 'Kopiert')
+                            : t('wallet.copy', 'Adresse kopieren')
+                        }
+                      >
+                        {copied ? (
+                          <Check className="size-3.5" aria-hidden="true" />
+                        ) : (
+                          <Copy className="size-3.5" aria-hidden="true" />
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -393,8 +463,22 @@ export default function PointsPage() {
                             <code className="flex-1 truncate rounded-md bg-destructive/5 border border-destructive/20 px-3 py-2 font-mono text-xs">
                               {wallet!.privateKey}
                             </code>
-                            <Button variant="ghost" size="icon" className="size-8" onClick={() => handleCopy(wallet!.privateKey)} aria-label={copied ? t('common.copied', 'Kopiert') : t('wallet.copyKey', 'Private Key kopieren')}>
-                              {copied ? <Check className="size-3.5" aria-hidden="true" /> : <Copy className="size-3.5" aria-hidden="true" />}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-8"
+                              onClick={() => handleCopy(wallet!.privateKey)}
+                              aria-label={
+                                copied
+                                  ? t('common.copied', 'Kopiert')
+                                  : t('wallet.copyKey', 'Private Key kopieren')
+                              }
+                            >
+                              {copied ? (
+                                <Check className="size-3.5" aria-hidden="true" />
+                              ) : (
+                                <Copy className="size-3.5" aria-hidden="true" />
+                              )}
                             </Button>
                           </div>
                           <Button variant="outline" size="sm" onClick={handleHideKey}>
@@ -421,11 +505,22 @@ export default function PointsPage() {
                           <Download className="mr-1.5 size-3.5" aria-hidden="true" />
                           {t('wallet.info.downloadKey')}
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => { setImportValue(''); setShowImportDialog(true) }}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setImportValue('')
+                            setShowImportDialog(true)
+                          }}
+                        >
                           <Upload className="mr-1.5 size-3.5" aria-hidden="true" />
                           {t('wallet.import.importAnother')}
                         </Button>
-                        <Button variant="destructive" size="sm" onClick={() => setShowDeleteDialog(true)}>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => setShowDeleteDialog(true)}
+                        >
                           <Trash2 className="mr-1.5 size-3.5" aria-hidden="true" />
                           {t('wallet.delete.button')}
                         </Button>
@@ -494,17 +589,45 @@ export default function PointsPage() {
               <CardContent>
                 <div className="grid gap-4 sm:grid-cols-3">
                   {[
-                    { icon: ClipboardCheck, color: 'text-blue-500', bg: 'bg-blue-500/10', titleKey: 'points.howItWorks.step1title', textKey: 'points.howItWorks.step1text', step: '1' },
-                    { icon: Gift, color: 'text-green-500', bg: 'bg-green-500/10', titleKey: 'points.howItWorks.step2title', textKey: 'points.howItWorks.step2text', step: '2' },
-                    { icon: BarChart3, color: 'text-primary', bg: 'bg-primary/10', titleKey: 'points.howItWorks.step3title', textKey: 'points.howItWorks.step3text', step: '3' },
+                    {
+                      icon: ClipboardCheck,
+                      color: 'text-blue-500',
+                      bg: 'bg-blue-500/10',
+                      titleKey: 'points.howItWorks.step1title',
+                      textKey: 'points.howItWorks.step1text',
+                      step: '1',
+                    },
+                    {
+                      icon: Gift,
+                      color: 'text-green-500',
+                      bg: 'bg-green-500/10',
+                      titleKey: 'points.howItWorks.step2title',
+                      textKey: 'points.howItWorks.step2text',
+                      step: '2',
+                    },
+                    {
+                      icon: BarChart3,
+                      color: 'text-primary',
+                      bg: 'bg-primary/10',
+                      titleKey: 'points.howItWorks.step3title',
+                      textKey: 'points.howItWorks.step3text',
+                      step: '3',
+                    },
                   ].map(({ icon: Icon, color, bg, titleKey, textKey, step }) => (
-                    <div key={step} className="flex gap-3 sm:flex-col sm:items-center sm:text-center">
-                      <div className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${bg} sm:size-12`}>
+                    <div
+                      key={step}
+                      className="flex gap-3 sm:flex-col sm:items-center sm:text-center"
+                    >
+                      <div
+                        className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${bg} sm:size-12`}
+                      >
                         <Icon className={`size-5 ${color} sm:size-6`} />
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-semibold sm:mt-2">{t(titleKey)}</p>
-                        <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">{t(textKey)}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
+                          {t(textKey)}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -529,7 +652,9 @@ export default function PointsPage() {
                   ))}
                 </div>
               ) : history.length === 0 ? (
-                <p className="py-6 text-center text-sm text-muted-foreground">{t('points.empty')}</p>
+                <p className="py-6 text-center text-sm text-muted-foreground">
+                  {t('points.empty')}
+                </p>
               ) : (
                 <>
                   {/* Desktop table */}
@@ -546,7 +671,9 @@ export default function PointsPage() {
                         {history.map((entry) => (
                           <TableRow key={entry.txHash}>
                             <TableCell className="font-medium">#{entry.surveyId}</TableCell>
-                            <TableCell className="text-right font-semibold">{entry.points}</TableCell>
+                            <TableCell className="text-right font-semibold">
+                              {entry.points}
+                            </TableCell>
                             <TableCell>
                               <a
                                 href={getTxUrl(entry.txHash)}
@@ -556,7 +683,9 @@ export default function PointsPage() {
                               >
                                 {entry.txHash.slice(0, 10)}...
                                 <ExternalLink className="size-3" aria-hidden="true" />
-                                <span className="sr-only">{t('points.table.viewTx', 'Transaktion anzeigen')}</span>
+                                <span className="sr-only">
+                                  {t('points.table.viewTx', 'Transaktion anzeigen')}
+                                </span>
                               </a>
                             </TableCell>
                           </TableRow>
@@ -567,7 +696,10 @@ export default function PointsPage() {
                   {/* Mobile cards */}
                   <div className="space-y-2 sm:hidden">
                     {history.map((entry) => (
-                      <div key={entry.txHash} className="flex items-center justify-between rounded-lg border border-border p-3">
+                      <div
+                        key={entry.txHash}
+                        className="flex items-center justify-between rounded-lg border border-border p-3"
+                      >
                         <div>
                           <p className="text-sm font-medium">#{entry.surveyId}</p>
                           <a
@@ -621,7 +753,11 @@ export default function PointsPage() {
               )}
             </Button>
           </div>
-          {searchError && <p className="text-sm text-destructive" role="alert">{searchError}</p>}
+          {searchError && (
+            <p className="text-sm text-destructive" role="alert">
+              {searchError}
+            </p>
+          )}
           {searchPoints !== null && (
             <div className="space-y-3 border-t border-border pt-4">
               <div className="flex items-center gap-3">
@@ -681,21 +817,26 @@ export default function PointsPage() {
             <DialogDescription>{t('wallet.reveal.description')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
-            {[t('wallet.reveal.check1'), t('wallet.reveal.check2'), t('wallet.reveal.check3')].map((text, i) => (
-              <label key={i} className="flex items-start gap-3 cursor-pointer rounded-lg border border-border p-3 transition-colors hover:bg-muted/50">
-                <input
-                  type="checkbox"
-                  checked={revealChecks[i]}
-                  onChange={() => {
-                    const next = [...revealChecks]
-                    next[i] = !next[i]
-                    setRevealChecks(next)
-                  }}
-                  className="mt-0.5 size-4 rounded accent-primary"
-                />
-                <span className="text-sm">{text}</span>
-              </label>
-            ))}
+            {[t('wallet.reveal.check1'), t('wallet.reveal.check2'), t('wallet.reveal.check3')].map(
+              (text, i) => (
+                <label
+                  key={i}
+                  className="flex items-start gap-3 cursor-pointer rounded-lg border border-border p-3 transition-colors hover:bg-muted/50"
+                >
+                  <input
+                    type="checkbox"
+                    checked={revealChecks[i]}
+                    onChange={() => {
+                      const next = [...revealChecks]
+                      next[i] = !next[i]
+                      setRevealChecks(next)
+                    }}
+                    className="mt-0.5 size-4 rounded accent-primary"
+                  />
+                  <span className="text-sm">{text}</span>
+                </label>
+              ),
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowRevealDialog(false)}>
@@ -750,7 +891,9 @@ export default function PointsPage() {
           </DialogHeader>
           {hasWallet && (
             <div className="rounded-lg bg-amber-500/5 border border-amber-500/20 p-3">
-              <p className="text-sm text-amber-600 dark:text-amber-400">{t('wallet.reset.warning')}</p>
+              <p className="text-sm text-amber-600 dark:text-amber-400">
+                {t('wallet.reset.warning')}
+              </p>
             </div>
           )}
           <div>
@@ -782,17 +925,31 @@ export default function PointsPage() {
           <div className="flex items-center justify-between border-b border-border px-6 py-4">
             <div>
               <DialogTitle className="text-lg">{t('wallet.create.dialogTitle')}</DialogTitle>
-              <DialogDescription className="mt-0.5">{t('wallet.create.dialogDescription')}</DialogDescription>
+              <DialogDescription className="mt-0.5">
+                {t('wallet.create.dialogDescription')}
+              </DialogDescription>
             </div>
           </div>
 
           <div className="max-h-[60vh] overflow-y-auto px-6 py-5">
             <div className="space-y-5">
               {[
-                { title: t('wallet.create.dialogInfo1Title'), text: t('wallet.create.dialogInfo1Text') },
-                { title: t('wallet.create.dialogInfo2Title'), text: t('wallet.create.dialogInfo2Text') },
-                { title: t('wallet.create.dialogInfo3Title'), text: t('wallet.create.dialogInfo3Text') },
-                { title: t('wallet.create.dialogInfo4Title'), text: t('wallet.create.dialogInfo4Text') },
+                {
+                  title: t('wallet.create.dialogInfo1Title'),
+                  text: t('wallet.create.dialogInfo1Text'),
+                },
+                {
+                  title: t('wallet.create.dialogInfo2Title'),
+                  text: t('wallet.create.dialogInfo2Text'),
+                },
+                {
+                  title: t('wallet.create.dialogInfo3Title'),
+                  text: t('wallet.create.dialogInfo3Text'),
+                },
+                {
+                  title: t('wallet.create.dialogInfo4Title'),
+                  text: t('wallet.create.dialogInfo4Text'),
+                },
               ].map(({ title, text }) => (
                 <div key={title}>
                   <p className="text-sm font-semibold">{title}</p>
@@ -802,8 +959,15 @@ export default function PointsPage() {
             </div>
 
             <div className="mt-6 space-y-1">
-              {[t('wallet.create.dialogCheck1'), t('wallet.create.dialogCheck2'), t('wallet.create.dialogCheck3')].map((text, i) => (
-                <label key={i} className="flex cursor-pointer items-start gap-3 rounded-lg p-2.5 transition-colors hover:bg-muted/50">
+              {[
+                t('wallet.create.dialogCheck1'),
+                t('wallet.create.dialogCheck2'),
+                t('wallet.create.dialogCheck3'),
+              ].map((text, i) => (
+                <label
+                  key={i}
+                  className="flex cursor-pointer items-start gap-3 rounded-lg p-2.5 transition-colors hover:bg-muted/50"
+                >
                   <input
                     type="checkbox"
                     checked={createChecks[i]}
@@ -824,10 +988,7 @@ export default function PointsPage() {
             <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
               {t('common.cancel')}
             </Button>
-            <Button
-              disabled={!createChecks.every(Boolean)}
-              onClick={handleCreateConfirm}
-            >
+            <Button disabled={!createChecks.every(Boolean)} onClick={handleCreateConfirm}>
               <Wallet className="mr-1.5 size-4" />
               {t('wallet.create.dialogConfirm')}
             </Button>
@@ -842,7 +1003,10 @@ function InfoTip({ text }: { text: string }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button className="inline-flex size-5 items-center justify-center rounded-full text-muted-foreground hover:text-foreground" aria-label="Info">
+        <button
+          className="inline-flex size-5 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+          aria-label="Info"
+        >
           <Info className="size-3.5" aria-hidden="true" />
         </button>
       </TooltipTrigger>

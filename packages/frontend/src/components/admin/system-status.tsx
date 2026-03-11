@@ -113,7 +113,9 @@ export function SystemStatus({ adminSignature, adminMessage }: SystemStatusProps
         </div>
 
         <div className="flex items-center gap-3">
-          {loading && <Loader2 className="size-4 animate-spin text-muted-foreground" aria-hidden="true" />}
+          {loading && (
+            <Loader2 className="size-4 animate-spin text-muted-foreground" aria-hidden="true" />
+          )}
           {status && !loading && (
             <div className="flex items-center gap-1.5">
               {status.lowBalance ? (
@@ -121,7 +123,11 @@ export function SystemStatus({ adminSignature, adminMessage }: SystemStatusProps
               ) : (
                 <CheckCircle2 className="size-4 text-emerald-500" aria-hidden="true" />
               )}
-              <span className={`text-xs font-medium ${status.lowBalance ? 'text-amber-500' : 'text-emerald-500'}`}>
+              <span
+                className={`text-xs font-medium ${
+                  status.lowBalance ? 'text-amber-500' : 'text-emerald-500'
+                }`}
+              >
                 {parseFloat(status.balance).toFixed(6)} ETH
               </span>
             </div>
@@ -167,7 +173,11 @@ export function SystemStatus({ adminSignature, adminMessage }: SystemStatusProps
                 label={t('admin.systemStatus.balance')}
                 value={`${parseFloat(status.balance).toFixed(6)} ETH`}
                 highlight={status.lowBalance}
-                badge={status.lowBalance ? t('admin.systemStatus.statusLow') : t('admin.systemStatus.statusOk')}
+                badge={
+                  status.lowBalance
+                    ? t('admin.systemStatus.statusLow')
+                    : t('admin.systemStatus.statusOk')
+                }
                 badgeColor={status.lowBalance ? 'amber' : 'emerald'}
               />
               <StatusItem
@@ -179,26 +189,34 @@ export function SystemStatus({ adminSignature, adminMessage }: SystemStatusProps
                 icon={CheckCircle2}
                 label={t('admin.systemStatus.claimsRemaining')}
                 value={`~${status.estimates.claimsRemaining.toLocaleString()}`}
-                sublabel={`${t('admin.systemStatus.costPerClaim')}: ${parseFloat(status.estimates.costPerClaim).toFixed(6)} ETH`}
+                sublabel={`${t('admin.systemStatus.costPerClaim')}: ${parseFloat(
+                  status.estimates.costPerClaim,
+                ).toFixed(6)} ETH`}
               />
               <StatusItem
                 icon={Hash}
                 label={t('admin.systemStatus.registrationsRemaining')}
                 value={`~${status.estimates.registrationsRemaining.toLocaleString()}`}
-                sublabel={`${t('admin.systemStatus.costPerRegistration')}: ${parseFloat(status.estimates.costPerRegistration).toFixed(6)} ETH`}
+                sublabel={`${t('admin.systemStatus.costPerRegistration')}: ${parseFloat(
+                  status.estimates.costPerRegistration,
+                ).toFixed(6)} ETH`}
               />
               <StatusItem
                 icon={Globe}
                 label={t('admin.systemStatus.network')}
                 value={status.blockchain.network}
-                sublabel={`${t('admin.systemStatus.blockNumber')}: ${status.blockchain.blockNumber.toLocaleString()}`}
+                sublabel={`${t(
+                  'admin.systemStatus.blockNumber',
+                )}: ${status.blockchain.blockNumber.toLocaleString()}`}
               />
               <div className="flex items-center gap-3 rounded-md bg-muted/50 p-3">
                 <div className="flex size-8 shrink-0 items-center justify-center rounded bg-muted">
                   <Copy className="size-3.5 text-muted-foreground" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs text-muted-foreground">{t('admin.systemStatus.minterAddress')}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t('admin.systemStatus.minterAddress')}
+                  </p>
                   <div className="flex items-center gap-1.5">
                     {explorerUrl ? (
                       <a
@@ -248,7 +266,11 @@ function StatusItem({
 }) {
   return (
     <div className="flex items-center gap-3 rounded-md bg-muted/50 p-3">
-      <div className={`flex size-8 shrink-0 items-center justify-center rounded ${highlight ? 'bg-amber-500/10' : 'bg-muted'}`}>
+      <div
+        className={`flex size-8 shrink-0 items-center justify-center rounded ${
+          highlight ? 'bg-amber-500/10' : 'bg-muted'
+        }`}
+      >
         <Icon className={`size-3.5 ${highlight ? 'text-amber-500' : 'text-muted-foreground'}`} />
       </div>
       <div className="min-w-0">
@@ -256,11 +278,13 @@ function StatusItem({
         <div className="flex items-center gap-2">
           <p className={`text-sm font-semibold ${highlight ? 'text-amber-500' : ''}`}>{value}</p>
           {badge && (
-            <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
-              badgeColor === 'amber'
-                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-            }`}>
+            <span
+              className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                badgeColor === 'amber'
+                  ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                  : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+              }`}
+            >
               {badge}
             </span>
           )}

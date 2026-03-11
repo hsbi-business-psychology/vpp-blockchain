@@ -21,8 +21,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: ".nvmrc"
-          cache: "pnpm"
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
 
       - run: pnpm install --frozen-lockfile
 
@@ -42,8 +42,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: ".nvmrc"
-          cache: "pnpm"
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
 
       - run: pnpm install --frozen-lockfile
 
@@ -56,7 +56,7 @@ jobs:
       - name: Run tests with gas report
         run: pnpm --filter @vpp/contracts run test
         env:
-          REPORT_GAS: "true"
+          REPORT_GAS: 'true'
 
       - name: Check coverage
         run: pnpm --filter @vpp/contracts run coverage
@@ -71,8 +71,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: ".nvmrc"
-          cache: "pnpm"
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
 
       - run: pnpm install --frozen-lockfile
 
@@ -95,8 +95,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: ".nvmrc"
-          cache: "pnpm"
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
 
       - run: pnpm install --frozen-lockfile
 

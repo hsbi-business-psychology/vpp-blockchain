@@ -73,15 +73,18 @@ export function useApi() {
     [],
   )
 
-  const getSurveys = useCallback(async (signature: string, message: string): Promise<SurveyInfo[]> => {
-    return apiFetch<SurveyInfo[]>('/api/surveys', {
-      headers: {
-        'Content-Type': 'application/json',
-        'x-admin-signature': signature,
-        'x-admin-message': message,
-      },
-    })
-  }, [])
+  const getSurveys = useCallback(
+    async (signature: string, message: string): Promise<SurveyInfo[]> => {
+      return apiFetch<SurveyInfo[]>('/api/surveys', {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-signature': signature,
+          'x-admin-message': message,
+        },
+      })
+    },
+    [],
+  )
 
   const registerSurvey = useCallback(
     async (params: {
@@ -102,7 +105,9 @@ export function useApi() {
   )
 
   const downloadTemplate = useCallback(async (surveyId: number, secret: string): Promise<Blob> => {
-    const url = `${config.apiUrl}/api/surveys/${surveyId}/template?secret=${encodeURIComponent(secret)}`
+    const url = `${config.apiUrl}/api/surveys/${surveyId}/template?secret=${encodeURIComponent(
+      secret,
+    )}`
     const res = await fetch(url)
     if (!res.ok) throw new Error('Failed to download template')
     return res.blob()
@@ -123,7 +128,9 @@ export function useApi() {
   )
 
   const getWalletSubmissionStatus = useCallback(
-    async (address: string): Promise<{ address: string; submitted: boolean; totalPoints: number }> => {
+    async (
+      address: string,
+    ): Promise<{ address: string; submitted: boolean; totalPoints: number }> => {
       return apiFetch<{ address: string; submitted: boolean; totalPoints: number }>(
         `/api/wallets/${address}/submitted`,
       )

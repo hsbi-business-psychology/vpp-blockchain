@@ -4,7 +4,15 @@ import { useNavigate } from 'react-router'
 import { ArrowRight, GraduationCap, Users, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-function FadeIn({ children, className = '', delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
+function FadeIn({
+  children,
+  className = '',
+  delay = 0,
+}: {
+  children: ReactNode
+  className?: string
+  delay?: number
+}) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -25,10 +33,7 @@ function FadeIn({ children, className = '', delay = 0 }: { children: ReactNode; 
   }, [delay])
 
   return (
-    <div
-      ref={ref}
-      className={`fade-in-section ${className}`}
-    >
+    <div ref={ref} className={`fade-in-section ${className}`}>
       {children}
     </div>
   )
@@ -118,19 +123,23 @@ export default function HomePage() {
           <FadeIn delay={0}>
             <div className="rounded-lg bg-card p-8 shadow-sm">
               <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10">
-                    <GraduationCap className="size-6 text-primary" aria-hidden="true" />
+                <GraduationCap className="size-6 text-primary" aria-hidden="true" />
               </div>
               <h3 className="mb-2 text-lg font-semibold">{t('home.highlights.student.title')}</h3>
-              <p className="text-base leading-relaxed text-muted-foreground">{t('home.highlights.student.text')}</p>
+              <p className="text-base leading-relaxed text-muted-foreground">
+                {t('home.highlights.student.text')}
+              </p>
             </div>
           </FadeIn>
           <FadeIn delay={120}>
             <div className="rounded-lg bg-card p-8 shadow-sm">
               <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10">
-                    <Users className="size-6 text-primary" aria-hidden="true" />
+                <Users className="size-6 text-primary" aria-hidden="true" />
               </div>
               <h3 className="mb-2 text-lg font-semibold">{t('home.highlights.lecturer.title')}</h3>
-              <p className="text-base leading-relaxed text-muted-foreground">{t('home.highlights.lecturer.text')}</p>
+              <p className="text-base leading-relaxed text-muted-foreground">
+                {t('home.highlights.lecturer.text')}
+              </p>
             </div>
           </FadeIn>
         </div>
@@ -144,7 +153,7 @@ export default function HomePage() {
             {t('home.docsCta.text')}
           </p>
           <Button variant="outline" size="lg" onClick={() => navigate('/docs')}>
-                <BookOpen className="mr-2 size-4" aria-hidden="true" />
+            <BookOpen className="mr-2 size-4" aria-hidden="true" />
             {t('home.docsCta.button')}
           </Button>
         </section>

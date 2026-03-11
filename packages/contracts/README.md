@@ -61,49 +61,49 @@ Copy `.env.example` to `.env` and fill in your values:
 cp .env.example .env
 ```
 
-| Variable | Description |
-|---|---|
-| `DEPLOYER_PRIVATE_KEY` | Private key of the deploying wallet |
-| `BASE_SEPOLIA_RPC_URL` | RPC endpoint for Base Sepolia testnet |
-| `BASE_MAINNET_RPC_URL` | RPC endpoint for Base mainnet |
-| `BASESCAN_API_KEY` | API key for contract verification on BaseScan |
-| `REPORT_GAS` | Set to `true` to enable gas usage reports |
+| Variable               | Description                                   |
+| ---------------------- | --------------------------------------------- |
+| `DEPLOYER_PRIVATE_KEY` | Private key of the deploying wallet           |
+| `BASE_SEPOLIA_RPC_URL` | RPC endpoint for Base Sepolia testnet         |
+| `BASE_MAINNET_RPC_URL` | RPC endpoint for Base mainnet                 |
+| `BASESCAN_API_KEY`     | API key for contract verification on BaseScan |
+| `REPORT_GAS`           | Set to `true` to enable gas usage reports     |
 
 ## Contract API
 
 ### Write Functions (require roles)
 
-| Function | Role | Description |
-|---|---|---|
-| `registerSurvey(id, secretHash, points, maxClaims)` | `ADMIN_ROLE` | Register a new survey |
-| `awardPoints(student, surveyId, secret)` | `MINTER_ROLE` | Award points to a student |
-| `deactivateSurvey(surveyId)` | `ADMIN_ROLE` | Deactivate a survey |
+| Function                                            | Role          | Description               |
+| --------------------------------------------------- | ------------- | ------------------------- |
+| `registerSurvey(id, secretHash, points, maxClaims)` | `ADMIN_ROLE`  | Register a new survey     |
+| `awardPoints(student, surveyId, secret)`            | `MINTER_ROLE` | Award points to a student |
+| `deactivateSurvey(surveyId)`                        | `ADMIN_ROLE`  | Deactivate a survey       |
 
 ### Read Functions (public)
 
-| Function | Description |
-|---|---|
-| `totalPoints(wallet)` | Get total points for a wallet |
-| `surveyPoints(wallet, surveyId)` | Get points for a specific survey |
-| `getSurveyInfo(surveyId)` | Get survey details |
-| `claimed(wallet, surveyId)` | Check if a wallet has claimed a survey |
+| Function                         | Description                            |
+| -------------------------------- | -------------------------------------- |
+| `totalPoints(wallet)`            | Get total points for a wallet          |
+| `surveyPoints(wallet, surveyId)` | Get points for a specific survey       |
+| `getSurveyInfo(surveyId)`        | Get survey details                     |
+| `claimed(wallet, surveyId)`      | Check if a wallet has claimed a survey |
 
 ### Events
 
-| Event | Description |
-|---|---|
-| `SurveyRegistered(surveyId, points, maxClaims)` | Emitted when a survey is registered |
-| `PointsAwarded(wallet, surveyId, points)` | Emitted when points are awarded |
-| `SurveyDeactivated(surveyId)` | Emitted when a survey is deactivated |
+| Event                                           | Description                          |
+| ----------------------------------------------- | ------------------------------------ |
+| `SurveyRegistered(surveyId, points, maxClaims)` | Emitted when a survey is registered  |
+| `PointsAwarded(wallet, surveyId, points)`       | Emitted when points are awarded      |
+| `SurveyDeactivated(surveyId)`                   | Emitted when a survey is deactivated |
 
 ## Gas Costs (Base L2)
 
-| Operation | Estimated Gas | Estimated Cost |
-|---|---|---|
-| Deploy contract | ~500,000 | ~$0.50 |
-| `registerSurvey()` | ~80,000 | ~$0.005 |
-| `awardPoints()` | ~45,000–65,000 | ~$0.002–0.003 |
-| Read functions | 0 | Free |
+| Operation          | Estimated Gas  | Estimated Cost |
+| ------------------ | -------------- | -------------- |
+| Deploy contract    | ~500,000       | ~$0.50         |
+| `registerSurvey()` | ~80,000        | ~$0.005        |
+| `awardPoints()`    | ~45,000–65,000 | ~$0.002–0.003  |
+| Read functions     | 0              | Free           |
 
 ## License
 

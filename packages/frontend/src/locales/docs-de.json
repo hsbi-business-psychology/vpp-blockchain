@@ -42,225 +42,519 @@
         "title": "Erste Schritte",
         "description": "So startest du mit VPP Blockchain und sammelst deine ersten Punkte.",
         "sections": [
-          { "type": "text", "heading": "Was ist VPP Blockchain?", "content": "VPP Blockchain ist ein System der Hochschule, mit dem du Versuchspersonenpunkte (VPP) digital und fälschungssicher sammeln kannst. Statt Papierscheinen werden deine Punkte auf einer Blockchain gespeichert -- einem öffentlichen, unveränderlichen Register.\n\nDas Beste: Du brauchst weder Geld noch technisches Vorwissen. Alles funktioniert direkt in deinem Browser." },
-          { "type": "steps", "heading": "In 3 Schritten zum ersten Punkt", "steps": [
-            { "title": "Wallet verbinden", "text": "Gehe auf \"Meine Punkte\" und wähle eine der drei Optionen: Browser-Wallet erstellen (ein Klick, nichts installieren), MetaMask verbinden (sicherer, falls installiert) oder einen bestehenden Private Key importieren." },
-            { "title": "An einer Studie teilnehmen", "text": "Nimm an einer Studie teil (z.B. über SoSci Survey). Am Ende wirst du automatisch weitergeleitet, um deinen Punkt einzulösen." },
-            { "title": "Punkt einlösen (Claim)", "text": "Du signierst eine Nachricht mit deiner Wallet -- das beweist, dass du der Besitzer bist. Der Punkt wird dann auf der Blockchain gespeichert und ist sofort in deinem Dashboard sichtbar." }
-          ]},
-          { "type": "callout", "variant": "tip", "content": "Du brauchst kein Kryptoguthaben. Alle Transaktionskosten werden vom System übernommen." },
-          { "type": "callout", "variant": "warning", "content": "Bewahre deinen Private Key sicher auf! Wer ihn hat, kontrolliert deine Wallet. Wenn du ihn verlierst, sind deine Punkte unwiederbringlich verloren." }
+          {
+            "type": "text",
+            "heading": "Was ist VPP Blockchain?",
+            "content": "VPP Blockchain ist ein System der Hochschule, mit dem du Versuchspersonenpunkte (VPP) digital und fälschungssicher sammeln kannst. Statt Papierscheinen werden deine Punkte auf einer Blockchain gespeichert -- einem öffentlichen, unveränderlichen Register.\n\nDas Beste: Du brauchst weder Geld noch technisches Vorwissen. Alles funktioniert direkt in deinem Browser."
+          },
+          {
+            "type": "steps",
+            "heading": "In 3 Schritten zum ersten Punkt",
+            "steps": [
+              {
+                "title": "Wallet verbinden",
+                "text": "Gehe auf \"Meine Punkte\" und wähle eine der drei Optionen: Browser-Wallet erstellen (ein Klick, nichts installieren), MetaMask verbinden (sicherer, falls installiert) oder einen bestehenden Private Key importieren."
+              },
+              {
+                "title": "An einer Studie teilnehmen",
+                "text": "Nimm an einer Studie teil (z.B. über SoSci Survey). Am Ende wirst du automatisch weitergeleitet, um deinen Punkt einzulösen."
+              },
+              {
+                "title": "Punkt einlösen (Claim)",
+                "text": "Du signierst eine Nachricht mit deiner Wallet -- das beweist, dass du der Besitzer bist. Der Punkt wird dann auf der Blockchain gespeichert und ist sofort in deinem Dashboard sichtbar."
+              }
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "tip",
+            "content": "Du brauchst kein Kryptoguthaben. Alle Transaktionskosten werden vom System übernommen."
+          },
+          {
+            "type": "callout",
+            "variant": "warning",
+            "content": "Bewahre deinen Private Key sicher auf! Wer ihn hat, kontrolliert deine Wallet. Wenn du ihn verlierst, sind deine Punkte unwiederbringlich verloren."
+          }
         ]
       },
       "claim-process": {
         "title": "So funktioniert der Claim",
         "description": "Schritt für Schritt erklärt: Was passiert, wenn du einen Punkt einlöst.",
         "sections": [
-          { "type": "text", "heading": "Überblick", "content": "Der Claim-Prozess ist der zentrale Vorgang, bei dem du nach Abschluss einer Studie deinen Punkt erhältst. Er läuft vollständig automatisch -- du musst nur einmal bestätigen." },
-          { "type": "diagram", "diagramId": "claim-flow", "caption": "Der Weg vom Fragebogen bis zum Blockchain-Eintrag" },
-          { "type": "steps", "heading": "Detaillierter Ablauf", "steps": [
-            { "title": "Studie abschließen", "text": "Du bearbeitest einen Fragebogen in SoSci Survey. Auf der letzten Seite befindet sich ein Link, der dich zum VPP-System weiterleitet." },
-            { "title": "Weiterleitung zum Claim", "text": "Der Link enthält die Umfrage-ID und ein geheimes Token. Du landest auf der Claim-Seite des VPP-Systems." },
-            { "title": "Nachricht signieren", "text": "Dein Browser erstellt eine Nachricht mit deiner Wallet-Adresse, der Umfrage-ID und dem aktuellen Zeitstempel. Du signierst diese Nachricht mit deinem Private Key -- das geschieht lokal, der Key verlässt nie deinen Browser." },
-            { "title": "Backend-Prüfung", "text": "Das Backend überprüft: Ist die Signatur gültig? Stimmt das Secret? Wurde der Punkt schon eingelöst? Wenn alles passt, sendet es eine Transaktion an die Blockchain." },
-            { "title": "Blockchain-Eintrag", "text": "Die Blockchain speichert: Welches Wallet hat für welche Umfrage wie viele Punkte erhalten. Dieser Eintrag ist öffentlich, unveränderlich und jederzeit überprüfbar." }
-          ]},
-          { "type": "callout", "variant": "info", "content": "Dein Private Key verlässt niemals deinen Browser. Die Signatur beweist nur, dass du der Besitzer der Wallet bist -- sie gibt niemandem Zugriff auf deine Wallet." }
+          {
+            "type": "text",
+            "heading": "Überblick",
+            "content": "Der Claim-Prozess ist der zentrale Vorgang, bei dem du nach Abschluss einer Studie deinen Punkt erhältst. Er läuft vollständig automatisch -- du musst nur einmal bestätigen."
+          },
+          {
+            "type": "diagram",
+            "diagramId": "claim-flow",
+            "caption": "Der Weg vom Fragebogen bis zum Blockchain-Eintrag"
+          },
+          {
+            "type": "steps",
+            "heading": "Detaillierter Ablauf",
+            "steps": [
+              {
+                "title": "Studie abschließen",
+                "text": "Du bearbeitest einen Fragebogen in SoSci Survey. Auf der letzten Seite befindet sich ein Link, der dich zum VPP-System weiterleitet."
+              },
+              {
+                "title": "Weiterleitung zum Claim",
+                "text": "Der Link enthält die Umfrage-ID und ein geheimes Token. Du landest auf der Claim-Seite des VPP-Systems."
+              },
+              {
+                "title": "Nachricht signieren",
+                "text": "Dein Browser erstellt eine Nachricht mit deiner Wallet-Adresse, der Umfrage-ID und dem aktuellen Zeitstempel. Du signierst diese Nachricht mit deinem Private Key -- das geschieht lokal, der Key verlässt nie deinen Browser."
+              },
+              {
+                "title": "Backend-Prüfung",
+                "text": "Das Backend überprüft: Ist die Signatur gültig? Stimmt das Secret? Wurde der Punkt schon eingelöst? Wenn alles passt, sendet es eine Transaktion an die Blockchain."
+              },
+              {
+                "title": "Blockchain-Eintrag",
+                "text": "Die Blockchain speichert: Welches Wallet hat für welche Umfrage wie viele Punkte erhalten. Dieser Eintrag ist öffentlich, unveränderlich und jederzeit überprüfbar."
+              }
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "info",
+            "content": "Dein Private Key verlässt niemals deinen Browser. Die Signatur beweist nur, dass du der Besitzer der Wallet bist -- sie gibt niemandem Zugriff auf deine Wallet."
+          }
         ]
       },
       "wallet-security": {
         "title": "Wallet und Private Key",
         "description": "Was eine Wallet ist, wie Public und Private Keys funktionieren, und wie du sie sicher aufbewahrst.",
         "sections": [
-          { "type": "text", "heading": "Was ist eine Wallet?", "content": "Eine Wallet ist dein digitaler Schlüsselbund im Blockchain-Netzwerk. Sie besteht aus zwei Teilen:\n\n1. Dem Public Key (öffentlicher Schlüssel) -- das ist deine Adresse, vergleichbar mit einer E-Mail-Adresse. Du kannst sie bedenkenlos teilen.\n\n2. Dem Private Key (privater Schlüssel) -- das ist dein Passwort. Wer den Private Key hat, kontrolliert die Wallet und alle darin gespeicherten Punkte.\n\nDu hast drei Möglichkeiten, eine Wallet zu nutzen: Ein Browser-Wallet direkt auf der Webseite erstellen, MetaMask verbinden (verschlüsselte Schlüsselverwaltung), oder einen bestehenden Private Key importieren." },
+          {
+            "type": "text",
+            "heading": "Was ist eine Wallet?",
+            "content": "Eine Wallet ist dein digitaler Schlüsselbund im Blockchain-Netzwerk. Sie besteht aus zwei Teilen:\n\n1. Dem Public Key (öffentlicher Schlüssel) -- das ist deine Adresse, vergleichbar mit einer E-Mail-Adresse. Du kannst sie bedenkenlos teilen.\n\n2. Dem Private Key (privater Schlüssel) -- das ist dein Passwort. Wer den Private Key hat, kontrolliert die Wallet und alle darin gespeicherten Punkte.\n\nDu hast drei Möglichkeiten, eine Wallet zu nutzen: Ein Browser-Wallet direkt auf der Webseite erstellen, MetaMask verbinden (verschlüsselte Schlüsselverwaltung), oder einen bestehenden Private Key importieren."
+          },
           { "type": "diagram", "diagramId": "public-private-key" },
-          { "type": "text", "heading": "Wie funktioniert das kryptografisch?", "content": "Public und Private Key bilden ein kryptografisches Schlüsselpaar. Sie werden mathematisch erzeugt und hängen zusammen: Aus dem Private Key kann der Public Key berechnet werden, aber nicht umgekehrt.\n\nWenn du eine Nachricht signierst, verwendest du deinen Private Key. Jeder kann dann mit deinem Public Key überprüfen, dass die Signatur von dir stammt -- ohne den Private Key zu kennen. Dieses Prinzip nennt sich asymmetrische Kryptografie." },
-          { "type": "list", "heading": "Sicherheitstipps", "items": [
-            "Speichere deinen Private Key an einem sicheren Ort (z.B. Passwort-Manager, verschlüsselter Notiz-App).",
-            "Teile deinen Private Key niemals mit anderen -- auch nicht mit Lehrenden oder dem Support.",
-            "Erstelle ein Backup: Wenn du deinen Private Key verlierst, gibt es keine Möglichkeit, ihn wiederherzustellen.",
-            "Verwende ein separates Browser-Profil, wenn du an einem geteilten Computer arbeitest.",
-            "Die Wallet wird in deinem Browser (localStorage) gespeichert. Wenn du den Browser-Speicher löschst, wird die Wallet entfernt -- der Private Key ist dann der einzige Weg, sie wiederherzustellen."
-          ]},
-          { "type": "callout", "variant": "warning", "content": "Es gibt kein \"Passwort zurücksetzen\". Private Keys können nicht wiederhergestellt werden. Wenn du ihn verlierst, sind deine Punkte unwiederbringlich verloren." }
+          {
+            "type": "text",
+            "heading": "Wie funktioniert das kryptografisch?",
+            "content": "Public und Private Key bilden ein kryptografisches Schlüsselpaar. Sie werden mathematisch erzeugt und hängen zusammen: Aus dem Private Key kann der Public Key berechnet werden, aber nicht umgekehrt.\n\nWenn du eine Nachricht signierst, verwendest du deinen Private Key. Jeder kann dann mit deinem Public Key überprüfen, dass die Signatur von dir stammt -- ohne den Private Key zu kennen. Dieses Prinzip nennt sich asymmetrische Kryptografie."
+          },
+          {
+            "type": "list",
+            "heading": "Sicherheitstipps",
+            "items": [
+              "Speichere deinen Private Key an einem sicheren Ort (z.B. Passwort-Manager, verschlüsselter Notiz-App).",
+              "Teile deinen Private Key niemals mit anderen -- auch nicht mit Lehrenden oder dem Support.",
+              "Erstelle ein Backup: Wenn du deinen Private Key verlierst, gibt es keine Möglichkeit, ihn wiederherzustellen.",
+              "Verwende ein separates Browser-Profil, wenn du an einem geteilten Computer arbeitest.",
+              "Die Wallet wird in deinem Browser (localStorage) gespeichert. Wenn du den Browser-Speicher löschst, wird die Wallet entfernt -- der Private Key ist dann der einzige Weg, sie wiederherzustellen."
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "warning",
+            "content": "Es gibt kein \"Passwort zurücksetzen\". Private Keys können nicht wiederhergestellt werden. Wenn du ihn verlierst, sind deine Punkte unwiederbringlich verloren."
+          }
         ]
       },
       "thesis-submission": {
         "title": "Zur Bachelorarbeit anmelden",
         "description": "So funktioniert der Abgabe-Prozess: Punkte sammeln, dem Prüfer vorzeigen, zugelassen werden.",
         "sections": [
-          { "type": "text", "heading": "Der Weg zur Zulassung", "content": "Um zur Bachelorarbeit zugelassen zu werden, musst du eine bestimmte Anzahl an VPP-Punkten nachweisen. Der gesamte Prozess läuft digital über die Blockchain." },
-          { "type": "steps", "heading": "Ablauf", "steps": [
-            { "title": "Punkte sammeln", "text": "Nimm an verschiedenen Studien teil und sammle die erforderliche Punktzahl. Deinen aktuellen Stand siehst du jederzeit unter \"Meine Punkte\"." },
-            { "title": "Public Key dem Prüfer geben", "text": "Wenn du genug Punkte hast, teile deinen Public Key (Wallet-Adresse) mit deinem Prüfer. Du findest ihn in deinem Punkte-Dashboard." },
-            { "title": "Prüfer überprüft die Punkte", "text": "Der Prüfer kann deinen Punktestand direkt auf der Blockchain überprüfen. Er sieht, wie viele Punkte du gesammelt hast und an welchen Studien du teilgenommen hast." },
-            { "title": "Wallet wird als abgegeben markiert", "text": "Der Prüfer markiert dein Wallet im System als abgegeben. So wird sichergestellt, dass dieselbe Wallet nicht mehrfach zur Zulassung verwendet wird." }
-          ]},
-          { "type": "callout", "variant": "info", "content": "Sobald dein Wallet als abgegeben markiert ist, siehst du in deinem Dashboard einen grünen Hinweis. Die Markierung ist auf der Blockchain gespeichert und für alle transparent nachvollziehbar." },
-          { "type": "callout", "variant": "tip", "content": "Dein Prüfer braucht nur deinen Public Key (Wallet-Adresse). Teile niemals deinen Private Key!" }
+          {
+            "type": "text",
+            "heading": "Der Weg zur Zulassung",
+            "content": "Um zur Bachelorarbeit zugelassen zu werden, musst du eine bestimmte Anzahl an VPP-Punkten nachweisen. Der gesamte Prozess läuft digital über die Blockchain."
+          },
+          {
+            "type": "steps",
+            "heading": "Ablauf",
+            "steps": [
+              {
+                "title": "Punkte sammeln",
+                "text": "Nimm an verschiedenen Studien teil und sammle die erforderliche Punktzahl. Deinen aktuellen Stand siehst du jederzeit unter \"Meine Punkte\"."
+              },
+              {
+                "title": "Public Key dem Prüfer geben",
+                "text": "Wenn du genug Punkte hast, teile deinen Public Key (Wallet-Adresse) mit deinem Prüfer. Du findest ihn in deinem Punkte-Dashboard."
+              },
+              {
+                "title": "Prüfer überprüft die Punkte",
+                "text": "Der Prüfer kann deinen Punktestand direkt auf der Blockchain überprüfen. Er sieht, wie viele Punkte du gesammelt hast und an welchen Studien du teilgenommen hast."
+              },
+              {
+                "title": "Wallet wird als abgegeben markiert",
+                "text": "Der Prüfer markiert dein Wallet im System als abgegeben. So wird sichergestellt, dass dieselbe Wallet nicht mehrfach zur Zulassung verwendet wird."
+              }
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "info",
+            "content": "Sobald dein Wallet als abgegeben markiert ist, siehst du in deinem Dashboard einen grünen Hinweis. Die Markierung ist auf der Blockchain gespeichert und für alle transparent nachvollziehbar."
+          },
+          {
+            "type": "callout",
+            "variant": "tip",
+            "content": "Dein Prüfer braucht nur deinen Public Key (Wallet-Adresse). Teile niemals deinen Private Key!"
+          }
         ]
       },
       "survey-management": {
         "title": "Umfragen erstellen und verwalten",
         "description": "Anleitung für Lehrende: Studien registrieren, SoSci Survey integrieren und Templates nutzen.",
         "sections": [
-          { "type": "text", "heading": "Übersicht", "content": "Als Lehrender mit Admin-Rechten kannst du Studien im VPP-System registrieren. Jede Studie erhält eine eindeutige ID, ein geheimes Token (Secret) und eine Punktzahl. Die Registrierung erfolgt direkt auf der Blockchain." },
-          { "type": "steps", "heading": "Studie registrieren", "steps": [
-            { "title": "Im Admin-Dashboard anmelden", "text": "Gehe zum Lehrenden-Bereich und melde dich mit deiner Admin-Wallet an. Du benötigst eine Wallet mit der ADMIN_ROLE im Smart Contract." },
-            { "title": "\"Umfrage registrieren\" klicken", "text": "Die Umfrage-ID und das Secret werden automatisch generiert. Gib einen Titel und die Punktzahl ein. Die ID und das Secret kannst du bei Bedarf auch manuell anpassen." },
-            { "title": "Bestätigen und Template herunterladen", "text": "Nach der Registrierung wird automatisch ein SoSci Survey XML-Template heruntergeladen. Dieses Template enthält die Konfiguration für die letzte Seite deines Fragebogens." }
-          ]},
-          { "type": "text", "heading": "SoSci Survey Integration", "content": "Das heruntergeladene XML-Template wird in SoSci Survey importiert und als letzte Seite des Fragebogens eingebunden. Es enthält einen Redirect-Link mit der Umfrage-ID und dem Secret, der die Teilnehmenden nach Abschluss automatisch zur Claim-Seite weiterleitet." },
-          { "type": "list", "heading": "Verwaltungsfunktionen", "items": [
-            "Umfragen deaktivieren: Beende eine Studie, sodass keine neuen Claims mehr möglich sind.",
-            "Template erneut herunterladen: Falls das Secret im Browser gespeichert ist, kannst du das Template jederzeit erneut herunterladen.",
-            "Claim-Statistiken: Sieh in Echtzeit, wie viele Teilnehmende ihre Punkte eingelöst haben."
-          ]},
-          { "type": "callout", "variant": "warning", "content": "Das Secret wird nur als Hash auf der Blockchain gespeichert. Wenn du es verlierst und es nicht im Browser gespeichert ist, musst du es erneut eingeben, um ein Template herunterzuladen." }
+          {
+            "type": "text",
+            "heading": "Übersicht",
+            "content": "Als Lehrender mit Admin-Rechten kannst du Studien im VPP-System registrieren. Jede Studie erhält eine eindeutige ID, ein geheimes Token (Secret) und eine Punktzahl. Die Registrierung erfolgt direkt auf der Blockchain."
+          },
+          {
+            "type": "steps",
+            "heading": "Studie registrieren",
+            "steps": [
+              {
+                "title": "Im Admin-Dashboard anmelden",
+                "text": "Gehe zum Lehrenden-Bereich und melde dich mit deiner Admin-Wallet an. Du benötigst eine Wallet mit der ADMIN_ROLE im Smart Contract."
+              },
+              {
+                "title": "\"Umfrage registrieren\" klicken",
+                "text": "Die Umfrage-ID und das Secret werden automatisch generiert. Gib einen Titel und die Punktzahl ein. Die ID und das Secret kannst du bei Bedarf auch manuell anpassen."
+              },
+              {
+                "title": "Bestätigen und Template herunterladen",
+                "text": "Nach der Registrierung wird automatisch ein SoSci Survey XML-Template heruntergeladen. Dieses Template enthält die Konfiguration für die letzte Seite deines Fragebogens."
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "heading": "SoSci Survey Integration",
+            "content": "Das heruntergeladene XML-Template wird in SoSci Survey importiert und als letzte Seite des Fragebogens eingebunden. Es enthält einen Redirect-Link mit der Umfrage-ID und dem Secret, der die Teilnehmenden nach Abschluss automatisch zur Claim-Seite weiterleitet."
+          },
+          {
+            "type": "list",
+            "heading": "Verwaltungsfunktionen",
+            "items": [
+              "Umfragen deaktivieren: Beende eine Studie, sodass keine neuen Claims mehr möglich sind.",
+              "Template erneut herunterladen: Falls das Secret im Browser gespeichert ist, kannst du das Template jederzeit erneut herunterladen.",
+              "Claim-Statistiken: Sieh in Echtzeit, wie viele Teilnehmende ihre Punkte eingelöst haben."
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "warning",
+            "content": "Das Secret wird nur als Hash auf der Blockchain gespeichert. Wenn du es verlierst und es nicht im Browser gespeichert ist, musst du es erneut eingeben, um ein Template herunterzuladen."
+          }
         ]
       },
       "admin-dashboard": {
         "title": "Das Admin-Dashboard",
         "description": "Alles über das Lehrenden-Dashboard: Metriken, Umfragetabelle, Filter und System-Status.",
         "sections": [
-          { "type": "text", "heading": "Übersicht", "content": "Das Admin-Dashboard ist die zentrale Verwaltungsoberfläche für Lehrende. Es zeigt auf einen Blick alle wichtigen Kennzahlen, erlaubt die Verwaltung von Umfragen und bietet Zugriff auf Rollen- und Abgabenverwaltung." },
-          { "type": "list", "heading": "Metriken", "items": [
-            "Umfragen gesamt: Die Gesamtanzahl aller registrierten Studien.",
-            "Aktive Umfragen: Studien, die aktuell Claims annehmen.",
-            "Claims gesamt: Die Summe aller eingelösten Punkte-Claims.",
-            "Vergebene Punkte: Die Gesamtzahl aller vergebenen Punkte über alle Studien."
-          ]},
-          { "type": "text", "heading": "Umfragetabelle", "content": "Die Tabelle zeigt alle registrierten Studien mit Titel, ID, Punktzahl, Claim-Anzahl und Status. Du kannst:\n\n-- Nach Status filtern (alle, aktiv, inaktiv)\n-- Sortieren (neueste/älteste zuerst)\n-- Seitenweise blättern (10, 25 oder 50 pro Seite)\n-- Klicke auf eine Umfrage, um Details zu sehen und Aktionen durchzuführen." },
-          { "type": "text", "heading": "System-Status", "content": "Am unteren Ende des Dashboards findest du den aufklappbaren System-Status. Er zeigt das Guthaben des Backend-Wallets, geschätzte verbleibende Claims, Gas-Kosten und eine Warnung bei niedrigem Guthaben. So erkennst du frühzeitig, wenn das Backend-Wallet aufgeladen werden muss." }
+          {
+            "type": "text",
+            "heading": "Übersicht",
+            "content": "Das Admin-Dashboard ist die zentrale Verwaltungsoberfläche für Lehrende. Es zeigt auf einen Blick alle wichtigen Kennzahlen, erlaubt die Verwaltung von Umfragen und bietet Zugriff auf Rollen- und Abgabenverwaltung."
+          },
+          {
+            "type": "list",
+            "heading": "Metriken",
+            "items": [
+              "Umfragen gesamt: Die Gesamtanzahl aller registrierten Studien.",
+              "Aktive Umfragen: Studien, die aktuell Claims annehmen.",
+              "Claims gesamt: Die Summe aller eingelösten Punkte-Claims.",
+              "Vergebene Punkte: Die Gesamtzahl aller vergebenen Punkte über alle Studien."
+            ]
+          },
+          {
+            "type": "text",
+            "heading": "Umfragetabelle",
+            "content": "Die Tabelle zeigt alle registrierten Studien mit Titel, ID, Punktzahl, Claim-Anzahl und Status. Du kannst:\n\n-- Nach Status filtern (alle, aktiv, inaktiv)\n-- Sortieren (neueste/älteste zuerst)\n-- Seitenweise blättern (10, 25 oder 50 pro Seite)\n-- Klicke auf eine Umfrage, um Details zu sehen und Aktionen durchzuführen."
+          },
+          {
+            "type": "text",
+            "heading": "System-Status",
+            "content": "Am unteren Ende des Dashboards findest du den aufklappbaren System-Status. Er zeigt das Guthaben des Backend-Wallets, geschätzte verbleibende Claims, Gas-Kosten und eine Warnung bei niedrigem Guthaben. So erkennst du frühzeitig, wenn das Backend-Wallet aufgeladen werden muss."
+          }
         ]
       },
       "role-management": {
         "title": "Rollen und Berechtigungen",
         "description": "Wie Admin- und Minter-Rollen im Smart Contract funktionieren und verwaltet werden.",
         "sections": [
-          { "type": "text", "heading": "Rollenkonzept", "content": "Das VPP-System verwendet zwei Rollen, die direkt im Smart Contract auf der Blockchain gespeichert sind:\n\nADMIN_ROLE: Kann Umfragen registrieren, deaktivieren, andere Admins hinzufügen/entfernen und Studierenden-Abgaben markieren.\n\nMINTER_ROLE: Kann Punkte vergeben. Diese Rolle wird dem Backend-Wallet zugewiesen, das die Transaktionen für Studierende durchführt." },
+          {
+            "type": "text",
+            "heading": "Rollenkonzept",
+            "content": "Das VPP-System verwendet zwei Rollen, die direkt im Smart Contract auf der Blockchain gespeichert sind:\n\nADMIN_ROLE: Kann Umfragen registrieren, deaktivieren, andere Admins hinzufügen/entfernen und Studierenden-Abgaben markieren.\n\nMINTER_ROLE: Kann Punkte vergeben. Diese Rolle wird dem Backend-Wallet zugewiesen, das die Transaktionen für Studierende durchführt."
+          },
           { "type": "diagram", "diagramId": "smart-contract" },
-          { "type": "text", "heading": "Admin-Verwaltung", "content": "Im Admin-Dashboard gibt es den Bereich \"Admin-Rollenverwaltung\". Dort siehst du alle aktuellen Admins und kannst:\n\n-- Neue Admin-Wallets hinzufügen (Wallet-Adresse eingeben)\n-- Bestehende Admins entfernen\n-- Deinen eigenen Status sehen\n\nAlle Änderungen werden als Transaktion auf der Blockchain gespeichert und sind unveränderlich protokolliert." },
-          { "type": "callout", "variant": "info", "content": "Jeder Admin kann andere Admins hinzufügen oder entfernen. Das bedeutet: Der erste Admin (der Deployer des Contracts) muss den anderen Lehrenden die Admin-Rolle zuweisen." }
+          {
+            "type": "text",
+            "heading": "Admin-Verwaltung",
+            "content": "Im Admin-Dashboard gibt es den Bereich \"Admin-Rollenverwaltung\". Dort siehst du alle aktuellen Admins und kannst:\n\n-- Neue Admin-Wallets hinzufügen (Wallet-Adresse eingeben)\n-- Bestehende Admins entfernen\n-- Deinen eigenen Status sehen\n\nAlle Änderungen werden als Transaktion auf der Blockchain gespeichert und sind unveränderlich protokolliert."
+          },
+          {
+            "type": "callout",
+            "variant": "info",
+            "content": "Jeder Admin kann andere Admins hinzufügen oder entfernen. Das bedeutet: Der erste Admin (der Deployer des Contracts) muss den anderen Lehrenden die Admin-Rolle zuweisen."
+          }
         ]
       },
       "submission-tracking": {
         "title": "Studierenden-Abgaben verwalten",
         "description": "Wallets als abgegeben markieren, um doppelte Zulassungen zur Bachelorarbeit zu verhindern.",
         "sections": [
-          { "type": "text", "heading": "Warum Abgaben tracken?", "content": "Wenn Studierende genügend Punkte gesammelt haben, zeigen sie ihren Public Key dem Prüfer, der den Punktestand überprüft. Damit nicht mehrere Studierende dieselbe Wallet verwenden oder dieselbe Wallet mehrfach zur Zulassung vorgelegt wird, können Prüfer Wallets als abgegeben markieren." },
-          { "type": "steps", "heading": "Ablauf", "steps": [
-            { "title": "Wallet suchen", "text": "Gib im Bereich \"Studierenden-Abgaben\" die Wallet-Adresse des Studierenden ein. Du siehst sofort den aktuellen Punktestand und den Abgabestatus." },
-            { "title": "Als abgegeben markieren", "text": "Klicke auf \"Als abgegeben markieren\" und bestätige die Aktion. Die Markierung wird als Transaktion auf der Blockchain gespeichert." },
-            { "title": "Studierende sehen den Status", "text": "Markierte Wallets zeigen in ihrem Punkte-Dashboard einen grünen Hinweis an, dass die Abgabe erfolgreich registriert wurde." }
-          ]},
-          { "type": "callout", "variant": "tip", "content": "Falls eine Markierung versehentlich gesetzt wurde, kannst du sie jederzeit wieder aufheben. Auch diese Aktion wird auf der Blockchain protokolliert." }
+          {
+            "type": "text",
+            "heading": "Warum Abgaben tracken?",
+            "content": "Wenn Studierende genügend Punkte gesammelt haben, zeigen sie ihren Public Key dem Prüfer, der den Punktestand überprüft. Damit nicht mehrere Studierende dieselbe Wallet verwenden oder dieselbe Wallet mehrfach zur Zulassung vorgelegt wird, können Prüfer Wallets als abgegeben markieren."
+          },
+          {
+            "type": "steps",
+            "heading": "Ablauf",
+            "steps": [
+              {
+                "title": "Wallet suchen",
+                "text": "Gib im Bereich \"Studierenden-Abgaben\" die Wallet-Adresse des Studierenden ein. Du siehst sofort den aktuellen Punktestand und den Abgabestatus."
+              },
+              {
+                "title": "Als abgegeben markieren",
+                "text": "Klicke auf \"Als abgegeben markieren\" und bestätige die Aktion. Die Markierung wird als Transaktion auf der Blockchain gespeichert."
+              },
+              {
+                "title": "Studierende sehen den Status",
+                "text": "Markierte Wallets zeigen in ihrem Punkte-Dashboard einen grünen Hinweis an, dass die Abgabe erfolgreich registriert wurde."
+              }
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "tip",
+            "content": "Falls eine Markierung versehentlich gesetzt wurde, kannst du sie jederzeit wieder aufheben. Auch diese Aktion wird auf der Blockchain protokolliert."
+          }
         ]
       },
       "what-is-blockchain": {
         "title": "Was ist eine Blockchain?",
         "description": "Eine verständliche Einführung in die Blockchain-Technologie -- ohne Vorwissen.",
         "sections": [
-          { "type": "text", "heading": "Die Grundidee", "content": "Eine Blockchain ist ein digitales Register (Ledger), das von vielen Computern gleichzeitig geführt wird. Statt einer zentralen Datenbank, die ein einzelnes Unternehmen kontrolliert, wird die Blockchain von einem Netzwerk betrieben.\n\nDas Besondere: Einmal gespeicherte Daten können nicht mehr verändert oder gelöscht werden. Jeder kann die Einträge überprüfen, aber niemand kann sie nachträglich manipulieren." },
+          {
+            "type": "text",
+            "heading": "Die Grundidee",
+            "content": "Eine Blockchain ist ein digitales Register (Ledger), das von vielen Computern gleichzeitig geführt wird. Statt einer zentralen Datenbank, die ein einzelnes Unternehmen kontrolliert, wird die Blockchain von einem Netzwerk betrieben.\n\nDas Besondere: Einmal gespeicherte Daten können nicht mehr verändert oder gelöscht werden. Jeder kann die Einträge überprüfen, aber niemand kann sie nachträglich manipulieren."
+          },
           { "type": "diagram", "diagramId": "blockchain-chain" },
-          { "type": "text", "heading": "Wie funktioniert das?", "content": "Daten werden in Blöcken gespeichert. Jeder Block enthält:\n\n1. Die eigentlichen Daten (z.B. Transaktionen, Punkte-Vergaben)\n2. Einen Hash -- einen einzigartigen digitalen Fingerabdruck des Blocks\n3. Den Hash des vorherigen Blocks\n\nDurch diese Verkettung entsteht eine Kette (Chain). Wird ein älterer Block verändert, stimmen alle nachfolgenden Hashes nicht mehr -- die Manipulation fällt sofort auf." },
-          { "type": "text", "heading": "Warum ist das für VPP relevant?", "content": "VPP Blockchain nutzt diese Eigenschaften, um Versuchspersonenpunkte fälschungssicher zu speichern. Niemand kann sich selbst Punkte zuschreiben, vergangene Einträge manipulieren oder behaupten, Punkte zu haben, die nicht vergeben wurden. Gleichzeitig ist für jeden transparent nachvollziehbar, welche Punkte vergeben wurden." },
-          { "type": "callout", "variant": "info", "content": "Du musst nicht verstehen, wie die Blockchain im Detail funktioniert, um VPP nutzen zu können. Das System übernimmt alles automatisch im Hintergrund." }
+          {
+            "type": "text",
+            "heading": "Wie funktioniert das?",
+            "content": "Daten werden in Blöcken gespeichert. Jeder Block enthält:\n\n1. Die eigentlichen Daten (z.B. Transaktionen, Punkte-Vergaben)\n2. Einen Hash -- einen einzigartigen digitalen Fingerabdruck des Blocks\n3. Den Hash des vorherigen Blocks\n\nDurch diese Verkettung entsteht eine Kette (Chain). Wird ein älterer Block verändert, stimmen alle nachfolgenden Hashes nicht mehr -- die Manipulation fällt sofort auf."
+          },
+          {
+            "type": "text",
+            "heading": "Warum ist das für VPP relevant?",
+            "content": "VPP Blockchain nutzt diese Eigenschaften, um Versuchspersonenpunkte fälschungssicher zu speichern. Niemand kann sich selbst Punkte zuschreiben, vergangene Einträge manipulieren oder behaupten, Punkte zu haben, die nicht vergeben wurden. Gleichzeitig ist für jeden transparent nachvollziehbar, welche Punkte vergeben wurden."
+          },
+          {
+            "type": "callout",
+            "variant": "info",
+            "content": "Du musst nicht verstehen, wie die Blockchain im Detail funktioniert, um VPP nutzen zu können. Das System übernimmt alles automatisch im Hintergrund."
+          }
         ]
       },
       "cryptography": {
         "title": "Kryptografie einfach erklärt",
         "description": "Hashing, digitale Signaturen und asymmetrische Verschlüsselung -- die Grundlagen hinter VPP.",
         "sections": [
-          { "type": "text", "heading": "Was ist Kryptografie?", "content": "Kryptografie ist die Wissenschaft der Verschlüsselung. In VPP Blockchain werden drei kryptografische Konzepte verwendet: Hashing, digitale Signaturen und asymmetrische Schlüsselpaare." },
-          { "type": "text", "heading": "Hashing", "content": "Ein Hash ist ein digitaler Fingerabdruck. Eine Hash-Funktion nimmt beliebige Daten und erzeugt daraus eine Zeichenkette fester Länge. Dabei gilt:\n\n-- Gleiche Eingabe ergibt immer den gleichen Hash\n-- Selbst kleinste Änderungen erzeugen einen völlig anderen Hash\n-- Aus dem Hash kann man die Originaldaten nicht zurückberechnen\n\nBeispiel: Das Wort \"Hallo\" ergibt den Hash 0x1c8a... -- ändert man es zu \"Hallo!\" wird daraus 0x9f3b... (komplett anders).\n\nIn VPP wird Hashing verwendet, um das Secret einer Umfrage zu schützen. Nur der Hash wird auf der Blockchain gespeichert, nicht das Secret selbst." },
+          {
+            "type": "text",
+            "heading": "Was ist Kryptografie?",
+            "content": "Kryptografie ist die Wissenschaft der Verschlüsselung. In VPP Blockchain werden drei kryptografische Konzepte verwendet: Hashing, digitale Signaturen und asymmetrische Schlüsselpaare."
+          },
+          {
+            "type": "text",
+            "heading": "Hashing",
+            "content": "Ein Hash ist ein digitaler Fingerabdruck. Eine Hash-Funktion nimmt beliebige Daten und erzeugt daraus eine Zeichenkette fester Länge. Dabei gilt:\n\n-- Gleiche Eingabe ergibt immer den gleichen Hash\n-- Selbst kleinste Änderungen erzeugen einen völlig anderen Hash\n-- Aus dem Hash kann man die Originaldaten nicht zurückberechnen\n\nBeispiel: Das Wort \"Hallo\" ergibt den Hash 0x1c8a... -- ändert man es zu \"Hallo!\" wird daraus 0x9f3b... (komplett anders).\n\nIn VPP wird Hashing verwendet, um das Secret einer Umfrage zu schützen. Nur der Hash wird auf der Blockchain gespeichert, nicht das Secret selbst."
+          },
           { "type": "diagram", "diagramId": "public-private-key" },
-          { "type": "text", "heading": "Digitale Signaturen", "content": "Eine digitale Signatur beweist, dass eine Nachricht von einem bestimmten Absender stammt und nicht verändert wurde. In VPP signierst du bei jedem Claim eine Nachricht mit deinem Private Key.\n\nDas Backend kann dann mit deinem Public Key überprüfen, ob die Signatur gültig ist -- ohne deinen Private Key zu kennen. Dieses Verfahren heißt EIP-191 und ist ein Standard auf Ethereum." },
-          { "type": "text", "heading": "Asymmetrische Verschlüsselung", "content": "Public und Private Key bilden ein mathematisches Paar. Der Private Key kann Nachrichten signieren, der Public Key kann Signaturen überprüfen. Aus dem Public Key lässt sich der Private Key nicht berechnen -- selbst mit modernster Rechenpower nicht.\n\nDeshalb ist es sicher, deinen Public Key (deine Wallet-Adresse) zu teilen, solange du deinen Private Key geheim hältst." }
+          {
+            "type": "text",
+            "heading": "Digitale Signaturen",
+            "content": "Eine digitale Signatur beweist, dass eine Nachricht von einem bestimmten Absender stammt und nicht verändert wurde. In VPP signierst du bei jedem Claim eine Nachricht mit deinem Private Key.\n\nDas Backend kann dann mit deinem Public Key überprüfen, ob die Signatur gültig ist -- ohne deinen Private Key zu kennen. Dieses Verfahren heißt EIP-191 und ist ein Standard auf Ethereum."
+          },
+          {
+            "type": "text",
+            "heading": "Asymmetrische Verschlüsselung",
+            "content": "Public und Private Key bilden ein mathematisches Paar. Der Private Key kann Nachrichten signieren, der Public Key kann Signaturen überprüfen. Aus dem Public Key lässt sich der Private Key nicht berechnen -- selbst mit modernster Rechenpower nicht.\n\nDeshalb ist es sicher, deinen Public Key (deine Wallet-Adresse) zu teilen, solange du deinen Private Key geheim hältst."
+          }
         ]
       },
       "smart-contracts": {
         "title": "Smart Contracts verstehen",
         "description": "Was Smart Contracts sind, wie der SurveyPoints-Vertrag funktioniert und was er kostet.",
         "sections": [
-          { "type": "text", "heading": "Was ist ein Smart Contract?", "content": "Ein Smart Contract ist ein Programm, das auf der Blockchain ausgeführt wird. Es läuft automatisch, kann nicht verändert werden und ist für jeden einsehbar. Man kann sich das wie einen Automaten vorstellen: Wenn die richtigen Bedingungen erfüllt sind, führt er die programmierte Aktion aus.\n\nSmart Contracts werden in der Programmiersprache Solidity geschrieben und auf der Ethereum-Blockchain (bzw. Layer-2-Netzwerken wie Base) deployed." },
+          {
+            "type": "text",
+            "heading": "Was ist ein Smart Contract?",
+            "content": "Ein Smart Contract ist ein Programm, das auf der Blockchain ausgeführt wird. Es läuft automatisch, kann nicht verändert werden und ist für jeden einsehbar. Man kann sich das wie einen Automaten vorstellen: Wenn die richtigen Bedingungen erfüllt sind, führt er die programmierte Aktion aus.\n\nSmart Contracts werden in der Programmiersprache Solidity geschrieben und auf der Ethereum-Blockchain (bzw. Layer-2-Netzwerken wie Base) deployed."
+          },
           { "type": "diagram", "diagramId": "smart-contract" },
-          { "type": "text", "heading": "Der SurveyPoints-Vertrag", "content": "VPP Blockchain verwendet einen einzigen Smart Contract namens SurveyPoints. Er speichert:\n\n-- Umfragen (ID, Secret-Hash, Punktzahl, Status)\n-- Punkte pro Wallet und Umfrage\n-- Gesamtpunktzahl pro Wallet\n-- Ob ein Wallet schon geclaimed hat\n-- Ob ein Wallet als abgegeben markiert wurde\n-- Wer Admin- und Minter-Rechte hat\n\nDer Vertrag ist Open Source und kann von jedem auf BaseScan eingesehen und überprüft werden." },
-          { "type": "list", "heading": "Kosten (Gas Fees)", "items": [
-            "Contract Deployment: ~0,50 $ (einmalig)",
-            "Umfrage registrieren: ~0,005 $",
-            "Punkte vergeben (erster Claim): ~0,003 $",
-            "Punkte vergeben (weitere Claims): ~0,002 $",
-            "Lese-Operationen (Punktestand abfragen): kostenlos"
-          ]},
-          { "type": "callout", "variant": "tip", "content": "Alle Transaktionskosten werden vom Backend-Wallet bezahlt. Studierende zahlen nichts." }
+          {
+            "type": "text",
+            "heading": "Der SurveyPoints-Vertrag",
+            "content": "VPP Blockchain verwendet einen einzigen Smart Contract namens SurveyPoints. Er speichert:\n\n-- Umfragen (ID, Secret-Hash, Punktzahl, Status)\n-- Punkte pro Wallet und Umfrage\n-- Gesamtpunktzahl pro Wallet\n-- Ob ein Wallet schon geclaimed hat\n-- Ob ein Wallet als abgegeben markiert wurde\n-- Wer Admin- und Minter-Rechte hat\n\nDer Vertrag ist Open Source und kann von jedem auf BaseScan eingesehen und überprüft werden."
+          },
+          {
+            "type": "list",
+            "heading": "Kosten (Gas Fees)",
+            "items": [
+              "Contract Deployment: ~0,50 $ (einmalig)",
+              "Umfrage registrieren: ~0,005 $",
+              "Punkte vergeben (erster Claim): ~0,003 $",
+              "Punkte vergeben (weitere Claims): ~0,002 $",
+              "Lese-Operationen (Punktestand abfragen): kostenlos"
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "tip",
+            "content": "Alle Transaktionskosten werden vom Backend-Wallet bezahlt. Studierende zahlen nichts."
+          }
         ]
       },
       "base-l2": {
         "title": "Base L2 und Ethereum",
         "description": "Was ein Layer-2-Netzwerk ist, warum wir Base nutzen und was das für dich bedeutet.",
         "sections": [
-          { "type": "text", "heading": "Ethereum und das Skalierungsproblem", "content": "Ethereum ist die bekannteste Blockchain für Smart Contracts. Allerdings sind Transaktionen auf Ethereum teuer (oft mehrere Dollar) und langsam (bis zu 15 Sekunden). Für ein System wie VPP, in dem viele kleine Transaktionen stattfinden, wäre das unpraktisch und zu teuer." },
+          {
+            "type": "text",
+            "heading": "Ethereum und das Skalierungsproblem",
+            "content": "Ethereum ist die bekannteste Blockchain für Smart Contracts. Allerdings sind Transaktionen auf Ethereum teuer (oft mehrere Dollar) und langsam (bis zu 15 Sekunden). Für ein System wie VPP, in dem viele kleine Transaktionen stattfinden, wäre das unpraktisch und zu teuer."
+          },
           { "type": "diagram", "diagramId": "layer-2" },
-          { "type": "text", "heading": "Was ist ein Layer 2?", "content": "Layer-2-Netzwerke (L2) lösen dieses Problem. Sie verarbeiten Transaktionen schnell und günstig auf einem eigenen Netzwerk und schreiben die Ergebnisse gebündelt auf Ethereum zurück. Die Sicherheit von Ethereum bleibt erhalten, aber die Kosten sinken drastisch." },
-          { "type": "text", "heading": "Warum Base?", "content": "Base ist ein Layer-2-Netzwerk, das von Coinbase betrieben wird. Es bietet:\n\n-- Extrem niedrige Transaktionskosten (~0,002 $ pro Transaktion)\n-- Schnelle Bestätigungszeiten (~2 Sekunden)\n-- Volle Kompatibilität mit Ethereum (gleiche Tools, gleiche Sprache)\n-- Zuverlässige öffentliche RPC-Endpunkte\n-- Sicherheit durch Ethereum als Basis-Layer" },
-          { "type": "callout", "variant": "info", "content": "Für Studierende macht es keinen Unterschied, auf welcher Blockchain die Punkte gespeichert sind. Das System funktioniert im Hintergrund und ist genauso einfach zu bedienen wie jede andere Webseite." }
+          {
+            "type": "text",
+            "heading": "Was ist ein Layer 2?",
+            "content": "Layer-2-Netzwerke (L2) lösen dieses Problem. Sie verarbeiten Transaktionen schnell und günstig auf einem eigenen Netzwerk und schreiben die Ergebnisse gebündelt auf Ethereum zurück. Die Sicherheit von Ethereum bleibt erhalten, aber die Kosten sinken drastisch."
+          },
+          {
+            "type": "text",
+            "heading": "Warum Base?",
+            "content": "Base ist ein Layer-2-Netzwerk, das von Coinbase betrieben wird. Es bietet:\n\n-- Extrem niedrige Transaktionskosten (~0,002 $ pro Transaktion)\n-- Schnelle Bestätigungszeiten (~2 Sekunden)\n-- Volle Kompatibilität mit Ethereum (gleiche Tools, gleiche Sprache)\n-- Zuverlässige öffentliche RPC-Endpunkte\n-- Sicherheit durch Ethereum als Basis-Layer"
+          },
+          {
+            "type": "callout",
+            "variant": "info",
+            "content": "Für Studierende macht es keinen Unterschied, auf welcher Blockchain die Punkte gespeichert sind. Das System funktioniert im Hintergrund und ist genauso einfach zu bedienen wie jede andere Webseite."
+          }
         ]
       },
       "about": {
         "title": "Über VPP Blockchain",
         "description": "Motivation, Ziele und die Geschichte hinter dem Projekt.",
         "sections": [
-          { "type": "text", "heading": "Was ist VPP Blockchain?", "content": "VPP Blockchain ist ein Open-Source-Projekt, das Versuchspersonenpunkte (VPP) digital und fälschungssicher auf der Blockchain verwaltet. Es wurde an der Hochschule Bielefeld (HSBI) entwickelt und kann von anderen Hochschulen frei genutzt und angepasst werden." },
-          { "type": "text", "heading": "Motivation", "content": "In vielen Psychologie-Studiengängen müssen Studierende eine bestimmte Anzahl an Versuchspersonenstunden (VP-Stunden) nachweisen. Traditionell geschieht dies über Papierscheine oder einfache Web-Formulare -- fehleranfällig, leicht zu fälschen und schwer zu verwalten.\n\nVPP Blockchain löst diese Probleme, indem es die Blockchain als fälschungssichere Datenbank nutzt. Jeder Punkt ist transparent, überprüfbar und unveränderlich gespeichert." },
-          { "type": "list", "heading": "Ziele des Projekts", "items": [
-            "Fälschungssicherheit: Keine manipulierten oder duplizierten Punktescheine mehr.",
-            "Transparenz: Jeder kann den Punktestand eines Wallets überprüfen.",
-            "Einfachheit: Studierende brauchen weder Geld noch technisches Vorwissen.",
-            "Open Source: Der Code ist frei verfügbar und kann von anderen Hochschulen genutzt werden.",
-            "Datenschutz: Keine persönlichen Daten auf der Blockchain -- nur Wallet-Adressen und Punkte."
-          ]},
-          { "type": "callout", "variant": "info", "content": "VPP Blockchain ist vollständig Open Source und auf GitHub verfügbar. Beiträge, Feedback und Feature-Requests sind willkommen!" }
+          {
+            "type": "text",
+            "heading": "Was ist VPP Blockchain?",
+            "content": "VPP Blockchain ist ein Open-Source-Projekt, das Versuchspersonenpunkte (VPP) digital und fälschungssicher auf der Blockchain verwaltet. Es wurde an der Hochschule Bielefeld (HSBI) entwickelt und kann von anderen Hochschulen frei genutzt und angepasst werden."
+          },
+          {
+            "type": "text",
+            "heading": "Motivation",
+            "content": "In vielen Psychologie-Studiengängen müssen Studierende eine bestimmte Anzahl an Versuchspersonenstunden (VP-Stunden) nachweisen. Traditionell geschieht dies über Papierscheine oder einfache Web-Formulare -- fehleranfällig, leicht zu fälschen und schwer zu verwalten.\n\nVPP Blockchain löst diese Probleme, indem es die Blockchain als fälschungssichere Datenbank nutzt. Jeder Punkt ist transparent, überprüfbar und unveränderlich gespeichert."
+          },
+          {
+            "type": "list",
+            "heading": "Ziele des Projekts",
+            "items": [
+              "Fälschungssicherheit: Keine manipulierten oder duplizierten Punktescheine mehr.",
+              "Transparenz: Jeder kann den Punktestand eines Wallets überprüfen.",
+              "Einfachheit: Studierende brauchen weder Geld noch technisches Vorwissen.",
+              "Open Source: Der Code ist frei verfügbar und kann von anderen Hochschulen genutzt werden.",
+              "Datenschutz: Keine persönlichen Daten auf der Blockchain -- nur Wallet-Adressen und Punkte."
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "info",
+            "content": "VPP Blockchain ist vollständig Open Source und auf GitHub verfügbar. Beiträge, Feedback und Feature-Requests sind willkommen!"
+          }
         ]
       },
       "for-universities": {
         "title": "Für Universitäten",
         "description": "Wie andere Hochschulen VPP Blockchain für ihre eigenen VP-Stunden einsetzen können.",
         "sections": [
-          { "type": "text", "heading": "Eigene Instanz aufsetzen", "content": "VPP Blockchain ist als Open-Source-Projekt konzipiert, das von jeder Hochschule eigenständig betrieben werden kann. Jede Universität deployed ihren eigenen Smart Contract auf der Blockchain und betreibt ihr eigenes Frontend und Backend." },
-          { "type": "text", "heading": "Drei Integrationsstufen", "content": "Level 1 -- Vollständiges Deployment (empfohlen): Eigener Smart Contract, eigenes Backend und Frontend. Volle Kontrolle über Branding, Texte und Konfiguration.\n\nLevel 2 -- Eigenes Frontend: Nutzt den bereitgestellten Smart Contract und das Backend, aber mit eigenem Frontend-Design.\n\nLevel 3 -- Nur Smart Contract: Interagiert direkt mit dem Smart Contract über eigene Tools oder Scripts." },
-          { "type": "list", "heading": "Anpassungsmöglichkeiten", "items": [
-            "Logo und Branding: Eigenes Universitätslogo im Header (Light + Dark Mode)",
-            "Farbschema: Anpassbare CSS-Variablen für das gesamte Theming",
-            "Texte und Sprache: Vollständige i18n-Unterstützung (DE/EN), weitere Sprachen einfach hinzufügbar",
-            "Kontaktdaten: Impressum, Datenschutz und Kontaktinformationen individuell konfigurierbar",
-            "Blockchain-Netzwerk: Frei wählbar (Base Mainnet, Base Sepolia Testnet oder andere EVM-Chains)"
-          ]},
-          { "type": "list", "heading": "Geschätzte Kosten", "items": [
-            "Contract Deployment: ~0,50 $",
-            "Backend-Server: Ab ~5 $/Monat (einfacher VPS oder Plesk)",
-            "Laufende Blockchain-Kosten: ~0,002 $ pro Claim",
-            "Ein Semester mit 200 Studierenden und 3 Studien: ~1,20 $ Blockchain-Kosten",
-            "Eine Einzahlung von 10 $ reicht für ca. 8 Semester"
-          ]},
-          { "type": "callout", "variant": "tip", "content": "Die vollständige Deployment-Anleitung findest du im Repository unter docs/deployment.md. Bei Fragen oder Problemen kannst du ein GitHub Issue erstellen." }
+          {
+            "type": "text",
+            "heading": "Eigene Instanz aufsetzen",
+            "content": "VPP Blockchain ist als Open-Source-Projekt konzipiert, das von jeder Hochschule eigenständig betrieben werden kann. Jede Universität deployed ihren eigenen Smart Contract auf der Blockchain und betreibt ihr eigenes Frontend und Backend."
+          },
+          {
+            "type": "text",
+            "heading": "Drei Integrationsstufen",
+            "content": "Level 1 -- Vollständiges Deployment (empfohlen): Eigener Smart Contract, eigenes Backend und Frontend. Volle Kontrolle über Branding, Texte und Konfiguration.\n\nLevel 2 -- Eigenes Frontend: Nutzt den bereitgestellten Smart Contract und das Backend, aber mit eigenem Frontend-Design.\n\nLevel 3 -- Nur Smart Contract: Interagiert direkt mit dem Smart Contract über eigene Tools oder Scripts."
+          },
+          {
+            "type": "list",
+            "heading": "Anpassungsmöglichkeiten",
+            "items": [
+              "Logo und Branding: Eigenes Universitätslogo im Header (Light + Dark Mode)",
+              "Farbschema: Anpassbare CSS-Variablen für das gesamte Theming",
+              "Texte und Sprache: Vollständige i18n-Unterstützung (DE/EN), weitere Sprachen einfach hinzufügbar",
+              "Kontaktdaten: Impressum, Datenschutz und Kontaktinformationen individuell konfigurierbar",
+              "Blockchain-Netzwerk: Frei wählbar (Base Mainnet, Base Sepolia Testnet oder andere EVM-Chains)"
+            ]
+          },
+          {
+            "type": "list",
+            "heading": "Geschätzte Kosten",
+            "items": [
+              "Contract Deployment: ~0,50 $",
+              "Backend-Server: Ab ~5 $/Monat (einfacher VPS oder Plesk)",
+              "Laufende Blockchain-Kosten: ~0,002 $ pro Claim",
+              "Ein Semester mit 200 Studierenden und 3 Studien: ~1,20 $ Blockchain-Kosten",
+              "Eine Einzahlung von 10 $ reicht für ca. 8 Semester"
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "tip",
+            "content": "Die vollständige Deployment-Anleitung findest du im Repository unter docs/deployment.md. Bei Fragen oder Problemen kannst du ein GitHub Issue erstellen."
+          }
         ]
       },
       "security-privacy": {
         "title": "Sicherheit und Datenschutz",
         "description": "Welche Daten auf der Blockchain gespeichert werden und welche nicht.",
         "sections": [
-          { "type": "text", "heading": "Was wird gespeichert?", "content": "Auf der Blockchain werden ausschließlich technische Daten gespeichert:\n\n-- Wallet-Adressen (keine Namen, keine E-Mail-Adressen, keine Matrikelnummern)\n-- Punkte pro Wallet und Umfrage\n-- Gesamtpunktzahl pro Wallet\n-- Ob ein Wallet geclaimed oder als abgegeben markiert wurde\n-- Umfrage-Konfigurationen (ID, Punktzahl, Status, Secret-Hash)\n\nKeine persönlichen Daten werden auf der Blockchain gespeichert. Die Verbindung zwischen einer Person und ihrer Wallet-Adresse ist nur der Person selbst bekannt." },
-          { "type": "text", "heading": "Was ist öffentlich sichtbar?", "content": "Blockchain-Daten sind grundsätzlich öffentlich. Jeder kann sehen, welche Wallet-Adresse wie viele Punkte hat. Allerdings ist ohne zusätzliche Information nicht erkennbar, wem eine Wallet gehört.\n\nBeispiel: Man kann sehen, dass 0x71C7...4Fe2 insgesamt 8 Punkte hat -- aber nicht, dass das die Wallet von Max Mustermann ist." },
-          { "type": "list", "heading": "Sicherheitsmaßnahmen", "items": [
-            "Private Keys verlassen nie den Browser des Nutzers.",
-            "Alle Signaturen werden lokal erstellt -- das Backend sieht nur die Signatur, nicht den Key.",
-            "Das Backend ist stateless -- es speichert keine Nutzerdaten in einer Datenbank.",
-            "Rate-Limiting schützt vor Brute-Force-Angriffen auf Claims.",
-            "Admin-Zugriff erfordert eine kryptografische Signatur mit einem autorisierten Wallet.",
-            "Der Smart Contract ist Open Source und mit OpenZeppelin-Standardbibliotheken gebaut."
-          ]},
-          { "type": "callout", "variant": "warning", "content": "Obwohl keine persönlichen Daten auf der Blockchain gespeichert werden, solltest du deinen Public Key nicht unnötig öffentlich verbreiten. Die Kombination von Public Key und Kontext (z.B. in einem Forum-Post) könnte eine Zuordnung ermöglichen." }
+          {
+            "type": "text",
+            "heading": "Was wird gespeichert?",
+            "content": "Auf der Blockchain werden ausschließlich technische Daten gespeichert:\n\n-- Wallet-Adressen (keine Namen, keine E-Mail-Adressen, keine Matrikelnummern)\n-- Punkte pro Wallet und Umfrage\n-- Gesamtpunktzahl pro Wallet\n-- Ob ein Wallet geclaimed oder als abgegeben markiert wurde\n-- Umfrage-Konfigurationen (ID, Punktzahl, Status, Secret-Hash)\n\nKeine persönlichen Daten werden auf der Blockchain gespeichert. Die Verbindung zwischen einer Person und ihrer Wallet-Adresse ist nur der Person selbst bekannt."
+          },
+          {
+            "type": "text",
+            "heading": "Was ist öffentlich sichtbar?",
+            "content": "Blockchain-Daten sind grundsätzlich öffentlich. Jeder kann sehen, welche Wallet-Adresse wie viele Punkte hat. Allerdings ist ohne zusätzliche Information nicht erkennbar, wem eine Wallet gehört.\n\nBeispiel: Man kann sehen, dass 0x71C7...4Fe2 insgesamt 8 Punkte hat -- aber nicht, dass das die Wallet von Max Mustermann ist."
+          },
+          {
+            "type": "list",
+            "heading": "Sicherheitsmaßnahmen",
+            "items": [
+              "Private Keys verlassen nie den Browser des Nutzers.",
+              "Alle Signaturen werden lokal erstellt -- das Backend sieht nur die Signatur, nicht den Key.",
+              "Das Backend ist stateless -- es speichert keine Nutzerdaten in einer Datenbank.",
+              "Rate-Limiting schützt vor Brute-Force-Angriffen auf Claims.",
+              "Admin-Zugriff erfordert eine kryptografische Signatur mit einem autorisierten Wallet.",
+              "Der Smart Contract ist Open Source und mit OpenZeppelin-Standardbibliotheken gebaut."
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "warning",
+            "content": "Obwohl keine persönlichen Daten auf der Blockchain gespeichert werden, solltest du deinen Public Key nicht unnötig öffentlich verbreiten. Die Kombination von Public Key und Kontext (z.B. in einem Forum-Post) könnte eine Zuordnung ermöglichen."
+          }
         ]
       },
       "faq": {
@@ -268,36 +562,76 @@
         "description": "Antworten auf die wichtigsten Fragen rund um VPP Blockchain.",
         "sections": [
           { "type": "text", "heading": "Allgemein", "content": "" },
-          { "type": "list", "heading": "Muss ich etwas bezahlen?", "items": [
-            "Nein. Die Nutzung ist für Studierende komplett kostenlos. Alle Transaktionskosten (Gas Fees) werden vom System übernommen."
-          ]},
-          { "type": "list", "heading": "Brauche ich MetaMask?", "items": [
-            "Nein, aber du kannst es nutzen. Du hast drei Möglichkeiten: Ein Browser-Wallet direkt auf der Webseite erstellen (einfachste Option), MetaMask verbinden (sicherer, weil der Key verschlüsselt gespeichert wird), oder einen bestehenden Private Key importieren."
-          ]},
-          { "type": "list", "heading": "Kann ich dieselbe Studie mehrfach nutzen?", "items": [
-            "Nein. Pro Wallet und Studie kann genau ein Mal geclaimed werden. Das wird durch den Smart Contract sichergestellt."
-          ]},
-          { "type": "list", "heading": "Was passiert, wenn ich meinen Private Key verliere?", "items": [
-            "Dann sind deine Punkte leider unwiederbringlich verloren. Es gibt kein Passwort-zurücksetzen auf der Blockchain. Deshalb: Private Key immer sicher aufbewahren!"
-          ]},
-          { "type": "list", "heading": "Kann ich meine Punkte auf eine andere Wallet übertragen?", "items": [
-            "Nein. Punkte sind fest an eine Wallet gebunden und nicht übertragbar. Das verhindert Handel mit VPP."
-          ]},
-          { "type": "list", "heading": "Welche Daten sieht die Öffentlichkeit?", "items": [
-            "Nur Wallet-Adressen und Punktestände. Keine Namen, E-Mail-Adressen oder andere persönliche Daten. Die Zuordnung Wallet-zu-Person kennt nur der Besitzer."
-          ]},
-          { "type": "list", "heading": "Ich habe am Ende der Studie nichts bekommen -- was tun?", "items": [
-            "Stelle sicher, dass du die Studie vollständig abgeschlossen und den Redirect-Link am Ende genutzt hast. Kontaktiere im Zweifel den Lehrenden, der die Studie erstellt hat."
-          ]},
-          { "type": "list", "heading": "Wie viele Punkte brauche ich?", "items": [
-            "Das hängt von den Anforderungen deines Studiengangs ab. Die genaue Punktzahl erfährst du bei deinem Prüfungsamt oder deinen Lehrenden."
-          ]},
-          { "type": "list", "heading": "Warum Blockchain und nicht eine normale Datenbank?", "items": [
-            "Eine Blockchain bietet Fälschungssicherheit, Transparenz und Dezentralität. Niemand -- auch nicht die Betreiber -- kann Punkte nachträglich manipulieren. Das schafft Vertrauen für alle Beteiligten."
-          ]},
-          { "type": "list", "heading": "Kann ich VPP Blockchain an meiner Hochschule einsetzen?", "items": [
-            "Ja! VPP Blockchain ist Open Source und kann von jeder Hochschule frei genutzt und angepasst werden. Siehe den Artikel \"Für Universitäten\" in dieser Dokumentation."
-          ]}
+          {
+            "type": "list",
+            "heading": "Muss ich etwas bezahlen?",
+            "items": [
+              "Nein. Die Nutzung ist für Studierende komplett kostenlos. Alle Transaktionskosten (Gas Fees) werden vom System übernommen."
+            ]
+          },
+          {
+            "type": "list",
+            "heading": "Brauche ich MetaMask?",
+            "items": [
+              "Nein, aber du kannst es nutzen. Du hast drei Möglichkeiten: Ein Browser-Wallet direkt auf der Webseite erstellen (einfachste Option), MetaMask verbinden (sicherer, weil der Key verschlüsselt gespeichert wird), oder einen bestehenden Private Key importieren."
+            ]
+          },
+          {
+            "type": "list",
+            "heading": "Kann ich dieselbe Studie mehrfach nutzen?",
+            "items": [
+              "Nein. Pro Wallet und Studie kann genau ein Mal geclaimed werden. Das wird durch den Smart Contract sichergestellt."
+            ]
+          },
+          {
+            "type": "list",
+            "heading": "Was passiert, wenn ich meinen Private Key verliere?",
+            "items": [
+              "Dann sind deine Punkte leider unwiederbringlich verloren. Es gibt kein Passwort-zurücksetzen auf der Blockchain. Deshalb: Private Key immer sicher aufbewahren!"
+            ]
+          },
+          {
+            "type": "list",
+            "heading": "Kann ich meine Punkte auf eine andere Wallet übertragen?",
+            "items": [
+              "Nein. Punkte sind fest an eine Wallet gebunden und nicht übertragbar. Das verhindert Handel mit VPP."
+            ]
+          },
+          {
+            "type": "list",
+            "heading": "Welche Daten sieht die Öffentlichkeit?",
+            "items": [
+              "Nur Wallet-Adressen und Punktestände. Keine Namen, E-Mail-Adressen oder andere persönliche Daten. Die Zuordnung Wallet-zu-Person kennt nur der Besitzer."
+            ]
+          },
+          {
+            "type": "list",
+            "heading": "Ich habe am Ende der Studie nichts bekommen -- was tun?",
+            "items": [
+              "Stelle sicher, dass du die Studie vollständig abgeschlossen und den Redirect-Link am Ende genutzt hast. Kontaktiere im Zweifel den Lehrenden, der die Studie erstellt hat."
+            ]
+          },
+          {
+            "type": "list",
+            "heading": "Wie viele Punkte brauche ich?",
+            "items": [
+              "Das hängt von den Anforderungen deines Studiengangs ab. Die genaue Punktzahl erfährst du bei deinem Prüfungsamt oder deinen Lehrenden."
+            ]
+          },
+          {
+            "type": "list",
+            "heading": "Warum Blockchain und nicht eine normale Datenbank?",
+            "items": [
+              "Eine Blockchain bietet Fälschungssicherheit, Transparenz und Dezentralität. Niemand -- auch nicht die Betreiber -- kann Punkte nachträglich manipulieren. Das schafft Vertrauen für alle Beteiligten."
+            ]
+          },
+          {
+            "type": "list",
+            "heading": "Kann ich VPP Blockchain an meiner Hochschule einsetzen?",
+            "items": [
+              "Ja! VPP Blockchain ist Open Source und kann von jeder Hochschule frei genutzt und angepasst werden. Siehe den Artikel \"Für Universitäten\" in dieser Dokumentation."
+            ]
+          }
         ]
       }
     }

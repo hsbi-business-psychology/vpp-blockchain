@@ -11,22 +11,20 @@ function renderWithRouter(ui: React.ReactElement) {
 describe('HomePage', () => {
   it('renders the hero title', () => {
     renderWithRouter(<HomePage />)
-    expect(
-      screen.getByRole('heading', { level: 1 }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
   })
 
   it('renders highlight cards for students and lecturers', () => {
     renderWithRouter(<HomePage />)
-    expect(screen.getByRole('heading', { name: /For students|Für Studierende/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: /For students|Für Studierende/i }),
+    ).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /For lecturers|Für Lehrende/i })).toBeInTheDocument()
   })
 
   it('renders the docs CTA section', () => {
     renderWithRouter(<HomePage />)
-    expect(
-      screen.getByText(/Open documentation|Dokumentation öffnen/i),
-    ).toBeInTheDocument()
+    expect(screen.getByText(/Open documentation|Dokumentation öffnen/i)).toBeInTheDocument()
   })
 
   it('renders CTA buttons', () => {

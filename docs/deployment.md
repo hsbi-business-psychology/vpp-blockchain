@@ -19,6 +19,7 @@ cp .env.example .env
 ```
 
 Edit `.env`:
+
 ```
 DEPLOYER_PRIVATE_KEY=<your-deployer-private-key>
 BASE_SEPOLIA_RPC_URL=https://sepolia.base.org
@@ -148,31 +149,31 @@ cp -r packages/frontend/dist/* /var/www/vpp-frontend/
 
 ### Backend
 
-| Variable | Required | Description |
-|---|---|---|
-| `PORT` | No | Server port (default: `3000`) |
-| `RPC_URL` | Yes | Base RPC endpoint |
-| `CONTRACT_ADDRESS` | Yes | Deployed SurveyPoints address |
-| `MINTER_PRIVATE_KEY` | Yes | Backend wallet private key (MINTER_ROLE) |
-| `CONTRACT_DEPLOY_BLOCK` | No | Block number at contract deployment (speeds up event queries; default: `0`) |
-| `EXPLORER_BASE_URL` | Yes | Block explorer URL |
-| `FRONTEND_URL` | Yes | Frontend URL (CORS + template redirects) |
-| `CLAIM_RATE_LIMIT_WINDOW_MS` | No | Rate limit window for claims (default: `60000`) |
-| `CLAIM_RATE_LIMIT_MAX` | No | Max claims per window (default: `5`) |
-| `API_RATE_LIMIT_WINDOW_MS` | No | Rate limit window for API (default: `60000`) |
-| `API_RATE_LIMIT_MAX` | No | Max API requests per window (default: `100`) |
+| Variable                     | Required | Description                                                                 |
+| ---------------------------- | -------- | --------------------------------------------------------------------------- |
+| `PORT`                       | No       | Server port (default: `3000`)                                               |
+| `RPC_URL`                    | Yes      | Base RPC endpoint                                                           |
+| `CONTRACT_ADDRESS`           | Yes      | Deployed SurveyPoints address                                               |
+| `MINTER_PRIVATE_KEY`         | Yes      | Backend wallet private key (MINTER_ROLE)                                    |
+| `CONTRACT_DEPLOY_BLOCK`      | No       | Block number at contract deployment (speeds up event queries; default: `0`) |
+| `EXPLORER_BASE_URL`          | Yes      | Block explorer URL                                                          |
+| `FRONTEND_URL`               | Yes      | Frontend URL (CORS + template redirects)                                    |
+| `CLAIM_RATE_LIMIT_WINDOW_MS` | No       | Rate limit window for claims (default: `60000`)                             |
+| `CLAIM_RATE_LIMIT_MAX`       | No       | Max claims per window (default: `5`)                                        |
+| `API_RATE_LIMIT_WINDOW_MS`   | No       | Rate limit window for API (default: `60000`)                                |
+| `API_RATE_LIMIT_MAX`         | No       | Max API requests per window (default: `100`)                                |
 
 ### Frontend
 
-| Variable | Required | Description |
-|---|---|---|
-| `VITE_APP_NAME` | No | Application name (default: `VPP Blockchain`) |
-| `VITE_API_URL` | Yes | Backend API base URL |
-| `VITE_RPC_URL` | Yes | Base RPC endpoint |
-| `VITE_CONTRACT_ADDRESS` | Yes | Deployed SurveyPoints address |
-| `VITE_CONTRACT_DEPLOY_BLOCK` | No | Block number at contract deployment (speeds up event queries; default: `0`) |
-| `VITE_EXPLORER_URL` | Yes | Block explorer base URL |
-| `VITE_DEFAULT_LOCALE` | No | Default language `en` or `de` (default: `en`) |
+| Variable                     | Required | Description                                                                 |
+| ---------------------------- | -------- | --------------------------------------------------------------------------- |
+| `VITE_APP_NAME`              | No       | Application name (default: `VPP Blockchain`)                                |
+| `VITE_API_URL`               | Yes      | Backend API base URL                                                        |
+| `VITE_RPC_URL`               | Yes      | Base RPC endpoint                                                           |
+| `VITE_CONTRACT_ADDRESS`      | Yes      | Deployed SurveyPoints address                                               |
+| `VITE_CONTRACT_DEPLOY_BLOCK` | No       | Block number at contract deployment (speeds up event queries; default: `0`) |
+| `VITE_EXPLORER_URL`          | Yes      | Block explorer base URL                                                     |
+| `VITE_DEFAULT_LOCALE`        | No       | Default language `en` or `de` (default: `en`)                               |
 
 ## 5. Post-Deployment Checklist
 
@@ -197,6 +198,7 @@ curl https://vpp.your-university.edu/api/health
 ```
 
 Expected response:
+
 ```json
 {
   "status": "ok",
@@ -216,11 +218,13 @@ Monitor the backend wallet balance on [BaseScan](https://basescan.org). When bal
 ### Logs
 
 If using Docker:
+
 ```bash
 docker logs vpp-backend --follow
 ```
 
 If using pm2:
+
 ```bash
 pm2 logs vpp-backend
 ```

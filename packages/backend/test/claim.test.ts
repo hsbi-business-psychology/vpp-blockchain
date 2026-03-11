@@ -37,15 +37,13 @@ describe('POST /api/claim', () => {
       hash: '0xtxhash123',
     } as unknown as ethers.TransactionReceipt)
 
-    const res = await request(app)
-      .post('/api/claim')
-      .send({
-        walletAddress: TEST_WALLET.address,
-        surveyId: 1,
-        secret: 'test-secret',
-        signature,
-        message,
-      })
+    const res = await request(app).post('/api/claim').send({
+      walletAddress: TEST_WALLET.address,
+      surveyId: 1,
+      secret: 'test-secret',
+      signature,
+      message,
+    })
 
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(true)
@@ -69,15 +67,13 @@ describe('POST /api/claim', () => {
       title: '',
     })
 
-    const res = await request(app)
-      .post('/api/claim')
-      .send({
-        walletAddress: TEST_WALLET.address,
-        surveyId: 1,
-        secret: 'test-secret',
-        signature,
-        message,
-      })
+    const res = await request(app).post('/api/claim').send({
+      walletAddress: TEST_WALLET.address,
+      surveyId: 1,
+      secret: 'test-secret',
+      signature,
+      message,
+    })
 
     expect(res.status).toBe(400)
     expect(res.body.error).toBe('INVALID_SIGNATURE')
@@ -98,15 +94,13 @@ describe('POST /api/claim', () => {
     })
     vi.mocked(blockchain.hasClaimed).mockResolvedValue(true)
 
-    const res = await request(app)
-      .post('/api/claim')
-      .send({
-        walletAddress: TEST_WALLET.address,
-        surveyId: 1,
-        secret: 'test-secret',
-        signature,
-        message,
-      })
+    const res = await request(app).post('/api/claim').send({
+      walletAddress: TEST_WALLET.address,
+      surveyId: 1,
+      secret: 'test-secret',
+      signature,
+      message,
+    })
 
     expect(res.status).toBe(409)
     expect(res.body.error).toBe('ALREADY_CLAIMED')
@@ -126,15 +120,13 @@ describe('POST /api/claim', () => {
       title: '',
     })
 
-    const res = await request(app)
-      .post('/api/claim')
-      .send({
-        walletAddress: TEST_WALLET.address,
-        surveyId: 999,
-        secret: 'test-secret',
-        signature,
-        message,
-      })
+    const res = await request(app).post('/api/claim').send({
+      walletAddress: TEST_WALLET.address,
+      surveyId: 999,
+      secret: 'test-secret',
+      signature,
+      message,
+    })
 
     expect(res.status).toBe(404)
     expect(res.body.error).toBe('SURVEY_NOT_FOUND')
@@ -145,24 +137,20 @@ describe('POST /api/claim', () => {
     const message = `claim:1:test-secret:${oldTimestamp}`
     const signature = await TEST_WALLET.signMessage(message)
 
-    const res = await request(app)
-      .post('/api/claim')
-      .send({
-        walletAddress: TEST_WALLET.address,
-        surveyId: 1,
-        secret: 'test-secret',
-        signature,
-        message,
-      })
+    const res = await request(app).post('/api/claim').send({
+      walletAddress: TEST_WALLET.address,
+      surveyId: 1,
+      secret: 'test-secret',
+      signature,
+      message,
+    })
 
     expect(res.status).toBe(400)
     expect(res.body.error).toBe('EXPIRED_MESSAGE')
   })
 
   it('should reject a request with missing fields', async () => {
-    const res = await request(app)
-      .post('/api/claim')
-      .send({ walletAddress: TEST_WALLET.address })
+    const res = await request(app).post('/api/claim').send({ walletAddress: TEST_WALLET.address })
 
     expect(res.status).toBe(400)
     expect(res.body.error).toBe('VALIDATION_ERROR')
@@ -182,15 +170,13 @@ describe('POST /api/claim', () => {
       title: '',
     })
 
-    const res = await request(app)
-      .post('/api/claim')
-      .send({
-        walletAddress: TEST_WALLET.address,
-        surveyId: 1,
-        secret: 'test-secret',
-        signature,
-        message,
-      })
+    const res = await request(app).post('/api/claim').send({
+      walletAddress: TEST_WALLET.address,
+      surveyId: 1,
+      secret: 'test-secret',
+      signature,
+      message,
+    })
 
     expect(res.status).toBe(400)
     expect(res.body.error).toBe('SURVEY_INACTIVE')

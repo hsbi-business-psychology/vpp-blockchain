@@ -112,12 +112,7 @@ export default function ClaimPage() {
                 <span className="text-xs text-muted-foreground">{t(`claim.steps.${step}`)}</span>
               </div>
               {i < steps.length - 1 && (
-                <div
-                  className={cn(
-                    'mx-2 h-px flex-1',
-                    isDone ? 'bg-success' : 'bg-border',
-                  )}
-                />
+                <div className={cn('mx-2 h-px flex-1', isDone ? 'bg-success' : 'bg-border')} />
               )}
             </div>
           )
@@ -177,7 +172,11 @@ export default function ClaimPage() {
 
       {currentStep === 'submit' && (
         <Card>
-          <CardContent className="flex flex-col items-center gap-4 py-8" role="status" aria-live="polite">
+          <CardContent
+            className="flex flex-col items-center gap-4 py-8"
+            role="status"
+            aria-live="polite"
+          >
             <Loader2 className="size-8 animate-spin text-primary" aria-hidden="true" />
             <p className="text-muted-foreground">{t('claim.submitting')}</p>
           </CardContent>

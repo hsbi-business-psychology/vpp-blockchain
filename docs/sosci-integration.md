@@ -80,10 +80,10 @@ Before going live, verify the complete flow:
 
 The redirect URL uses two query parameters:
 
-| Parameter | Description | Example |
-|---|---|---|
-| `surveyId` | Numeric survey identifier | `42` |
-| `secret` | Survey secret for verification | `VPP-x8k2m9` |
+| Parameter  | Description                    | Example      |
+| ---------- | ------------------------------ | ------------ |
+| `surveyId` | Numeric survey identifier      | `42`         |
+| `secret`   | Survey secret for verification | `VPP-x8k2m9` |
 
 ## Security Considerations
 
@@ -94,13 +94,13 @@ The redirect URL uses two query parameters:
 
 ## Troubleshooting
 
-| Problem | Solution |
-|---|---|
-| Redirect does not work | Check that the final page in SoSci Survey is configured with the correct URL |
-| "Survey not found" error | Verify that the survey ID matches the one registered in VPP |
-| "Invalid secret" error | Ensure the secret in the URL matches the one used during registration |
-| "Already claimed" error | The wallet has already claimed this survey — this is expected behavior |
-| Participant sees blank page | Check that the VPP frontend is deployed and accessible |
+| Problem                     | Solution                                                                     |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| Redirect does not work      | Check that the final page in SoSci Survey is configured with the correct URL |
+| "Survey not found" error    | Verify that the survey ID matches the one registered in VPP                  |
+| "Invalid secret" error      | Ensure the secret in the URL matches the one used during registration        |
+| "Already claimed" error     | The wallet has already claimed this survey — this is expected behavior       |
+| Participant sees blank page | Check that the VPP frontend is deployed and accessible                       |
 
 ## Alternative Survey Tools
 

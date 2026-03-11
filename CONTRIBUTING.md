@@ -78,23 +78,23 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ### Types
 
-| Type | Description |
-|---|---|
-| `feat` | A new feature |
-| `fix` | A bug fix |
-| `docs` | Documentation changes |
-| `test` | Adding or updating tests |
-| `chore` | Maintenance tasks (dependencies, CI, tooling) |
+| Type       | Description                                           |
+| ---------- | ----------------------------------------------------- |
+| `feat`     | A new feature                                         |
+| `fix`      | A bug fix                                             |
+| `docs`     | Documentation changes                                 |
+| `test`     | Adding or updating tests                              |
+| `chore`    | Maintenance tasks (dependencies, CI, tooling)         |
 | `refactor` | Code changes that neither fix a bug nor add a feature |
-| `ci` | CI/CD configuration changes |
+| `ci`       | CI/CD configuration changes                           |
 
 ### Scopes
 
-| Scope | Package |
-|---|---|
+| Scope       | Package              |
+| ----------- | -------------------- |
 | `contracts` | `packages/contracts` |
-| `backend` | `packages/backend` |
-| `frontend` | `packages/frontend` |
+| `backend`   | `packages/backend`   |
+| `frontend`  | `packages/frontend`  |
 
 ### Examples
 

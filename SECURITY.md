@@ -47,7 +47,7 @@ protection:
 
 ## Supported Versions
 
-| Version | Supported |
-|---|---|
-| Latest on `main` | Yes |
+| Version           | Supported   |
+| ----------------- | ----------- |
+| Latest on `main`  | Yes         |
 | Previous releases | Best effort |

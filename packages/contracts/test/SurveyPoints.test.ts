@@ -58,9 +58,10 @@ describe('SurveyPoints', () => {
 
     it('should revert when minter address is zero', async () => {
       const factory = await ethers.getContractFactory('SurveyPoints')
-      await expect(
-        factory.deploy(admin.address, ethers.ZeroAddress),
-      ).to.be.revertedWithCustomError(contract, 'ZeroAddress')
+      await expect(factory.deploy(admin.address, ethers.ZeroAddress)).to.be.revertedWithCustomError(
+        contract,
+        'ZeroAddress',
+      )
     })
   })
 
@@ -104,7 +105,9 @@ describe('SurveyPoints', () => {
     })
 
     it('should allow registering a survey with unlimited claims (maxClaims = 0)', async () => {
-      await contract.connect(admin).registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, 0, SURVEY_TITLE)
+      await contract
+        .connect(admin)
+        .registerSurvey(SURVEY_ID, secretHash, SURVEY_POINTS, 0, SURVEY_TITLE)
 
       const info = await contract.getSurveyInfo(SURVEY_ID)
       expect(info.maxClaims).to.equal(0)
@@ -112,7 +115,9 @@ describe('SurveyPoints', () => {
 
     it('should revert when surveyId is 0', async () => {
       await expect(
-        contract.connect(admin).registerSurvey(0, secretHash, SURVEY_POINTS, MAX_CLAIMS, SURVEY_TITLE),
+        contract
+          .connect(admin)
+          .registerSurvey(0, secretHash, SURVEY_POINTS, MAX_CLAIMS, SURVEY_TITLE),
       ).to.be.revertedWithCustomError(contract, 'InvalidSurveyId')
     })
 
@@ -143,12 +148,8 @@ describe('SurveyPoints', () => {
     })
 
     it('should allow registering multiple surveys', async () => {
-      await contract
-        .connect(admin)
-        .registerSurvey(1, secretHash, 2, MAX_CLAIMS, 'Survey One')
-      await contract
-        .connect(admin)
-        .registerSurvey(2, secretHash, 3, MAX_CLAIMS, 'Survey Two')
+      await contract.connect(admin).registerSurvey(1, secretHash, 2, MAX_CLAIMS, 'Survey One')
+      await contract.connect(admin).registerSurvey(2, secretHash, 3, MAX_CLAIMS, 'Survey Two')
 
       const info1 = await contract.getSurveyInfo(1)
       const info2 = await contract.getSurveyInfo(2)
@@ -169,9 +170,7 @@ describe('SurveyPoints', () => {
     })
 
     it('should award points to a student', async () => {
-      await contract
-        .connect(minter)
-        .awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET)
+      await contract.connect(minter).awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET)
 
       expect(await contract.totalPoints(student1.address)).to.equal(SURVEY_POINTS)
       expect(await contract.surveyPoints(student1.address, SURVEY_ID)).to.equal(SURVEY_POINTS)
@@ -179,19 +178,13 @@ describe('SurveyPoints', () => {
     })
 
     it('should emit PointsAwarded event', async () => {
-      await expect(
-        contract
-          .connect(minter)
-          .awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET),
-      )
+      await expect(contract.connect(minter).awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET))
         .to.emit(contract, 'PointsAwarded')
         .withArgs(student1.address, SURVEY_ID, SURVEY_POINTS)
     })
 
     it('should increment claim count', async () => {
-      await contract
-        .connect(minter)
-        .awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET)
+      await contract.connect(minter).awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET)
 
       const info = await contract.getSurveyInfo(SURVEY_ID)
       expect(info.claimCount).to.equal(1)
@@ -202,21 +195,15 @@ describe('SurveyPoints', () => {
       const hash2 = ethers.keccak256(ethers.toUtf8Bytes(secret2))
       await contract.connect(admin).registerSurvey(2, hash2, 3, MAX_CLAIMS, 'Second Survey')
 
-      await contract
-        .connect(minter)
-        .awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET)
+      await contract.connect(minter).awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET)
       await contract.connect(minter).awardPoints(student1.address, 2, secret2)
 
       expect(await contract.totalPoints(student1.address)).to.equal(SURVEY_POINTS + 3)
     })
 
     it('should allow different students to claim the same survey', async () => {
-      await contract
-        .connect(minter)
-        .awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET)
-      await contract
-        .connect(minter)
-        .awardPoints(student2.address, SURVEY_ID, SURVEY_SECRET)
+      await contract.connect(minter).awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET)
+      await contract.connect(minter).awardPoints(student2.address, SURVEY_ID, SURVEY_SECRET)
 
       expect(await contract.totalPoints(student1.address)).to.equal(SURVEY_POINTS)
       expect(await contract.totalPoints(student2.address)).to.equal(SURVEY_POINTS)
@@ -226,30 +213,22 @@ describe('SurveyPoints', () => {
     })
 
     it('should revert on double claim', async () => {
-      await contract
-        .connect(minter)
-        .awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET)
+      await contract.connect(minter).awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET)
 
       await expect(
-        contract
-          .connect(minter)
-          .awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET),
+        contract.connect(minter).awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET),
       ).to.be.revertedWithCustomError(contract, 'AlreadyClaimed')
     })
 
     it('should revert with invalid secret', async () => {
       await expect(
-        contract
-          .connect(minter)
-          .awardPoints(student1.address, SURVEY_ID, 'wrong-secret'),
+        contract.connect(minter).awardPoints(student1.address, SURVEY_ID, 'wrong-secret'),
       ).to.be.revertedWithCustomError(contract, 'InvalidSecret')
     })
 
     it('should revert when survey does not exist', async () => {
       await expect(
-        contract
-          .connect(minter)
-          .awardPoints(student1.address, 999, SURVEY_SECRET),
+        contract.connect(minter).awardPoints(student1.address, 999, SURVEY_SECRET),
       ).to.be.revertedWithCustomError(contract, 'SurveyNotFound')
     })
 
@@ -257,25 +236,19 @@ describe('SurveyPoints', () => {
       await contract.connect(admin).deactivateSurvey(SURVEY_ID)
 
       await expect(
-        contract
-          .connect(minter)
-          .awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET),
+        contract.connect(minter).awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET),
       ).to.be.revertedWithCustomError(contract, 'SurveyNotActive')
     })
 
     it('should revert when called by non-minter', async () => {
       await expect(
-        contract
-          .connect(outsider)
-          .awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET),
+        contract.connect(outsider).awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET),
       ).to.be.reverted
     })
 
     it('should revert when student address is zero', async () => {
       await expect(
-        contract
-          .connect(minter)
-          .awardPoints(ethers.ZeroAddress, SURVEY_ID, SURVEY_SECRET),
+        contract.connect(minter).awardPoints(ethers.ZeroAddress, SURVEY_ID, SURVEY_SECRET),
       ).to.be.revertedWithCustomError(contract, 'ZeroAddress')
     })
   })
@@ -294,30 +267,20 @@ describe('SurveyPoints', () => {
     })
 
     it('should allow claims up to the limit', async () => {
-      await contract
-        .connect(minter)
-        .awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET)
-      await contract
-        .connect(minter)
-        .awardPoints(student2.address, SURVEY_ID, SURVEY_SECRET)
+      await contract.connect(minter).awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET)
+      await contract.connect(minter).awardPoints(student2.address, SURVEY_ID, SURVEY_SECRET)
 
       const info = await contract.getSurveyInfo(SURVEY_ID)
       expect(info.claimCount).to.equal(LIMITED_MAX)
     })
 
     it('should revert when max claims is reached', async () => {
-      await contract
-        .connect(minter)
-        .awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET)
-      await contract
-        .connect(minter)
-        .awardPoints(student2.address, SURVEY_ID, SURVEY_SECRET)
+      await contract.connect(minter).awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET)
+      await contract.connect(minter).awardPoints(student2.address, SURVEY_ID, SURVEY_SECRET)
 
       const signers = await ethers.getSigners()
       await expect(
-        contract
-          .connect(minter)
-          .awardPoints(signers[5].address, SURVEY_ID, SURVEY_SECRET),
+        contract.connect(minter).awardPoints(signers[5].address, SURVEY_ID, SURVEY_SECRET),
       ).to.be.revertedWithCustomError(contract, 'MaxClaimsReached')
     })
 
@@ -328,9 +291,7 @@ describe('SurveyPoints', () => {
 
       const signers = await ethers.getSigners()
       for (let i = 0; i < 5; i++) {
-        await contract
-          .connect(minter)
-          .awardPoints(signers[i + 5].address, 2, SURVEY_SECRET)
+        await contract.connect(minter).awardPoints(signers[i + 5].address, 2, SURVEY_SECRET)
       }
 
       const info = await contract.getSurveyInfo(2)
@@ -366,16 +327,15 @@ describe('SurveyPoints', () => {
       await contract.connect(admin).deactivateSurvey(SURVEY_ID)
 
       await expect(
-        contract
-          .connect(minter)
-          .awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET),
+        contract.connect(minter).awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET),
       ).to.be.revertedWithCustomError(contract, 'SurveyNotActive')
     })
 
     it('should revert when survey does not exist', async () => {
-      await expect(
-        contract.connect(admin).deactivateSurvey(999),
-      ).to.be.revertedWithCustomError(contract, 'SurveyNotFound')
+      await expect(contract.connect(admin).deactivateSurvey(999)).to.be.revertedWithCustomError(
+        contract,
+        'SurveyNotFound',
+      )
     })
 
     it('should revert when survey is already inactive', async () => {
@@ -387,15 +347,11 @@ describe('SurveyPoints', () => {
     })
 
     it('should revert when called by non-admin', async () => {
-      await expect(
-        contract.connect(outsider).deactivateSurvey(SURVEY_ID),
-      ).to.be.reverted
+      await expect(contract.connect(outsider).deactivateSurvey(SURVEY_ID)).to.be.reverted
     })
 
     it('should preserve existing claims after deactivation', async () => {
-      await contract
-        .connect(minter)
-        .awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET)
+      await contract.connect(minter).awardPoints(student1.address, SURVEY_ID, SURVEY_SECRET)
 
       await contract.connect(admin).deactivateSurvey(SURVEY_ID)
 
@@ -459,9 +415,8 @@ describe('SurveyPoints', () => {
 
     it('should not allow non-admin to grant roles', async () => {
       const ADMIN_ROLE = await contract.ADMIN_ROLE()
-      await expect(
-        contract.connect(outsider).grantRole(ADMIN_ROLE, student1.address),
-      ).to.be.reverted
+      await expect(contract.connect(outsider).grantRole(ADMIN_ROLE, student1.address)).to.be
+        .reverted
     })
   })
 
@@ -507,15 +462,11 @@ describe('SurveyPoints', () => {
     })
 
     it('non-admin cannot call addAdmin', async () => {
-      await expect(
-        contract.connect(outsider).addAdmin(student1.address),
-      ).to.be.reverted
+      await expect(contract.connect(outsider).addAdmin(student1.address)).to.be.reverted
     })
 
     it('non-admin cannot call removeAdmin', async () => {
-      await expect(
-        contract.connect(outsider).removeAdmin(admin.address),
-      ).to.be.reverted
+      await expect(contract.connect(outsider).removeAdmin(admin.address)).to.be.reverted
     })
 
     it('addAdmin reverts for zero address', async () => {
@@ -576,17 +527,14 @@ describe('SurveyPoints', () => {
     })
 
     it('should revert when called by non-admin (mark)', async () => {
-      await expect(
-        contract.connect(outsider).markWalletSubmitted(student1.address),
-      ).to.be.reverted
+      await expect(contract.connect(outsider).markWalletSubmitted(student1.address)).to.be.reverted
     })
 
     it('should revert when called by non-admin (unmark)', async () => {
       await contract.connect(admin).markWalletSubmitted(student1.address)
 
-      await expect(
-        contract.connect(outsider).unmarkWalletSubmitted(student1.address),
-      ).to.be.reverted
+      await expect(contract.connect(outsider).unmarkWalletSubmitted(student1.address)).to.be
+        .reverted
     })
 
     it('should revert for zero address (mark)', async () => {

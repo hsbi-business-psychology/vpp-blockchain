@@ -68,7 +68,10 @@ describe('wallet utilities', () => {
     })
 
     it('migrates old wallets without type to local', () => {
-      localStorage.setItem('vpp-wallet', JSON.stringify({ address: TEST_ADDRESS, privateKey: TEST_KEY }))
+      localStorage.setItem(
+        'vpp-wallet',
+        JSON.stringify({ address: TEST_ADDRESS, privateKey: TEST_KEY }),
+      )
       const loaded = loadWallet()
       expect(loaded).toEqual({ address: TEST_ADDRESS, privateKey: TEST_KEY, type: 'local' })
     })

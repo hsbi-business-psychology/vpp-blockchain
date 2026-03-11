@@ -27,11 +27,41 @@ async function main() {
 
   // Seed test surveys
   const surveys = [
-    { id: 1, secret: 'test-secret-alpha', points: 2, maxClaims: 0, title: 'Persönlichkeitstest WS 2025' },
-    { id: 2, secret: 'test-secret-beta', points: 1, maxClaims: 0, title: 'Stresswahrnehmung Studie' },
-    { id: 3, secret: 'test-secret-gamma', points: 3, maxClaims: 0, title: 'Entscheidungsfindung Experiment' },
-    { id: 4, secret: 'test-secret-delta', points: 1, maxClaims: 0, title: 'Lernverhalten Befragung' },
-    { id: 5, secret: 'test-secret-epsilon', points: 2, maxClaims: 0, title: 'Emotionsregulation Studie' },
+    {
+      id: 1,
+      secret: 'test-secret-alpha',
+      points: 2,
+      maxClaims: 0,
+      title: 'Persönlichkeitstest WS 2025',
+    },
+    {
+      id: 2,
+      secret: 'test-secret-beta',
+      points: 1,
+      maxClaims: 0,
+      title: 'Stresswahrnehmung Studie',
+    },
+    {
+      id: 3,
+      secret: 'test-secret-gamma',
+      points: 3,
+      maxClaims: 0,
+      title: 'Entscheidungsfindung Experiment',
+    },
+    {
+      id: 4,
+      secret: 'test-secret-delta',
+      points: 1,
+      maxClaims: 0,
+      title: 'Lernverhalten Befragung',
+    },
+    {
+      id: 5,
+      secret: 'test-secret-epsilon',
+      points: 2,
+      maxClaims: 0,
+      title: 'Emotionsregulation Studie',
+    },
   ]
 
   for (const s of surveys) {
@@ -66,8 +96,12 @@ async function main() {
   console.log(`  VITE_CONTRACT_ADDRESS=${address}`)
   console.log(`  VITE_RPC_URL=http://127.0.0.1:8545\n`)
   console.log('Test accounts (Hardhat defaults):\n')
-  console.log(`  Admin private key:   0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80`)
-  console.log(`  Student private key: 0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d\n`)
+  console.log(
+    `  Admin private key:   0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80`,
+  )
+  console.log(
+    `  Student private key: 0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d\n`,
+  )
   console.log('Secrets for testing claims:\n')
   for (const s of surveys) {
     console.log(`  Survey #${s.id}: ${s.secret}`)

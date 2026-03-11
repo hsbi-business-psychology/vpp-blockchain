@@ -14,14 +14,14 @@ The backend handles three core responsibilities:
 
 ## API Endpoints
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| `POST` | `/api/claim` | Wallet signature | Claim points for a completed survey |
-| `GET` | `/api/points/:wallet` | None | Get total points and claim history |
-| `POST` | `/api/surveys` | Admin signature | Register a new survey on-chain |
-| `GET` | `/api/surveys` | None | List all registered surveys |
-| `GET` | `/api/surveys/:id/template` | None | Download SoSci Survey XML template |
-| `GET` | `/api/health` | None | Health check |
+| Method | Path                        | Auth             | Description                         |
+| ------ | --------------------------- | ---------------- | ----------------------------------- |
+| `POST` | `/api/claim`                | Wallet signature | Claim points for a completed survey |
+| `GET`  | `/api/points/:wallet`       | None             | Get total points and claim history  |
+| `POST` | `/api/surveys`              | Admin signature  | Register a new survey on-chain      |
+| `GET`  | `/api/surveys`              | None             | List all registered surveys         |
+| `GET`  | `/api/surveys/:id/template` | None             | Download SoSci Survey XML template  |
+| `GET`  | `/api/health`               | None             | Health check                        |
 
 ## Development
 
@@ -60,15 +60,15 @@ pnpm --filter @vpp/backend test
 
 ### Environment Variables
 
-| Variable | Required | Description |
-|---|---|---|
-| `PORT` | No | Server port (default: 3000) |
-| `RPC_URL` | Yes | Base RPC endpoint |
-| `CONTRACT_ADDRESS` | Yes | Deployed SurveyPoints contract address |
-| `MINTER_PRIVATE_KEY` | Yes | Private key of the backend wallet (MINTER_ROLE) |
-| `ADMIN_WALLETS` | Yes | Comma-separated admin wallet addresses |
-| `EXPLORER_BASE_URL` | No | Block explorer URL (default: https://sepolia.basescan.org) |
-| `FRONTEND_URL` | No | Frontend URL for CORS (default: http://localhost:5173) |
+| Variable             | Required | Description                                                |
+| -------------------- | -------- | ---------------------------------------------------------- |
+| `PORT`               | No       | Server port (default: 3000)                                |
+| `RPC_URL`            | Yes      | Base RPC endpoint                                          |
+| `CONTRACT_ADDRESS`   | Yes      | Deployed SurveyPoints contract address                     |
+| `MINTER_PRIVATE_KEY` | Yes      | Private key of the backend wallet (MINTER_ROLE)            |
+| `ADMIN_WALLETS`      | Yes      | Comma-separated admin wallet addresses                     |
+| `EXPLORER_BASE_URL`  | No       | Block explorer URL (default: https://sepolia.basescan.org) |
+| `FRONTEND_URL`       | No       | Frontend URL for CORS (default: http://localhost:5173)     |
 
 ## Architecture
 

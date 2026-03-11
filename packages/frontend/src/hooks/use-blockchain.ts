@@ -38,11 +38,14 @@ export function useBlockchain() {
     }
   }, [])
 
-  const getSurveyPoints = useCallback(async (address: string, surveyId: number): Promise<number> => {
-    const contract = getContract()
-    const points = await contract.surveyPoints(address, surveyId)
-    return Number(points)
-  }, [])
+  const getSurveyPoints = useCallback(
+    async (address: string, surveyId: number): Promise<number> => {
+      const contract = getContract()
+      const points = await contract.surveyPoints(address, surveyId)
+      return Number(points)
+    },
+    [],
+  )
 
   const hasClaimed = useCallback(async (address: string, surveyId: number): Promise<boolean> => {
     const contract = getContract()
