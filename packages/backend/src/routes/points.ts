@@ -1,10 +1,11 @@
 import { Router } from 'express'
+import type {} from 'express-serve-static-core'
 import { ethers } from 'ethers'
 import { AppError } from '../middleware/errorHandler.js'
 import * as blockchain from '../services/blockchain.js'
 import type { PointsResult } from '../types.js'
 
-const router = Router()
+const router: Router = Router()
 
 router.get('/:wallet', async (req, res, next) => {
   try {

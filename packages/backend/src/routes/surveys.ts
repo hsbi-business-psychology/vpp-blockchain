@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, type RequestHandler } from 'express'
 import { z } from 'zod'
 import { ethers } from 'ethers'
 import { config } from '../config.js'
@@ -8,7 +8,7 @@ import * as blockchain from '../services/blockchain.js'
 import { generateSoSciTemplate } from '../services/template.js'
 import type { SurveyInfo, SurveyRegisterResult } from '../types.js'
 
-const router = Router()
+const router: Router = Router()
 
 const registerSchema = z.object({
   surveyId: z.number().int().positive(),
@@ -20,7 +20,7 @@ const registerSchema = z.object({
 })
 
 // POST /api/surveys — register a new survey (admin only)
-router.post('/', requireAdmin, async (req, res, next) => {
+router.post('/', requireAdmin as RequestHandler, async (req, res, next) => {
   try {
     const parsed = registerSchema.safeParse(req.body)
     if (!parsed.success) {

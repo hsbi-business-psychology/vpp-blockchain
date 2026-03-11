@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, type RequestHandler } from 'express'
 import { z } from 'zod'
 import { ethers } from 'ethers'
 import { config } from '../config.js'
@@ -7,7 +7,7 @@ import { claimLimiter } from '../middleware/rateLimit.js'
 import * as blockchain from '../services/blockchain.js'
 import type { ClaimResult } from '../types.js'
 
-const router = Router()
+const router: Router = Router()
 
 const claimSchema = z.object({
   walletAddress: z.string().refine(ethers.isAddress, 'Invalid wallet address'),
@@ -17,7 +17,7 @@ const claimSchema = z.object({
   message: z.string().min(1),
 })
 
-router.post('/', claimLimiter, async (req, res, next) => {
+router.post('/', claimLimiter as RequestHandler, async (req, res, next) => {
   try {
     const parsed = claimSchema.safeParse(req.body)
     if (!parsed.success) {
