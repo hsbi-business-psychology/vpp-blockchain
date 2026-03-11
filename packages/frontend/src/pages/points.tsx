@@ -778,7 +778,7 @@ export default function PointsPage() {
 
       {/* ─── Create Wallet Info Dialog ─── */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-2xl gap-0 p-0">
+        <DialogContent className="sm:max-w-2xl gap-0 p-0">
           <div className="flex items-center justify-between border-b border-border px-6 py-4">
             <div>
               <DialogTitle className="text-lg">{t('wallet.create.dialogTitle')}</DialogTitle>

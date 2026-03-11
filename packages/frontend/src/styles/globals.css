@@ -132,6 +132,10 @@
   }
 }
 
+html.menu-open body {
+  overflow: hidden;
+}
+
 .fade-in-section {
   opacity: 0;
   transform: translateY(24px);

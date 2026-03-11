@@ -33,8 +33,12 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
   }
 
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    if (menuOpen) {
+      document.documentElement.classList.add('menu-open')
+    } else {
+      document.documentElement.classList.remove('menu-open')
+    }
+    return () => { document.documentElement.classList.remove('menu-open') }
   }, [menuOpen])
 
   function changeLanguage(code: string) {
