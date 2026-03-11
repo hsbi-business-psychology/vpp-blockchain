@@ -135,7 +135,7 @@ export default function ClaimPage() {
             <CardDescription>{t('claim.noWallet')}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => navigate('/wallet')} className="w-full">
+            <Button onClick={() => navigate('/points')} className="w-full">
               {t('claim.createFirst')}
             </Button>
           </CardContent>
