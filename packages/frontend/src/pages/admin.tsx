@@ -2,11 +2,20 @@ import { useState, useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { ethers } from 'ethers'
-import { ShieldCheck, ShieldX, Loader2, LogOut } from 'lucide-react'
+import { ShieldCheck, ShieldX, Loader2, LogOut, AlertTriangle, Download, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { MetricsCards } from '@/components/admin/metrics-cards'
 import { SurveyTable } from '@/components/admin/survey-table'
 import { RegisterSurveyDialog } from '@/components/admin/register-survey-dialog'
@@ -29,7 +38,7 @@ export default function AdminPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { wallet, hasWallet, sign } = useWallet()
-  const { getSurveys, registerSurvey, downloadTemplate } = useApi()
+  const { getSurveys, registerSurvey, downloadTemplate, deactivateSurvey } = useApi()
 
   const [adminCheck, setAdminCheck] = useState<'loading' | 'admin' | 'denied'>('loading')
   const [authenticated, setAuthenticated] = useState(false)
@@ -37,6 +46,13 @@ export default function AdminPage() {
   const [authCredentials, setAuthCredentials] = useState<{ signature: string; message: string } | null>(null)
   const [surveys, setSurveys] = useState<SurveyRow[]>([])
   const [loading, setLoading] = useState(false)
+
+  const [deactivateTarget, setDeactivateTarget] = useState<SurveyRow | null>(null)
+  const [deactivateLoading, setDeactivateLoading] = useState(false)
+
+  const [templateTarget, setTemplateTarget] = useState<SurveyRow | null>(null)
+  const [templateSecret, setTemplateSecret] = useState('')
+  const [templateLoading, setTemplateLoading] = useState(false)
 
   const rpcUrl = import.meta.env.VITE_RPC_URL || ''
   const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS || ''
@@ -128,22 +144,54 @@ export default function AdminPage() {
     }
   }
 
-  const handleDownloadTemplate = async (surveyId: number) => {
-    try {
-      const blob = await downloadTemplate(surveyId)
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `survey-${surveyId}-template.xml`
-      a.click()
-      URL.revokeObjectURL(url)
-    } catch {
-      toast.error(t('common.error'))
+  const handleDownloadTemplate = (surveyId: number) => {
+    const survey = surveys.find((s) => s.surveyId === surveyId)
+    if (survey) {
+      setTemplateTarget(survey)
+      setTemplateSecret('')
     }
   }
 
-  const handleDeactivate = async (_surveyId: number) => {
-    toast.info('Survey deactivation via admin UI coming soon')
+  const handleTemplateDownload = async () => {
+    if (!templateTarget || !templateSecret.trim()) return
+    setTemplateLoading(true)
+    try {
+      const blob = await downloadTemplate(templateTarget.surveyId, templateSecret.trim())
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `vpp-survey-${templateTarget.surveyId}.xml`
+      a.click()
+      URL.revokeObjectURL(url)
+      setTemplateTarget(null)
+    } catch {
+      toast.error(t('common.error'))
+    } finally {
+      setTemplateLoading(false)
+    }
+  }
+
+  const handleDeactivate = (surveyId: number) => {
+    const survey = surveys.find((s) => s.surveyId === surveyId)
+    if (survey) setDeactivateTarget(survey)
+  }
+
+  const handleDeactivateConfirm = async () => {
+    if (!deactivateTarget || !wallet) return
+    setDeactivateLoading(true)
+    try {
+      const timestamp = Date.now()
+      const message = `Deactivate survey ${deactivateTarget.surveyId} by ${wallet.address} at ${timestamp}`
+      const signature = await sign(message)
+      await deactivateSurvey(deactivateTarget.surveyId, signature, message)
+      toast.success(t('admin.surveys.deactivateConfirm.success'))
+      setDeactivateTarget(null)
+      await fetchSurveys()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t('common.error'))
+    } finally {
+      setDeactivateLoading(false)
+    }
   }
 
   const handleLogout = () => {
@@ -303,6 +351,85 @@ export default function AdminPage() {
       {wallet && signer && (
         <RoleManagement walletAddress={wallet.address} signer={signer} />
       )}
+
+      {/* ─── Deactivate Confirmation Dialog ─── */}
+      <Dialog open={!!deactivateTarget} onOpenChange={() => setDeactivateTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <div className="flex size-12 items-center justify-center rounded-lg bg-destructive/10 mb-2">
+              <AlertTriangle className="size-6 text-destructive" />
+            </div>
+            <DialogTitle>{t('admin.surveys.deactivateConfirm.title')}</DialogTitle>
+            <DialogDescription>{t('admin.surveys.deactivateConfirm.description')}</DialogDescription>
+          </DialogHeader>
+          {deactivateTarget && (
+            <div className="rounded-lg bg-muted p-3 space-y-1">
+              <p className="text-sm font-medium">{deactivateTarget.title || `Survey #${deactivateTarget.surveyId}`}</p>
+              <p className="text-xs text-muted-foreground">ID: {deactivateTarget.surveyId} · {deactivateTarget.claimCount} Claims</p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeactivateTarget(null)} disabled={deactivateLoading}>
+              {t('common.cancel')}
+            </Button>
+            <Button variant="destructive" onClick={handleDeactivateConfirm} disabled={deactivateLoading}>
+              {deactivateLoading ? (
+                <Loader2 className="mr-1.5 size-4 animate-spin" />
+              ) : (
+                <AlertTriangle className="mr-1.5 size-4" />
+              )}
+              {t('admin.surveys.deactivateConfirm.button')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── Template Download Dialog ─── */}
+      <Dialog open={!!templateTarget} onOpenChange={() => setTemplateTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10 mb-2">
+              <Download className="size-6 text-primary" />
+            </div>
+            <DialogTitle>{t('admin.surveys.templateDialog.title')}</DialogTitle>
+            <DialogDescription>{t('admin.surveys.templateDialog.description')}</DialogDescription>
+          </DialogHeader>
+          {templateTarget && (
+            <div className="rounded-lg bg-muted p-3 space-y-1">
+              <p className="text-sm font-medium">{templateTarget.title || `Survey #${templateTarget.surveyId}`}</p>
+              <p className="text-xs text-muted-foreground">ID: {templateTarget.surveyId} · {templateTarget.points} Punkte</p>
+            </div>
+          )}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">{t('admin.surveys.templateDialog.secretLabel')}</label>
+            <Input
+              value={templateSecret}
+              onChange={(e) => setTemplateSecret(e.target.value)}
+              placeholder={t('admin.surveys.templateDialog.secretPlaceholder')}
+              type="password"
+              className="font-mono text-xs"
+              onKeyDown={(e) => e.key === 'Enter' && templateSecret.trim() && handleTemplateDownload()}
+            />
+            <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
+              <Info className="mt-0.5 size-3 shrink-0" />
+              {t('admin.surveys.templateDialog.hint')}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTemplateTarget(null)}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={handleTemplateDownload} disabled={!templateSecret.trim() || templateLoading}>
+              {templateLoading ? (
+                <Loader2 className="mr-1.5 size-4 animate-spin" />
+              ) : (
+                <Download className="mr-1.5 size-4" />
+              )}
+              {t('admin.surveys.templateDialog.download')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

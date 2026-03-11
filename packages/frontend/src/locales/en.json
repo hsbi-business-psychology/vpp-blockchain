@@ -271,8 +271,22 @@
         "date": "Date",
         "tx": "Transaction"
       },
-      "downloadTemplate": "Download Template",
+      "downloadTemplate": "SoSci Template",
       "deactivate": "Deactivate",
+      "deactivateConfirm": {
+        "title": "Deactivate Survey",
+        "description": "Once deactivated, no more points can be claimed for this survey. This action is recorded on the blockchain.",
+        "button": "Permanently deactivate",
+        "success": "Survey has been deactivated"
+      },
+      "templateDialog": {
+        "title": "Download SoSci Template",
+        "description": "Enter the secret for this survey to generate the SoSci Survey template file with the correct claim link.",
+        "secretLabel": "Survey Secret",
+        "secretPlaceholder": "Enter secret",
+        "download": "Download Template",
+        "hint": "You received the secret when registering the survey. It is needed to create the claim link."
+      },
       "filter": {
         "all": "All",
         "activeOnly": "Active only",

@@ -109,12 +109,26 @@ export function useApi() {
     [],
   )
 
-  const downloadTemplate = useCallback(async (surveyId: number): Promise<Blob> => {
-    const url = `${config.apiUrl}/api/surveys/${surveyId}/template`
+  const downloadTemplate = useCallback(async (surveyId: number, secret: string): Promise<Blob> => {
+    const url = `${config.apiUrl}/api/surveys/${surveyId}/template?secret=${encodeURIComponent(secret)}`
     const res = await fetch(url)
     if (!res.ok) throw new Error('Failed to download template')
     return res.blob()
   }, [])
+
+  const deactivateSurvey = useCallback(
+    async (surveyId: number, signature: string, message: string): Promise<{ txHash: string }> => {
+      return apiFetch<{ txHash: string }>(`/api/surveys/${surveyId}/deactivate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-signature': signature,
+          'x-admin-message': message,
+        },
+      })
+    },
+    [],
+  )
 
   const getHealth = useCallback(async (): Promise<HealthResult> => {
     return apiFetch<HealthResult>('/api/health')
@@ -126,6 +140,7 @@ export function useApi() {
     getSurveys,
     registerSurvey,
     downloadTemplate,
+    deactivateSurvey,
     getHealth,
   }
 }

@@ -271,8 +271,22 @@
         "date": "Datum",
         "tx": "Transaktion"
       },
-      "downloadTemplate": "Template herunterladen",
+      "downloadTemplate": "SoSci-Template",
       "deactivate": "Deaktivieren",
+      "deactivateConfirm": {
+        "title": "Umfrage deaktivieren",
+        "description": "Nach der Deaktivierung können keine weiteren Punkte für diese Umfrage vergeben werden. Diese Aktion wird auf der Blockchain gespeichert.",
+        "button": "Endgültig deaktivieren",
+        "success": "Umfrage wurde deaktiviert"
+      },
+      "templateDialog": {
+        "title": "SoSci-Template herunterladen",
+        "description": "Gib das Secret dieser Umfrage ein, um die SoSci-Survey-Vorlagendatei mit dem korrekten Claim-Link zu generieren.",
+        "secretLabel": "Umfrage-Secret",
+        "secretPlaceholder": "Secret eingeben",
+        "download": "Template herunterladen",
+        "hint": "Du hast das Secret bei der Registrierung erhalten. Es wird benötigt, um den Claim-Link zu erstellen."
+      },
       "filter": {
         "all": "Alle",
         "activeOnly": "Nur aktive",
