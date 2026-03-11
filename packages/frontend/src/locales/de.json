@@ -189,6 +189,7 @@
     "title": "Meine Punkte",
     "subtitle": "Hier siehst du deinen aktuellen Punktestand und alle bisherigen Einlösungen. Deine Punkte werden direkt von der Blockchain gelesen – fälschungssicher und jederzeit nachvollziehbar.",
     "total": "Gesamtpunkte",
+    "dataError": "Blockchain-Daten konnten nicht vollständig geladen werden. Bitte prüfe deine Internetverbindung und lade die Seite neu.",
     "submittedBanner": {
       "title": "Punkte abgegeben",
       "description": "Dein Wallet wurde als abgegeben markiert. Deine Punkte wurden zur Zulassung zur Bachelorarbeit vorgelegt und akzeptiert."

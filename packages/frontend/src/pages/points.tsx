@@ -56,6 +56,7 @@ import {
 import { useWallet } from '@/hooks/use-wallet'
 import { useBlockchain } from '@/hooks/use-blockchain'
 import { getTxUrl } from '@/lib/config'
+import { isValidPrivateKey } from '@/lib/wallet'
 import { toast } from 'sonner'
 import { ethers } from 'ethers'
 
@@ -92,13 +93,15 @@ export default function PointsPage() {
   >([])
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState('')
+  const [dataError, setDataError] = useState(false)
 
   useEffect(() => {
     if (!wallet?.address) return
+    setDataError(false)
 
     getTotalPoints(wallet.address)
       .then(setTotalPoints)
-      .catch(() => {})
+      .catch(() => setDataError(true))
 
     checkSubmitted(wallet.address)
       .then(setWalletSubmitted)
@@ -106,7 +109,7 @@ export default function PointsPage() {
 
     getClaimHistory(wallet.address)
       .then(setHistory)
-      .catch(() => {})
+      .catch(() => setDataError(true))
   }, [wallet?.address, getTotalPoints, getClaimHistory, checkSubmitted])
 
   function handleCopy(text: string) {
@@ -127,8 +130,13 @@ export default function PointsPage() {
   }
 
   function handleImport() {
+    const key = importValue.trim()
+    if (!isValidPrivateKey(key)) {
+      toast.error(t('wallet.import.error'))
+      return
+    }
     try {
-      importKey(importValue.trim())
+      importKey(key)
       setImportValue('')
       setShowImportDialog(false)
       toast.success(t('wallet.create.success'))
@@ -451,6 +459,14 @@ export default function PointsPage() {
               <p className="mt-1 text-sm text-muted-foreground sm:text-base">{t('points.total')}</p>
             </div>
           </div>
+
+          {/* ─── Data Error Banner ─── */}
+          {dataError && (
+            <div className="flex items-center gap-3 rounded-lg border border-destructive/20 bg-destructive/5 p-3">
+              <Info className="size-4 shrink-0 text-destructive" aria-hidden="true" />
+              <p className="text-sm text-destructive">{t('points.dataError')}</p>
+            </div>
+          )}
 
           {/* ─── Submitted Banner ─── */}
           {walletSubmitted && (

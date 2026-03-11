@@ -189,6 +189,7 @@
     "title": "My Points",
     "subtitle": "View your current points balance and all past claims. Your points are read directly from the blockchain — tamper-proof and verifiable at any time.",
     "total": "Total Points",
+    "dataError": "Blockchain data could not be fully loaded. Please check your internet connection and reload the page.",
     "submittedBanner": {
       "title": "Points Submitted",
       "description": "Your wallet has been marked as \"submitted\". Your points have been presented and accepted for thesis admission."

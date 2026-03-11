@@ -73,7 +73,7 @@ export function SystemStatus({ adminSignature, adminMessage }: SystemStatusProps
 
   const copyAddress = (address: string) => {
     navigator.clipboard.writeText(address)
-    toast.success('Copied!')
+    toast.success(t('common.copied'))
   }
 
   const explorerUrl = status?.minterAddress
