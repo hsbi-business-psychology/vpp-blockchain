@@ -45,9 +45,3 @@ pnpm-debug.log*
 .cache/
 tmp/
 temp/
-
-# Local planning docs (German, not part of the repository)
-ARCHITEKTUR.md
-GROBKONZEPT.md
-PHASENPLAN.md
-REQUIREMENTS.md
