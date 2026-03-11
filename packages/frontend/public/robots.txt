@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /claim
+
+Sitemap: https://vpstunden.hsbi.de/sitemap.xml
