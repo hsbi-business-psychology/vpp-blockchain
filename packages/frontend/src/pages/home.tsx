@@ -62,14 +62,7 @@ export default function HomePage() {
   const navigate = useNavigate()
 
   return (
-    <div className="relative space-y-20 pb-8 pt-2 md:pb-16 md:pt-4">
-      {/* Background gradient orbs – full viewport width, bleed through header */}
-      <div className="pointer-events-none absolute -top-24 left-1/2 -z-10 w-screen -translate-x-1/2 overflow-hidden" style={{ height: 'calc(100% + 6rem)' }} aria-hidden="true">
-        <div className="absolute -top-32 left-1/2 h-[700px] w-[1000px] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,oklch(0.55_0.14_260/0.12),transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,oklch(0.55_0.16_280/0.22),transparent_70%)]" />
-        <div className="absolute top-[480px] -left-20 h-[550px] w-[550px] rounded-full bg-[radial-gradient(ellipse_at_center,oklch(0.6_0.12_145/0.09),transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,oklch(0.5_0.14_280/0.12),transparent_70%)]" />
-        <div className="absolute top-[850px] right-0 h-[450px] w-[650px] rounded-full bg-[radial-gradient(ellipse_at_center,oklch(0.65_0.10_260/0.08),transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,oklch(0.55_0.12_310/0.12),transparent_70%)]" />
-      </div>
-
+    <div className="space-y-20 pb-8 pt-2 md:pb-16 md:pt-4">
       {/* Hero – split layout on desktop */}
       <section className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
         <FadeIn>
