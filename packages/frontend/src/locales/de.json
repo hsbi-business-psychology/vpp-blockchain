@@ -272,7 +272,21 @@
         "tx": "Transaktion"
       },
       "downloadTemplate": "Template herunterladen",
-      "deactivate": "Deaktivieren"
+      "deactivate": "Deaktivieren",
+      "filter": {
+        "all": "Alle",
+        "activeOnly": "Nur aktive",
+        "inactiveOnly": "Nur inaktive",
+        "newestFirst": "Neueste zuerst",
+        "oldestFirst": "Älteste zuerst"
+      },
+      "pagination": {
+        "showing": "{{from}}–{{to}} von {{total}}",
+        "perPage": "pro Seite",
+        "previous": "Zurück",
+        "next": "Weiter",
+        "page": "Seite {{current}} von {{total}}"
+      }
     },
     "register": {
       "title": "Neue Umfrage registrieren",

@@ -1,5 +1,14 @@
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Download, XCircle, MoreHorizontal, ChevronRight } from 'lucide-react'
+import {
+  Download,
+  XCircle,
+  MoreHorizontal,
+  ChevronRight,
+  ChevronLeft,
+  ArrowUpDown,
+  Filter,
+} from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -8,6 +17,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 
@@ -28,6 +44,11 @@ interface SurveyTableProps {
   onSelect?: (surveyId: number) => void
 }
 
+type StatusFilter = 'all' | 'active' | 'inactive'
+type SortOrder = 'newest' | 'oldest'
+
+const PAGE_SIZES = [10, 25, 50]
+
 const statusVariant: Record<string, string> = {
   active: 'bg-success/10 text-success border-success/20',
   inactive: 'bg-destructive/10 text-destructive border-destructive/20',
@@ -35,6 +56,34 @@ const statusVariant: Record<string, string> = {
 
 export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate, onSelect }: SurveyTableProps) {
   const { t } = useTranslation()
+
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('newest')
+  const [pageSize, setPageSize] = useState(10)
+  const [page, setPage] = useState(0)
+
+  const filtered = useMemo(() => {
+    let result = [...surveys]
+
+    if (statusFilter === 'active') result = result.filter((s) => s.active)
+    else if (statusFilter === 'inactive') result = result.filter((s) => !s.active)
+
+    result.sort((a, b) => {
+      const dateA = new Date(a.registeredAt).getTime()
+      const dateB = new Date(b.registeredAt).getTime()
+      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB
+    })
+
+    return result
+  }, [surveys, statusFilter, sortOrder])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+  const safePage = Math.min(page, totalPages - 1)
+  const paged = filtered.slice(safePage * pageSize, (safePage + 1) * pageSize)
+  const from = filtered.length === 0 ? 0 : safePage * pageSize + 1
+  const to = Math.min((safePage + 1) * pageSize, filtered.length)
+
+  if (safePage !== page) setPage(safePage)
 
   if (surveys.length === 0) {
     return (
@@ -44,126 +93,220 @@ export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate, onSelec
 
   const getStatus = (s: SurveyRow) => (s.active ? 'active' : 'inactive')
 
+  const statusLabel: Record<StatusFilter, string> = {
+    all: t('admin.surveys.filter.all'),
+    active: t('admin.surveys.filter.activeOnly'),
+    inactive: t('admin.surveys.filter.inactiveOnly'),
+  }
+
+  const sortLabel: Record<SortOrder, string> = {
+    newest: t('admin.surveys.filter.newestFirst'),
+    oldest: t('admin.surveys.filter.oldestFirst'),
+  }
+
   return (
-    <>
-      {/* Desktop table */}
-      <div className="hidden overflow-x-auto md:block">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-12">#</TableHead>
-              <TableHead>{t('admin.register.surveyTitle')}</TableHead>
-              <TableHead className="text-right">{t('admin.surveys.table.points')}</TableHead>
-              <TableHead className="text-right">{t('admin.surveys.table.claims')}</TableHead>
-              <TableHead>{t('admin.surveys.table.status')}</TableHead>
-              <TableHead>{t('admin.surveys.table.created')}</TableHead>
-              <TableHead className="w-12"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {surveys.map((survey) => {
-              const status = getStatus(survey)
-              return (
-                <TableRow
-                  key={survey.surveyId}
-                  className={cn(onSelect && 'cursor-pointer hover:bg-muted/50')}
-                  onClick={() => onSelect?.(survey.surveyId)}
-                >
-                  <TableCell className="font-mono text-muted-foreground">{survey.surveyId}</TableCell>
-                  <TableCell className="font-medium">
-                    {survey.title || `Survey #${survey.surveyId}`}
-                  </TableCell>
-                  <TableCell className="text-right">{survey.points}</TableCell>
-                  <TableCell className="text-right">{survey.claimCount}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={cn('border', statusVariant[status])}>
-                      {t(`admin.surveys.status.${status}`)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {new Date(survey.registeredAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-8"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <MoreHorizontal className="size-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onDownloadTemplate(survey.surveyId)}>
-                          <Download className="mr-2 size-4" />
-                          {t('admin.surveys.downloadTemplate')}
-                        </DropdownMenuItem>
-                        {survey.active && (
-                          <DropdownMenuItem
-                            onClick={() => onDeactivate(survey.surveyId)}
-                            className="text-destructive"
-                          >
-                            <XCircle className="mr-2 size-4" />
-                            {t('admin.surveys.deactivate')}
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
+    <div className="space-y-4">
+      {/* ─── Toolbar: Filters + Sort ─── */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          <Filter className="size-3.5 text-muted-foreground" />
+          <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as StatusFilter); setPage(0) }}>
+            <SelectTrigger size="sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{statusLabel.all}</SelectItem>
+              <SelectItem value="active">{statusLabel.active}</SelectItem>
+              <SelectItem value="inactive">{statusLabel.inactive}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <ArrowUpDown className="size-3.5 text-muted-foreground" />
+          <Select value={sortOrder} onValueChange={(v) => { setSortOrder(v as SortOrder); setPage(0) }}>
+            <SelectTrigger size="sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">{sortLabel.newest}</SelectItem>
+              <SelectItem value="oldest">{sortLabel.oldest}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="ml-auto flex items-center gap-1.5">
+          <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setPage(0) }}>
+            <SelectTrigger size="sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PAGE_SIZES.map((size) => (
+                <SelectItem key={size} value={String(size)}>
+                  {size} {t('admin.surveys.pagination.perPage')}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      {/* Mobile card list */}
-      <div className="space-y-3 md:hidden">
-        {surveys.map((survey) => {
-          const status = getStatus(survey)
-          return (
-            <div
-              key={survey.surveyId}
-              className={cn(
-                'rounded-lg border p-4 space-y-3',
-                onSelect && 'cursor-pointer hover:bg-muted/50',
-              )}
-              onClick={() => onSelect?.(survey.surveyId)}
-            >
-              <div className="flex items-center justify-between">
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium truncate">
-                    {survey.title || `Survey #${survey.surveyId}`}
-                  </p>
-                  <p className="text-xs text-muted-foreground">ID: {survey.surveyId}</p>
+      {filtered.length === 0 ? (
+        <p className="py-8 text-center text-sm text-muted-foreground">{t('common.noResults')}</p>
+      ) : (
+        <>
+          {/* Desktop table */}
+          <div className="hidden overflow-x-auto md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12">#</TableHead>
+                  <TableHead>{t('admin.register.surveyTitle')}</TableHead>
+                  <TableHead className="text-right">{t('admin.surveys.table.points')}</TableHead>
+                  <TableHead className="text-right">{t('admin.surveys.table.claims')}</TableHead>
+                  <TableHead>{t('admin.surveys.table.status')}</TableHead>
+                  <TableHead>{t('admin.surveys.table.created')}</TableHead>
+                  <TableHead className="w-12"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paged.map((survey) => {
+                  const status = getStatus(survey)
+                  return (
+                    <TableRow
+                      key={survey.surveyId}
+                      className={cn(onSelect && 'cursor-pointer hover:bg-muted/50')}
+                      onClick={() => onSelect?.(survey.surveyId)}
+                    >
+                      <TableCell className="font-mono text-muted-foreground">{survey.surveyId}</TableCell>
+                      <TableCell className="font-medium">
+                        {survey.title || `Survey #${survey.surveyId}`}
+                      </TableCell>
+                      <TableCell className="text-right">{survey.points}</TableCell>
+                      <TableCell className="text-right">{survey.claimCount}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={cn('border', statusVariant[status])}>
+                          {t(`admin.surveys.status.${status}`)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {new Date(survey.registeredAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-8"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreHorizontal className="size-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => onDownloadTemplate(survey.surveyId)}>
+                              <Download className="mr-2 size-4" />
+                              {t('admin.surveys.downloadTemplate')}
+                            </DropdownMenuItem>
+                            {survey.active && (
+                              <DropdownMenuItem
+                                onClick={() => onDeactivate(survey.surveyId)}
+                                className="text-destructive"
+                              >
+                                <XCircle className="mr-2 size-4" />
+                                {t('admin.surveys.deactivate')}
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Mobile card list */}
+          <div className="space-y-3 md:hidden">
+            {paged.map((survey) => {
+              const status = getStatus(survey)
+              return (
+                <div
+                  key={survey.surveyId}
+                  className={cn(
+                    'rounded-lg border p-4 space-y-3',
+                    onSelect && 'cursor-pointer hover:bg-muted/50',
+                  )}
+                  onClick={() => onSelect?.(survey.surveyId)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium truncate">
+                        {survey.title || `Survey #${survey.surveyId}`}
+                      </p>
+                      <p className="text-xs text-muted-foreground">ID: {survey.surveyId}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className={cn('border', statusVariant[status])}>
+                        {t(`admin.surveys.status.${status}`)}
+                      </Badge>
+                      <ChevronRight className="size-4 text-muted-foreground" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">{t('admin.surveys.table.points')}</p>
+                      <p className="font-medium">{survey.points}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">{t('admin.surveys.table.claims')}</p>
+                      <p className="font-medium">{survey.claimCount}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">{t('admin.surveys.table.created')}</p>
+                      <p className="font-medium">{new Date(survey.registeredAt).toLocaleDateString()}</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className={cn('border', statusVariant[status])}>
-                    {t(`admin.surveys.status.${status}`)}
-                  </Badge>
-                  <ChevronRight className="size-4 text-muted-foreground" />
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-sm">
-                <div>
-                  <p className="text-muted-foreground">{t('admin.surveys.table.points')}</p>
-                  <p className="font-medium">{survey.points}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">{t('admin.surveys.table.claims')}</p>
-                  <p className="font-medium">{survey.claimCount}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">{t('admin.surveys.table.created')}</p>
-                  <p className="font-medium">{new Date(survey.registeredAt).toLocaleDateString()}</p>
-                </div>
+              )
+            })}
+          </div>
+
+          {/* ─── Pagination Footer ─── */}
+          {filtered.length > pageSize && (
+            <div className="flex flex-col items-center gap-3 border-t border-border pt-4 sm:flex-row sm:justify-between">
+              <p className="text-xs text-muted-foreground">
+                {t('admin.surveys.pagination.showing', { from, to, total: filtered.length })}
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={safePage === 0}
+                  onClick={() => setPage(safePage - 1)}
+                >
+                  <ChevronLeft className="mr-1 size-3.5" />
+                  {t('admin.surveys.pagination.previous')}
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                  {t('admin.surveys.pagination.page', { current: safePage + 1, total: totalPages })}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={safePage >= totalPages - 1}
+                  onClick={() => setPage(safePage + 1)}
+                >
+                  {t('admin.surveys.pagination.next')}
+                  <ChevronRight className="ml-1 size-3.5" />
+                </Button>
               </div>
             </div>
-          )
-        })}
-      </div>
-    </>
+          )}
+        </>
+      )}
+    </div>
   )
 }

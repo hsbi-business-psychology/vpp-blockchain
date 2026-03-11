@@ -272,7 +272,21 @@
         "tx": "Transaction"
       },
       "downloadTemplate": "Download Template",
-      "deactivate": "Deactivate"
+      "deactivate": "Deactivate",
+      "filter": {
+        "all": "All",
+        "activeOnly": "Active only",
+        "inactiveOnly": "Inactive only",
+        "newestFirst": "Newest first",
+        "oldestFirst": "Oldest first"
+      },
+      "pagination": {
+        "showing": "{{from}}–{{to}} of {{total}}",
+        "perPage": "per page",
+        "previous": "Previous",
+        "next": "Next",
+        "page": "Page {{current}} of {{total}}"
+      }
     },
     "register": {
       "title": "Register New Survey",
