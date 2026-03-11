@@ -16,42 +16,108 @@
     "submit": "Submit",
     "close": "Close",
     "search": "Search",
-    "noResults": "No results found"
+    "noResults": "No results found",
+    "backToTop": "Back to top"
   },
   "nav": {
     "home": "Home",
-    "wallet": "Wallet",
-    "claim": "Claim",
-    "points": "Points",
-    "explorer": "Explorer",
-    "admin": "Admin"
+    "points": "My Points",
+    "admin": "Lecturers' Area"
+  },
+  "footer": {
+    "title": "Participant Points – Blockchain Project",
+    "text": "Participant points are issued as tamper-proof records on the blockchain.",
+    "contactTitle": "Contact",
+    "contactPerson": "Prof. Dr. Alexander Haubrock",
+    "contactPhone": "+49.521.106-70355",
+    "contactEmail": "vpstunden@hsbi.de",
+    "imprint": "Imprint",
+    "privacy": "Privacy Policy",
+    "accessibility": "Accessibility"
   },
   "home": {
     "hero": {
-      "title": "Verifiable Participant Points",
-      "subtitle": "Earn tamper-proof points for survey participation — secured by blockchain technology.",
-      "cta": {
-        "wallet": "Create Wallet",
-        "points": "View Points"
+      "title": "VPP points, digital — simple & tamper-proof",
+      "subtitle": "Take part in a study, confirm once at the end — and your point appears in your wallet for free. No paperwork, transparent at any time.",
+      "badges": ["Free", "No crypto required", "Secure & transparent"],
+      "ctaStudent": "View my points",
+      "ctaAdmin": "Lecturers' area"
+    },
+    "intro": {
+      "title": "What is this?",
+      "text": "VPP Blockchain is HSBI's system that records participant points (VPP) digitally. Instead of paper slips, you receive a tamper-proof point in your wallet after a study — without any personal data being stored. This lets you keep track at any time, lecturers can verify points quickly, and the process around registering your bachelor's thesis becomes easier. It's free for you; the system covers the fees in the background."
+    },
+    "highlights": {
+      "title": "At a glance",
+      "student": {
+        "title": "For students",
+        "text": "See your points at any time — no more collecting paper receipts. Just confirm once at the end of the study and you're done."
+      },
+      "lecturer": {
+        "title": "For lecturers",
+        "text": "Create studies, view points, manage surveys — all free of charge, with roles and explorer links."
       }
     },
-    "features": {
-      "transparent": {
-        "title": "Transparent",
-        "description": "All points are recorded on the blockchain — publicly verifiable and tamper-proof."
-      },
-      "noExtensions": {
-        "title": "No Extensions",
-        "description": "No MetaMask or browser extensions needed. Everything works right in your browser."
-      },
-      "costEfficient": {
-        "title": "Cost Efficient",
-        "description": "Built on Base L2 — each transaction costs less than $0.01."
-      },
-      "openSource": {
-        "title": "Open Source",
-        "description": "Fully open source. Any university can deploy their own instance."
-      }
+    "faq": {
+      "title": "Frequently asked questions",
+      "items": [
+        {
+          "q": "Do I have to pay anything?",
+          "a": "No. It's free for you: the backend covers the network fees in the background. You don't need your own crypto balance to receive points."
+        },
+        {
+          "q": "Can I use the same study multiple times?",
+          "a": "No. There is exactly one point per wallet and study. That rule is enforced in the smart contract; duplicate awards are prevented."
+        },
+        {
+          "q": "Which network is used?",
+          "a": "We use Base L2 — an Ethereum Layer 2 with very low transaction costs and high security."
+        },
+        {
+          "q": "Which data are stored?",
+          "a": "Only what's needed for the proof is on-chain: your wallet address, the block time reference and point events. Names, student IDs or survey answers are not stored."
+        },
+        {
+          "q": "I don't have a wallet yet — what should I do?",
+          "a": "The wallet is created directly in the web app — no additional software needed. Keep your private key safe, it's the key to your points."
+        },
+        {
+          "q": "Do I need cryptocurrency?",
+          "a": "No. The backend sponsors the transactions so neither students nor lecturers have to pay fees."
+        },
+        {
+          "q": "How do I see my points?",
+          "a": "Your points are read directly from the blockchain and displayed in the web app. Lecturers can also verify your status via the admin portal."
+        },
+        {
+          "q": "Can I transfer or sell points?",
+          "a": "No. Points are bound to your wallet and are non-transferable. This prevents misuse."
+        },
+        {
+          "q": "I didn't receive anything at the end of the study — what now?",
+          "a": "Check if you had a wallet and confirmed the final step. If it still doesn't work, contact the lecturer with your wallet address."
+        },
+        {
+          "q": "I lost my wallet — are the points gone?",
+          "a": "Points are bound to your wallet. Contact the lecturer: corrections can be made in the admin portal."
+        },
+        {
+          "q": "How many points do I need to register my bachelor's thesis?",
+          "a": "A total of 10 VPP. You can view your progress at any time in the web app."
+        },
+        {
+          "q": "Which data are public?",
+          "a": "Only the wallet address, the block time reference and point events. Personal data are deliberately excluded."
+        },
+        {
+          "q": "What exactly do lecturers do in the portal?",
+          "a": "Create studies (survey ID & point value), generate the SoSci starter file, check wallets and manage surveys. Permissions are managed via simple roles."
+        },
+        {
+          "q": "Why is this free?",
+          "a": "The backend pays the transaction fees. Your confirmation is signed and the backend submits the transaction on the blockchain — the cost per claim is under $0.01."
+        }
+      ]
     }
   },
   "wallet": {
@@ -114,7 +180,7 @@
   "points": {
     "title": "My Points",
     "total": "Total Points",
-    "noWallet": "Connect a wallet to view your points.",
+    "noWallet": "Create or import a wallet to view your points.",
     "surveys": "Survey Breakdown",
     "history": "Transaction History",
     "table": {
@@ -123,18 +189,18 @@
       "date": "Date",
       "tx": "Transaction"
     },
-    "empty": "No points yet. Complete a survey to earn your first points!"
-  },
-  "explorer": {
-    "title": "Explorer",
-    "description": "Look up points for any wallet address.",
-    "placeholder": "Enter wallet address (0x...)",
-    "search": "Search",
-    "invalidAddress": "Please enter a valid wallet address.",
-    "results": "Results for {{address}}"
+    "empty": "No points yet. Complete a survey to earn your first points!",
+    "explorer": {
+      "title": "Wallet Lookup",
+      "description": "Look up points for any wallet address.",
+      "placeholder": "Enter wallet address (0x...)",
+      "search": "Search",
+      "invalidAddress": "Please enter a valid wallet address.",
+      "results": "Results for {{address}}"
+    }
   },
   "admin": {
-    "title": "Admin Dashboard",
+    "title": "Lecturers' Area",
     "auth": {
       "title": "Admin Authentication",
       "description": "Sign a message with your admin wallet to access the dashboard.",
@@ -174,6 +240,158 @@
       "button": "Register",
       "success": "Survey registered successfully!",
       "error": "Failed to register survey"
+    },
+    "info": {
+      "surveyId": "A unique number for this survey. It is used in the redirect link and on the blockchain.",
+      "secret": "A secret that is only visible at the end of the survey. Keep it confidential.",
+      "maxClaims": "0 means unlimited. Otherwise point distribution stops when the limit is reached.",
+      "minterRole": "The MINTER_ROLE allows the backend to award points. Only authorized wallets can use this function."
+    }
+  },
+  "infoTips": {
+    "wallet": "A wallet is your digital keychain. It contains a public key (your address) and a private key (your password). Never share the private key.",
+    "privateKey": "Your private key is like a password — whoever has it controls your wallet. Store it securely and never share it.",
+    "blockchain": "The blockchain is a public, immutable ledger. Your points are stored there and can be verified by anyone.",
+    "claim": "A claim is the redemption of your survey participation. You sign a message with your wallet and the system awards you the points.",
+    "baseFee": "Base L2 is an Ethereum Layer 2 network with very low fees. A transaction costs less than $0.01."
+  },
+  "imprint": {
+    "title": "Imprint",
+    "lastUpdated": "Last updated: 14 October 2025",
+    "provider": {
+      "title": "Provider",
+      "address": ["Hochschule Bielefeld", "Faculty of Business", "Interaktion 1", "D-33619 Bielefeld", "Germany", "P.O. Box: 10 11 13", "D-33511 Bielefeld"],
+      "contact": [
+        {"label": "Phone", "value": "+49 521 106-01", "href": "tel:+4952110601"},
+        {"label": "Fax", "value": "+49 521 106-7790", "href": "tel:+495211067790"},
+        {"label": "Email", "value": "info@hsbi.de", "href": "mailto:info@hsbi.de"},
+        {"label": "Website", "value": "www.hsbi.de", "href": "https://www.hsbi.de"}
+      ]
+    },
+    "legalForm": {
+      "title": "Legal Form",
+      "text": "Hochschule Bielefeld is a public corporation under German law."
+    },
+    "representation": {
+      "title": "Statutory Representation",
+      "text": "It is legally represented by the President, Prof. Dr. Ingeborg Schramm-Wölk."
+    },
+    "supervisory": {
+      "title": "Supervisory Authority",
+      "text": "Ministry of Culture and Science of the State of North Rhine-Westphalia (MKW), 40190 Düsseldorf"
+    },
+    "vat": {
+      "title": "VAT Identification Number",
+      "text": "pursuant to Section 27a of the German VAT Act: DE124007838"
+    },
+    "contentResp": {
+      "title": "Content Responsibility (Sec. 18(2) MStV)",
+      "address": ["Prof. Dr. Alexander Haubrock", "Hochschule Bielefeld – HSBI", "Interaktion 1", "D-33619 Bielefeld", "Germany"]
+    },
+    "copyright": {
+      "title": "Copyright",
+      "text1": "Unless otherwise stated, copyrights and usage rights for texts, graphics and images on all pages referring to this imprint are held by Hochschule Bielefeld.",
+      "text2": "Creating, using, and distributing electronic copies requires permission."
+    },
+    "liability": {
+      "title": "Disclaimer",
+      "own": {
+        "title": "Liability for Our Own Content",
+        "text": "We are liable for the content of our own pages in accordance with statutory provisions. No guarantee or liability is assumed for the accuracy or completeness of the content provided on this website."
+      },
+      "external": {
+        "title": "Liability for External Links",
+        "text1": "Our offer contains links to external websites of third parties. We have no influence on the content of the linked pages; responsibility lies solely with the respective provider.",
+        "text2": "We kindly request visitors to inform us immediately of any unlawful content on linked pages. If we become aware of legal violations, we will remove such links without delay."
+      }
+    }
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated: 14 October 2025",
+    "toc": "Contents",
+    "sections": {
+      "intro": {
+        "title": "Summary",
+        "text1": "The protection of your personal data is important to us. This policy informs you about the data we process, the purposes, the legal basis, and your rights.",
+        "text2": "The use of our website is generally possible without providing personal data."
+      },
+      "controller": {
+        "title": "Controller",
+        "text": "The controller within the meaning of the GDPR is:",
+        "address": ["Prof. Dr. rer. nat. Axel Schneider", "Hochschule Bielefeld – HSBI", "Interaktion 1", "D-33619 Bielefeld", "Germany"],
+        "email": "vpstunden@hsbi.de"
+      },
+      "serverLogs": {
+        "title": "Server Log Files",
+        "text": "When accessing our website, the hosting provider automatically stores information in server log files.",
+        "items": ["Date and time of access", "IP address of the requesting device", "User agent (browser and operating system)", "Requested URL or resource", "HTTP status code"],
+        "legal": "The legal basis is Art. 6(1)(f) GDPR (legitimate interest in the secure provision of the website)."
+      },
+      "cookies": {
+        "title": "Cookies and Local Storage",
+        "text1": "We only use technically necessary cookies or equivalent local storage techniques as required for the operation of the website (e.g., session ID, language settings).",
+        "text2": "Legal basis for necessary cookies: Art. 6(1)(f) GDPR."
+      },
+      "web3": {
+        "title": "Web3 / Wallets and Blockchain",
+        "text1": "When creating or importing a wallet, we process your public wallet address and technical metadata to provide the service.",
+        "text2": "On-chain data is publicly accessible and permanently stored on the blockchain. Please do not store personal data in transaction metadata.",
+        "text3": "Legal basis: Art. 6(1)(b) GDPR (contractual purposes) and Art. 6(1)(f) GDPR (IT security)."
+      },
+      "fonts": {
+        "title": "Fonts",
+        "text": "Web fonts are served from our own servers (self-hosting). No connection to Google Fonts is established."
+      },
+      "rights": {
+        "title": "Your Rights",
+        "text": "You have the following rights regarding your personal data:",
+        "items": [
+          {"name": "Information (Art. 15 GDPR)", "desc": "You may request information about your processed data."},
+          {"name": "Rectification (Art. 16 GDPR)", "desc": "You may request the correction of inaccurate data."},
+          {"name": "Erasure (Art. 17 GDPR)", "desc": "You may request the deletion of your data."},
+          {"name": "Restriction (Art. 18 GDPR)", "desc": "You may request the restriction of processing."},
+          {"name": "Data Portability (Art. 20 GDPR)", "desc": "You may receive your data in a machine-readable format."},
+          {"name": "Objection (Art. 21 GDPR)", "desc": "You may object to processing."},
+          {"name": "Withdrawal (Art. 7(3) GDPR)", "desc": "You may withdraw consent at any time."}
+        ],
+        "complaint": "You also have the right to lodge a complaint with a data protection supervisory authority."
+      },
+      "security": {
+        "title": "Security",
+        "text": "We implement technical and organizational measures to protect your data against loss, destruction, access, alteration, or dissemination by unauthorized persons."
+      }
+    }
+  },
+  "accessibility": {
+    "title": "Accessibility Statement",
+    "lastUpdated": "Last updated: 14 October 2025",
+    "status": {
+      "title": "Conformance Status",
+      "text1": "Hochschule Bielefeld strives to make its web offerings accessible in accordance with Section 3 BITV 2.0 and Directive (EU) 2016/2102.",
+      "text2": "This web offering is currently partially conformant."
+    },
+    "nonAccessible": {
+      "title": "Non-Accessible Content",
+      "items": [
+        "Some images/icons do not yet have appropriate alternative text.",
+        "Partially insufficient keyboard focus visibility.",
+        "Dynamic content is not yet fully usable with screen readers."
+      ],
+      "text": "We are working on gradually addressing these issues."
+    },
+    "feedback": {
+      "title": "Feedback and Contact",
+      "text": "Have you noticed accessibility issues on our website? Please write to us — we will work on a prompt solution.",
+      "email": "vpstunden@hsbi.de"
+    },
+    "enforcement": {
+      "title": "Enforcement Procedure",
+      "text": "If you do not receive a satisfactory response within a reasonable period, you may contact the responsible enforcement or conciliation body."
+    },
+    "creation": {
+      "title": "Creation of This Statement",
+      "text": "This statement was created on 14 October 2025 and last reviewed on 14 October 2025 (self-assessment)."
     }
   }
 }

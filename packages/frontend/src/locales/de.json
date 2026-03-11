@@ -16,42 +16,108 @@
     "submit": "Absenden",
     "close": "Schließen",
     "search": "Suchen",
-    "noResults": "Keine Ergebnisse gefunden"
+    "noResults": "Keine Ergebnisse gefunden",
+    "backToTop": "Zurück nach oben"
   },
   "nav": {
     "home": "Startseite",
-    "wallet": "Wallet",
-    "claim": "Einlösen",
-    "points": "Punkte",
-    "explorer": "Explorer",
-    "admin": "Admin"
+    "points": "Meine Punkte",
+    "admin": "Lehrenden-Bereich"
+  },
+  "footer": {
+    "title": "Versuchspersonenpunkte – Blockchain-Projekt",
+    "text": "Versuchspersonenpunkte werden fälschungssicher auf der Blockchain vergeben.",
+    "contactTitle": "Kontakt",
+    "contactPerson": "Prof. Dr. Alexander Haubrock",
+    "contactPhone": "+49.521.106-70355",
+    "contactEmail": "vpstunden@hsbi.de",
+    "imprint": "Impressum",
+    "privacy": "Datenschutz",
+    "accessibility": "Barrierefreiheit"
   },
   "home": {
     "hero": {
-      "title": "Verifiable Participant Points",
-      "subtitle": "Sammle fälschungssichere Punkte für deine Umfrageteilnahme — gesichert durch Blockchain-Technologie.",
-      "cta": {
-        "wallet": "Wallet erstellen",
-        "points": "Punkte anzeigen"
+      "title": "VPP-Punkte digital – einfach & fälschungssicher",
+      "subtitle": "Du nimmst an einer Studie teil, bestätigst am Ende kurz – und dein Punkt erscheint kostenlos in deiner Wallet. Kein Papierkram, jederzeit nachvollziehbar.",
+      "badges": ["Kostenlos", "Kein Kryptoguthaben nötig", "Sicher & nachvollziehbar"],
+      "ctaStudent": "Meine Punkte ansehen",
+      "ctaAdmin": "Lehrenden-Bereich"
+    },
+    "intro": {
+      "title": "Worum geht's hier?",
+      "text": "VPP Blockchain ist das HSBI-System, das Versuchspersonenpunkte (VPP) digital erfasst. Statt Zetteln bekommst du nach einer Studie einen fälschungssicheren Punkt in deine Wallet – ohne, dass persönliche Daten gespeichert werden. So behältst du deinen Stand jederzeit im Blick, Lehrende können ihn schnell prüfen, und die Organisation rund um die Anmeldung zur Bachelorarbeit wird einfacher. Die Nutzung ist für dich kostenlos; die Gebühren übernimmt das System im Hintergrund."
+    },
+    "highlights": {
+      "title": "Auf einen Blick",
+      "student": {
+        "title": "Für Studierende",
+        "text": "Du siehst deinen Punktestand jederzeit – ohne Belege sammeln. Nur am Ende der Studie kurz bestätigen, fertig."
+      },
+      "lecturer": {
+        "title": "Für Lehrende",
+        "text": "Studien anlegen, Punkte einsehen, Umfragen verwalten – alles ohne Gebühren, mit Rollen & Explorer-Links."
       }
     },
-    "features": {
-      "transparent": {
-        "title": "Transparent",
-        "description": "Alle Punkte werden auf der Blockchain gespeichert — öffentlich überprüfbar und fälschungssicher."
-      },
-      "noExtensions": {
-        "title": "Keine Erweiterungen",
-        "description": "Kein MetaMask oder Browser-Erweiterungen nötig. Alles funktioniert direkt im Browser."
-      },
-      "costEfficient": {
-        "title": "Kostengünstig",
-        "description": "Basiert auf Base L2 — jede Transaktion kostet weniger als 0,01 $."
-      },
-      "openSource": {
-        "title": "Open Source",
-        "description": "Vollständig quelloffen. Jede Universität kann eine eigene Instanz betreiben."
-      }
+    "faq": {
+      "title": "Häufige Fragen",
+      "items": [
+        {
+          "q": "Muss ich etwas bezahlen?",
+          "a": "Nein. Die Nutzung ist für dich kostenfrei: Das Backend übernimmt die Netzwerkgebühren im Hintergrund. Du brauchst kein eigenes Kryptoguthaben, um Punkte zu erhalten."
+        },
+        {
+          "q": "Kann ich dieselbe Studie mehrfach nutzen?",
+          "a": "Nein. Pro Wallet und Studie gibt es genau einen Punkt. Das ist technisch im Smart Contract hinterlegt; doppelte Vergaben sind ausgeschlossen."
+        },
+        {
+          "q": "Welches Netzwerk wird genutzt?",
+          "a": "Wir nutzen Base L2 – ein Ethereum Layer 2 mit sehr niedrigen Transaktionskosten und hoher Sicherheit."
+        },
+        {
+          "q": "Welche Daten werden gespeichert?",
+          "a": "Auf der Blockchain stehen nur: deine Wallet-Adresse, der Zeitbezug über den Block und die Punkte-Ereignisse. Namen, Matrikelnummern oder Umfrage-Antworten werden nicht gespeichert."
+        },
+        {
+          "q": "Ich habe noch keine Wallet – was mache ich?",
+          "a": "Die Wallet wird direkt in der Web-App erstellt – du brauchst keine zusätzliche Software. Bewahre deinen Private Key sicher auf, er ist der Zugang zu deinen Punkten."
+        },
+        {
+          "q": "Brauche ich Kryptogeld?",
+          "a": "Nein. Das Backend sponsert die Transaktionen, sodass weder Studierende noch Lehrende Gebühren zahlen müssen."
+        },
+        {
+          "q": "Wie sehe ich meine Punkte?",
+          "a": "Deine Punkte werden direkt von der Blockchain gelesen und in der Web-App angezeigt. Zusätzlich können Lehrende deinen Stand über das Admin-Portal prüfen."
+        },
+        {
+          "q": "Kann ich Punkte übertragen oder verkaufen?",
+          "a": "Nein. Punkte sind an deine Wallet gebunden und nicht übertragbar. Das verhindert Missbrauch."
+        },
+        {
+          "q": "Ich habe am Ende der Studie nichts bekommen – was tun?",
+          "a": "Prüfe, ob du ein Wallet hattest und den Schritt am Ende bestätigt hast. Wenn es weiterhin hakt, melde dich mit deiner Wallet-Adresse bei der Lehrperson."
+        },
+        {
+          "q": "Ich habe meine Wallet verloren – sind die Punkte weg?",
+          "a": "Die Punkte sind an deine Wallet gebunden. Wende dich an die Lehrperson: Im Admin-Portal können Korrekturen vorgenommen werden."
+        },
+        {
+          "q": "Wie viele Punkte brauche ich bis zur Bachelor-Anmeldung?",
+          "a": "Insgesamt 10 VPP. Deinen Zwischenstand siehst du jederzeit in der Web-App."
+        },
+        {
+          "q": "Welche Daten sieht die Öffentlichkeit?",
+          "a": "Nur die Wallet-Adresse, der Zeitbezug über den Block und die Punkte-Ereignisse. Persönliche Daten fehlen bewusst."
+        },
+        {
+          "q": "Was machen Lehrende genau im Portal?",
+          "a": "Studien anlegen (Survey-ID & Punktewert), die SoSci-Starterdatei erzeugen, Wallets prüfen und Umfragen verwalten. Berechtigungen werden über eine einfache Rollenverwaltung vergeben."
+        },
+        {
+          "q": "Warum kostet das alles nichts?",
+          "a": "Das Backend zahlt die Transaktionsgebühren. Deine Bestätigung wird signiert und das Backend sendet die Transaktion auf der Blockchain – die Kosten pro Claim liegen unter 0,01 $."
+        }
+      ]
     }
   },
   "wallet": {
@@ -114,7 +180,7 @@
   "points": {
     "title": "Meine Punkte",
     "total": "Gesamtpunkte",
-    "noWallet": "Verbinde ein Wallet, um deine Punkte zu sehen.",
+    "noWallet": "Erstelle oder importiere ein Wallet, um deine Punkte zu sehen.",
     "surveys": "Aufschlüsselung nach Umfrage",
     "history": "Transaktionsverlauf",
     "table": {
@@ -123,18 +189,18 @@
       "date": "Datum",
       "tx": "Transaktion"
     },
-    "empty": "Noch keine Punkte. Nimm an einer Umfrage teil, um deine ersten Punkte zu sammeln!"
-  },
-  "explorer": {
-    "title": "Explorer",
-    "description": "Punkte für beliebige Wallet-Adressen nachschlagen.",
-    "placeholder": "Wallet-Adresse eingeben (0x...)",
-    "search": "Suchen",
-    "invalidAddress": "Bitte gib eine gültige Wallet-Adresse ein.",
-    "results": "Ergebnisse für {{address}}"
+    "empty": "Noch keine Punkte. Nimm an einer Umfrage teil, um deine ersten Punkte zu sammeln!",
+    "explorer": {
+      "title": "Wallet-Suche",
+      "description": "Punkte für beliebige Wallet-Adressen nachschlagen.",
+      "placeholder": "Wallet-Adresse eingeben (0x...)",
+      "search": "Suchen",
+      "invalidAddress": "Bitte gib eine gültige Wallet-Adresse ein.",
+      "results": "Ergebnisse für {{address}}"
+    }
   },
   "admin": {
-    "title": "Admin-Dashboard",
+    "title": "Lehrenden-Bereich",
     "auth": {
       "title": "Admin-Authentifizierung",
       "description": "Signiere eine Nachricht mit deinem Admin-Wallet, um auf das Dashboard zuzugreifen.",
@@ -174,6 +240,158 @@
       "button": "Registrieren",
       "success": "Umfrage erfolgreich registriert!",
       "error": "Umfrage konnte nicht registriert werden"
+    },
+    "info": {
+      "surveyId": "Eine eindeutige Nummer für diese Umfrage. Sie wird im Redirect-Link und in der Blockchain verwendet.",
+      "secret": "Ein Geheimnis, das nur am Ende der Umfrage sichtbar wird. Bewahre es vertraulich auf.",
+      "maxClaims": "0 bedeutet unbegrenzt. Ansonsten wird die Punktevergabe nach Erreichen des Limits gestoppt.",
+      "minterRole": "Die MINTER_ROLE erlaubt dem Backend, Punkte zu vergeben. Nur autorisierte Wallets können diese Funktion nutzen."
+    }
+  },
+  "infoTips": {
+    "wallet": "Eine Wallet ist dein digitaler Schlüsselbund. Sie enthält einen öffentlichen Schlüssel (deine Adresse) und einen privaten Schlüssel (dein Passwort). Teile den privaten Schlüssel niemals.",
+    "privateKey": "Dein Private Key ist wie ein Passwort – wer ihn hat, kontrolliert deine Wallet. Speichere ihn sicher ab und teile ihn mit niemandem.",
+    "blockchain": "Die Blockchain ist ein öffentliches, unveränderliches Register. Deine Punkte werden dort gespeichert und können von jedem überprüft werden.",
+    "claim": "Ein Claim ist die Einlösung deiner Umfrage-Teilnahme. Du signierst eine Nachricht mit deiner Wallet und das System vergibt dir die Punkte.",
+    "baseFee": "Base L2 ist ein Ethereum Layer-2-Netzwerk mit sehr niedrigen Gebühren. Eine Transaktion kostet weniger als 0,01 $."
+  },
+  "imprint": {
+    "title": "Impressum",
+    "lastUpdated": "Stand: 14. Oktober 2025",
+    "provider": {
+      "title": "Anbieter",
+      "address": ["Hochschule Bielefeld", "Fachbereich Wirtschaft", "Interaktion 1", "D-33619 Bielefeld", "Deutschland", "Postfach: 10 11 13", "D-33511 Bielefeld"],
+      "contact": [
+        {"label": "Telefon", "value": "+49 521 106-01", "href": "tel:+4952110601"},
+        {"label": "Telefax", "value": "+49 521 106-7790", "href": "tel:+495211067790"},
+        {"label": "E-Mail", "value": "info@hsbi.de", "href": "mailto:info@hsbi.de"},
+        {"label": "Web", "value": "www.hsbi.de", "href": "https://www.hsbi.de"}
+      ]
+    },
+    "legalForm": {
+      "title": "Rechtsform",
+      "text": "Die Hochschule Bielefeld ist eine Körperschaft des Öffentlichen Rechts."
+    },
+    "representation": {
+      "title": "Gesetzliche Vertretung",
+      "text": "Sie wird gesetzlich vertreten durch die Präsidentin Prof. Dr. Ingeborg Schramm-Wölk."
+    },
+    "supervisory": {
+      "title": "Zuständige Aufsichtsbehörde",
+      "text": "Ministerium für Kultur und Wissenschaft des Landes Nordrhein-Westfalen (MKW), 40190 Düsseldorf"
+    },
+    "vat": {
+      "title": "Umsatzsteuer-Identifikationsnummer",
+      "text": "gemäß § 27 a Umsatzsteuergesetz: DE124007838"
+    },
+    "contentResp": {
+      "title": "Inhaltlich Verantwortlich i.S.d. § 18 Abs. 2 MStV",
+      "address": ["Prof. Dr. Alexander Haubrock", "Hochschule Bielefeld – HSBI", "Interaktion 1", "D-33619 Bielefeld", "Deutschland"]
+    },
+    "copyright": {
+      "title": "Copyright",
+      "text1": "Die Urheber- und Nutzungsrechte (Copyright) für Texte, Grafiken und Bilder auf allen Seiten, die auf dieses Impressum verweisen, liegen – soweit nicht anders angegeben – bei der Hochschule Bielefeld.",
+      "text2": "Die Erstellung, Verwendung und Weitergabe von Kopien in elektronischer Form bedarf der Genehmigung."
+    },
+    "liability": {
+      "title": "Haftungsausschluss",
+      "own": {
+        "title": "Haftung für eigene Inhalte",
+        "text": "Für die Inhalte unserer eigenen Seite haften wir nach den gesetzlichen Bestimmungen. Es wird keine Gewähr oder Haftung für die Richtigkeit oder Vollständigkeit der auf dieser Webseite zur Verfügung gestellten Inhalte und Informationen übernommen."
+      },
+      "external": {
+        "title": "Haftung für externe Links",
+        "text1": "Unser Angebot enthält Links zu externen Webseiten Dritter. Rechtswidrige Inhalte waren zum Zeitpunkt der Verlinkung nicht erkennbar. Auf die Inhalte der verlinkten Seiten haben wir keinen Einfluss. Verantwortlich hierfür ist stets allein der jeweilige Anbieter oder Betreiber der Seiten.",
+        "text2": "Wir bitten die Besucherinnen und Besucher unserer Internetseiten, uns umgehend auf etwaige rechtswidrige Inhalte der verlinkten Seiten aufmerksam zu machen. Bei Bekanntwerden von Rechtsverletzungen werden wir derartige Links umgehend entfernen."
+      }
+    }
+  },
+  "privacy": {
+    "title": "Datenschutzerklärung",
+    "lastUpdated": "Stand: 14. Oktober 2025",
+    "toc": "Inhalt",
+    "sections": {
+      "intro": {
+        "title": "Kurzfassung",
+        "text1": "Der Schutz Ihrer personenbezogenen Daten ist uns wichtig. Diese Erklärung informiert Sie darüber, welche Daten wir verarbeiten, zu welchen Zwecken, auf welcher Rechtsgrundlage und welche Rechte Sie haben.",
+        "text2": "Die Nutzung unserer Website ist grundsätzlich ohne Angabe personenbezogener Daten möglich."
+      },
+      "controller": {
+        "title": "Verantwortliche Stelle",
+        "text": "Verantwortlich im Sinne der DSGVO ist:",
+        "address": ["Prof. Dr. rer. nat. Axel Schneider", "Hochschule Bielefeld – HSBI", "Interaktion 1", "D-33619 Bielefeld", "Deutschland"],
+        "email": "vpstunden@hsbi.de"
+      },
+      "serverLogs": {
+        "title": "Server-Logdateien",
+        "text": "Beim Aufruf unserer Website werden durch den Hosting-Provider automatisch Informationen in sog. Server-Logdateien gespeichert.",
+        "items": ["Datum und Uhrzeit des Abrufs", "IP-Adresse des anfragenden Geräts", "User-Agent (Browser und ggf. Betriebssystem)", "aufgerufene URL bzw. Ressource", "HTTP-Statuscode"],
+        "legal": "Die Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der sicheren Bereitstellung der Website)."
+      },
+      "cookies": {
+        "title": "Cookies und lokale Speicherung",
+        "text1": "Wir verwenden nur technisch notwendige Cookies bzw. gleichwertige lokale Speichertechniken, soweit dies für den Betrieb der Website erforderlich ist (z. B. Session-ID, Spracheinstellungen).",
+        "text2": "Rechtsgrundlage für notwendige Cookies: Art. 6 Abs. 1 lit. f DSGVO."
+      },
+      "web3": {
+        "title": "Web3 / Wallets und Blockchain",
+        "text1": "Beim Erstellen oder Importieren einer Wallet verarbeiten wir Ihre öffentliche Wallet-Adresse und technische Metadaten zur Bereitstellung des Dienstes.",
+        "text2": "On-Chain-Daten sind öffentlich zugänglich und dauerhaft auf der jeweiligen Blockchain gespeichert. Bitte hinterlegen Sie keine personenbezogenen Daten in Transaktions-Metadaten.",
+        "text3": "Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (nutzungsvertragliche Zwecke) und Art. 6 Abs. 1 lit. f DSGVO (IT-Sicherheit)."
+      },
+      "fonts": {
+        "title": "Schriften",
+        "text": "Webfonts werden von unseren eigenen Servern ausgeliefert (Self-Hosting). Es wird keine Verbindung zu Google Fonts hergestellt."
+      },
+      "rights": {
+        "title": "Ihre Rechte",
+        "text": "Sie haben gegenüber uns folgende Rechte hinsichtlich der Sie betreffenden personenbezogenen Daten:",
+        "items": [
+          {"name": "Auskunft (Art. 15 DSGVO)", "desc": "Sie erhalten Auskunft über die verarbeiteten Daten."},
+          {"name": "Berichtigung (Art. 16 DSGVO)", "desc": "Sie können die Berichtigung unrichtiger Daten verlangen."},
+          {"name": "Löschung (Art. 17 DSGVO)", "desc": "Sie können die Löschung Ihrer Daten verlangen."},
+          {"name": "Einschränkung (Art. 18 DSGVO)", "desc": "Sie können die Einschränkung der Verarbeitung verlangen."},
+          {"name": "Datenübertragbarkeit (Art. 20 DSGVO)", "desc": "Sie erhalten die Daten in einem maschinenlesbaren Format."},
+          {"name": "Widerspruch (Art. 21 DSGVO)", "desc": "Sie können gegen Verarbeitungen Widerspruch einlegen."},
+          {"name": "Widerruf (Art. 7 Abs. 3 DSGVO)", "desc": "Sie können eine erteilte Einwilligung jederzeit widerrufen."}
+        ],
+        "complaint": "Zudem haben Sie das Recht, sich bei einer Datenschutzaufsichtsbehörde zu beschweren."
+      },
+      "security": {
+        "title": "Sicherheit",
+        "text": "Wir treffen technische und organisatorische Maßnahmen, um Ihre Daten gegen Verlust, Zerstörung, Zugriff, Veränderung oder Verbreitung durch unbefugte Personen zu schützen."
+      }
+    }
+  },
+  "accessibility": {
+    "title": "Erklärung zur Barrierefreiheit",
+    "lastUpdated": "Stand: 14. Oktober 2025",
+    "status": {
+      "title": "Konformitätsstatus",
+      "text1": "Die Hochschule Bielefeld ist bemüht, ihre Webangebote im Einklang mit § 3 BITV 2.0 sowie der Richtlinie (EU) 2016/2102 barrierefrei zugänglich zu machen.",
+      "text2": "Dieses Webangebot ist derzeit teilweise konform."
+    },
+    "nonAccessible": {
+      "title": "Nicht barrierefreie Inhalte",
+      "items": [
+        "Einzelne Bilder/Icons haben noch keinen geeigneten Alternativtext.",
+        "Teilweise unzureichende Tastaturfokussichtbarkeit.",
+        "Dynamische Inhalte sind noch nicht vollständig mit Screenreadern nutzbar."
+      ],
+      "text": "Wir arbeiten an der schrittweisen Behebung der genannten Punkte."
+    },
+    "feedback": {
+      "title": "Feedback und Kontakt",
+      "text": "Sind Ihnen Mängel beim barrierefreien Zugang zu Inhalten unserer Website aufgefallen? Schreiben Sie uns – wir bemühen uns um schnelle Abhilfe.",
+      "email": "vpstunden@hsbi.de"
+    },
+    "enforcement": {
+      "title": "Durchsetzungsverfahren",
+      "text": "Sollten Sie innerhalb einer angemessenen Frist keine zufriedenstellende Antwort erhalten, können Sie sich an die zuständige Durchsetzungs- bzw. Schlichtungsstelle wenden."
+    },
+    "creation": {
+      "title": "Erstellung dieser Erklärung",
+      "text": "Diese Erklärung wurde am 14. Oktober 2025 erstellt und zuletzt am 14. Oktober 2025 überprüft (Selbstbewertung)."
     }
   }
 }
