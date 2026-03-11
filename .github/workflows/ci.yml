@@ -60,3 +60,27 @@ jobs:
 
       - name: Check coverage
         run: pnpm --filter @vpp/contracts run coverage
+
+  backend:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Compile contracts (needed for ABI)
+        run: pnpm --filter @vpp/contracts run compile
+
+      - name: Build backend
+        run: pnpm --filter @vpp/backend run build
+
+      - name: Run tests
+        run: pnpm --filter @vpp/backend run test
