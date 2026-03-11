@@ -343,6 +343,7 @@ export default function AdminPage() {
         activeSurveys={activeSurveys}
         totalClaims={totalClaims}
         totalPoints={totalPointsAwarded}
+        loading={loading}
       />
 
       <Separator />

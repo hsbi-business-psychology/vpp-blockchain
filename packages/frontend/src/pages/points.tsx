@@ -88,21 +88,18 @@ export default function PointsPage() {
 
   useEffect(() => {
     if (!wallet?.address) return
-    const fetchData = async () => {
-      try {
-        const [points, claims, submitted] = await Promise.all([
-          getTotalPoints(wallet.address),
-          getClaimHistory(wallet.address),
-          checkSubmitted(wallet.address),
-        ])
-        setTotalPoints(points)
-        setHistory(claims)
-        setWalletSubmitted(submitted)
-      } catch {
-        // handled by hook
-      }
-    }
-    fetchData()
+
+    getTotalPoints(wallet.address)
+      .then(setTotalPoints)
+      .catch(() => {})
+
+    checkSubmitted(wallet.address)
+      .then(setWalletSubmitted)
+      .catch(() => {})
+
+    getClaimHistory(wallet.address)
+      .then(setHistory)
+      .catch(() => {})
   }, [wallet?.address, getTotalPoints, getClaimHistory, checkSubmitted])
 
   function handleCopy(text: string) {

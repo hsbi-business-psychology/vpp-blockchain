@@ -1,14 +1,16 @@
 import { useTranslation } from 'react-i18next'
 import { BarChart3, CheckCircle2, Award, Activity } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface MetricsCardsProps {
   totalSurveys: number
   activeSurveys: number
   totalClaims: number
   totalPoints: number
+  loading?: boolean
 }
 
-export function MetricsCards({ totalSurveys, activeSurveys, totalClaims, totalPoints }: MetricsCardsProps) {
+export function MetricsCards({ totalSurveys, activeSurveys, totalClaims, totalPoints, loading }: MetricsCardsProps) {
   const { t } = useTranslation()
 
   const metrics = [
@@ -53,7 +55,11 @@ export function MetricsCards({ totalSurveys, activeSurveys, totalClaims, totalPo
             <Icon className={`size-4 ${color}`} />
           </div>
           <div className="min-w-0">
-            <p className="text-2xl font-bold leading-none">{value.toLocaleString()}</p>
+            {loading ? (
+              <Skeleton className="h-7 w-12" />
+            ) : (
+              <p className="text-2xl font-bold leading-none">{value.toLocaleString()}</p>
+            )}
             <p className="mt-0.5 truncate text-xs text-muted-foreground">{label}</p>
           </div>
         </div>
