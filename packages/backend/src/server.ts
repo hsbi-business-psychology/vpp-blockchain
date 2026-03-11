@@ -7,6 +7,7 @@ import { errorHandler } from './middleware/errorHandler.js'
 import claimRouter from './routes/claim.js'
 import pointsRouter from './routes/points.js'
 import surveysRouter from './routes/surveys.js'
+import walletsRouter from './routes/wallets.js'
 import healthRouter from './routes/health.js'
 
 export function createApp(): Express {
@@ -25,6 +26,7 @@ export function createApp(): Express {
   app.use('/api/claim', claimRouter)
   app.use('/api/points', pointsRouter)
   app.use('/api/surveys', surveysRouter)
+  app.use('/api/wallets', walletsRouter)
   app.use('/api/health', healthRouter)
 
   // Error handling (must be last)

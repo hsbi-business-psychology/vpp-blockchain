@@ -158,6 +158,28 @@ export async function isAdmin(address: string): Promise<boolean> {
   return readOnlyContract.isAdmin(address)
 }
 
+export async function markWalletSubmitted(
+  walletAddress: string,
+): Promise<ethers.TransactionReceipt> {
+  const tx = await contract.markWalletSubmitted(walletAddress)
+  const receipt = await tx.wait()
+  if (!receipt) throw new Error('Transaction receipt is null')
+  return receipt
+}
+
+export async function unmarkWalletSubmitted(
+  walletAddress: string,
+): Promise<ethers.TransactionReceipt> {
+  const tx = await contract.unmarkWalletSubmitted(walletAddress)
+  const receipt = await tx.wait()
+  if (!receipt) throw new Error('Transaction receipt is null')
+  return receipt
+}
+
+export async function isWalletSubmitted(walletAddress: string): Promise<boolean> {
+  return readOnlyContract.isWalletSubmitted(walletAddress)
+}
+
 export async function getBlockNumber(): Promise<number> {
   return provider.getBlockNumber()
 }
