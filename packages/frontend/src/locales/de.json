@@ -123,6 +123,8 @@
   "wallet": {
     "title": "Wallet",
     "noWallet": "Du hast noch kein Wallet.",
+    "connected": "Verbunden",
+    "manage": "Wallet verwalten",
     "create": {
       "title": "Wallet erstellen",
       "description": "Erstelle ein neues Wallet direkt im Browser. Keine Registrierung nötig.",
@@ -131,10 +133,11 @@
     },
     "import": {
       "title": "Wallet importieren",
-      "description": "Importiere ein bestehendes Wallet mit deinem Private Key.",
+      "description": "Du hast bereits ein Wallet? Importiere es mit deinem Private Key, um den Zugriff auf einem neuen Gerät wiederherzustellen.",
       "placeholder": "Private Key eingeben (0x...)",
       "button": "Importieren",
-      "error": "Ungültiges Private-Key-Format"
+      "error": "Ungültiges Private-Key-Format",
+      "importAnother": "Anderes Wallet importieren"
     },
     "info": {
       "address": "Adresse",
@@ -144,11 +147,28 @@
       "downloadKey": "Key-Datei herunterladen",
       "warning": "Teile deinen Private Key niemals mit anderen. Bewahre ihn sicher auf!"
     },
+    "reveal": {
+      "title": "Private Key anzeigen",
+      "description": "Dein Private Key ist wie ein Passwort – wer ihn kennt, kontrolliert dein Wallet und alle deine Punkte.",
+      "check1": "Ich bin gerade alleine und niemand sieht meinen Bildschirm.",
+      "check2": "Ich werde den Key niemandem zeigen oder weitergeben.",
+      "check3": "Ich weiß, dass ich den Key sicher abspeichern muss.",
+      "confirm": "Ich verstehe – Key anzeigen",
+      "hide": "Key verbergen"
+    },
     "delete": {
       "title": "Wallet löschen",
-      "description": "Das Wallet wird aus deinem Browser entfernt. Stelle sicher, dass du deinen Private Key gesichert hast!",
+      "description": "Das Wallet wird unwiderruflich aus deinem Browser entfernt. Deine Punkte bleiben auf der Blockchain, sind aber ohne den Private Key nicht mehr zugreifbar.",
+      "confirm": "Hast du deinen Private Key gesichert?",
+      "confirmDescription": "Ohne den Private Key kannst du nicht mehr auf deine Punkte zugreifen. Diese Aktion kann nicht rückgängig gemacht werden.",
       "button": "Wallet löschen",
+      "confirmButton": "Ja, Wallet endgültig löschen",
       "success": "Wallet gelöscht"
+    },
+    "reset": {
+      "title": "Wallet wechseln",
+      "description": "Ersetze dein aktuelles Wallet durch ein importiertes. Dein bisheriges Wallet wird dabei entfernt.",
+      "warning": "Sichere vorher unbedingt deinen Private Key!"
     }
   },
   "claim": {

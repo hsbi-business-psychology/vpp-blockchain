@@ -123,6 +123,8 @@
   "wallet": {
     "title": "Wallet",
     "noWallet": "You don't have a wallet yet.",
+    "connected": "Connected",
+    "manage": "Manage wallet",
     "create": {
       "title": "Create Wallet",
       "description": "Generate a new wallet directly in your browser. No registration needed.",
@@ -131,10 +133,11 @@
     },
     "import": {
       "title": "Import Wallet",
-      "description": "Import an existing wallet using your private key.",
+      "description": "Already have a wallet? Import it with your private key to restore access on a new device.",
       "placeholder": "Enter your private key (0x...)",
       "button": "Import",
-      "error": "Invalid private key format"
+      "error": "Invalid private key format",
+      "importAnother": "Import different wallet"
     },
     "info": {
       "address": "Address",
@@ -144,11 +147,28 @@
       "downloadKey": "Download Key File",
       "warning": "Never share your private key with anyone. Store it securely!"
     },
+    "reveal": {
+      "title": "Reveal Private Key",
+      "description": "Your private key is like a password — anyone who has it can control your wallet and all your points.",
+      "check1": "I am alone and nobody can see my screen.",
+      "check2": "I will not show or share this key with anyone.",
+      "check3": "I understand I must store this key securely.",
+      "confirm": "I understand — show key",
+      "hide": "Hide key"
+    },
     "delete": {
       "title": "Delete Wallet",
-      "description": "This will remove the wallet from your browser. Make sure you have backed up your private key!",
+      "description": "The wallet will be permanently removed from your browser. Your points remain on the blockchain but will no longer be accessible without the private key.",
+      "confirm": "Did you back up your private key?",
+      "confirmDescription": "Without the private key you can no longer access your points. This action cannot be undone.",
       "button": "Delete Wallet",
+      "confirmButton": "Yes, permanently delete wallet",
       "success": "Wallet deleted"
+    },
+    "reset": {
+      "title": "Switch Wallet",
+      "description": "Replace your current wallet with an imported one. Your current wallet will be removed.",
+      "warning": "Make sure to back up your private key first!"
     }
   },
   "claim": {
