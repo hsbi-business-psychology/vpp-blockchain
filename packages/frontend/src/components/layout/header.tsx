@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Menu, X } from 'lucide-react'
+import { useTheme } from 'next-themes'
+import { Menu, X, Home, Coins, BookOpen, ShieldCheck, Sun, Moon, Globe } from 'lucide-react'
 import { ThemeToggle } from './theme-toggle'
 import { LanguageSwitcher } from './language-switcher'
 
@@ -9,19 +10,31 @@ interface HeaderProps {
   onNavigate: (href: string) => void
 }
 
+const LANGUAGES = [
+  { code: 'de', label: 'DE' },
+  { code: 'en', label: 'EN' },
+] as const
+
 export function Header({ currentPath, onNavigate }: HeaderProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const { theme, setTheme } = useTheme()
   const [menuOpen, setMenuOpen] = useState(false)
 
   const navLinks = [
-    { href: '/points', label: t('nav.points') },
-    { href: '/docs', label: t('nav.docs') },
-    { href: '/admin', label: t('nav.admin') },
+    { href: '/', label: t('nav.home'), icon: Home },
+    { href: '/points', label: t('nav.points'), icon: Coins },
+    { href: '/docs', label: t('nav.docs'), icon: BookOpen },
+    { href: '/admin', label: t('nav.admin'), icon: ShieldCheck },
   ]
 
   function handleNav(href: string) {
     onNavigate(href)
     setMenuOpen(false)
+  }
+
+  function changeLanguage(code: string) {
+    i18n.changeLanguage(code)
+    localStorage.setItem('vpp-lang', code)
   }
 
   return (
@@ -37,8 +50,8 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
             <img src="/hsbi-logo-dark.png" alt="" width={262} height={192} fetchPriority="high" className="hidden h-12 w-auto dark:block md:h-16" aria-hidden="true" />
           </button>
 
-          <nav className="hidden items-center gap-1 md:flex" aria-label={t('nav.main', 'Hauptnavigation')}>
-            {navLinks.map(({ href, label }) => {
+          <nav className="hidden items-center gap-1 md:flex" aria-label={t('nav.main')}>
+            {navLinks.slice(1).map(({ href, label }) => {
               const isActive = currentPath === href || currentPath.startsWith(href + '/')
               return (
                 <button
@@ -64,7 +77,7 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="flex size-9 items-center justify-center rounded-md text-foreground md:hidden"
-            aria-label={menuOpen ? t('nav.closeMenu', 'Menü schließen') : t('nav.openMenu', 'Menü öffnen')}
+            aria-label={menuOpen ? t('nav.closeMenu') : t('nav.openMenu')}
             aria-expanded={menuOpen}
           >
             {menuOpen ? <X className="size-5" aria-hidden="true" /> : <Menu className="size-5" aria-hidden="true" />}
@@ -73,54 +86,119 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
       </header>
 
       {menuOpen && (
-        <div className="fixed inset-0 z-50 bg-background md:hidden" role="dialog" aria-label={t('nav.mobileMenu', 'Navigation')}>
-          <div className="flex items-center justify-between px-4 py-5">
-            <button
-              onClick={() => handleNav('/')}
-              className="flex items-center"
-              aria-label={t('nav.home')}
-            >
-              <img src="/hsbi-logo-light.png" alt="HSBI – Startseite" width={262} height={192} className="h-12 w-auto dark:hidden" />
-              <img src="/hsbi-logo-dark.png" alt="" width={262} height={192} className="hidden h-12 w-auto dark:block" aria-hidden="true" />
-            </button>
-            <button
-              onClick={() => setMenuOpen(false)}
-              className="flex size-9 items-center justify-center"
-              aria-label={t('nav.closeMenu', 'Menü schließen')}
-            >
-              <X className="size-5" aria-hidden="true" />
-            </button>
-          </div>
-          <nav className="flex flex-col gap-1 px-4 pt-6" aria-label={t('nav.main', 'Hauptnavigation')}>
-            <button
-              onClick={() => handleNav('/')}
-              aria-current={currentPath === '/' ? 'page' : undefined}
-              className={`rounded-md px-4 py-3 text-left text-base font-semibold ${
-                currentPath === '/' ? 'bg-accent text-primary' : ''
-              }`}
-            >
-              {t('nav.home')}
-            </button>
-            {navLinks.map(({ href, label }) => {
-              const isActive = currentPath === href || currentPath.startsWith(href + '/')
-              return (
-                <button
-                  key={href}
-                  onClick={() => handleNav(href)}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={`rounded-md px-4 py-3 text-left text-base font-semibold ${
-                    isActive ? 'bg-accent text-primary' : ''
-                  }`}
-                >
-                  {label}
-                </button>
-              )
-            })}
-            <div className="mt-4 flex items-center gap-2 px-4">
-              <LanguageSwitcher />
-              <ThemeToggle />
+        <div className="fixed inset-0 z-50 bg-background md:hidden" role="dialog" aria-label={t('nav.mobileMenu')}>
+          <div className="flex h-full flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-5">
+              <button
+                onClick={() => handleNav('/')}
+                className="flex items-center"
+                aria-label={t('nav.home')}
+              >
+                <img src="/hsbi-logo-light.png" alt="HSBI – Startseite" width={262} height={192} className="h-12 w-auto dark:hidden" />
+                <img src="/hsbi-logo-dark.png" alt="" width={262} height={192} className="hidden h-12 w-auto dark:block" aria-hidden="true" />
+              </button>
+              <button
+                onClick={() => setMenuOpen(false)}
+                className="flex size-9 items-center justify-center rounded-md hover:bg-accent"
+                aria-label={t('nav.closeMenu')}
+              >
+                <X className="size-5" aria-hidden="true" />
+              </button>
             </div>
-          </nav>
+
+            {/* Navigation */}
+            <nav className="flex-1 px-4 pt-2" aria-label={t('nav.main')}>
+              <div className="space-y-1">
+                {navLinks.map(({ href, label, icon: Icon }) => {
+                  const isActive = href === '/'
+                    ? currentPath === '/'
+                    : currentPath === href || currentPath.startsWith(href + '/')
+                  return (
+                    <button
+                      key={href}
+                      onClick={() => handleNav(href)}
+                      aria-current={isActive ? 'page' : undefined}
+                      className={`flex w-full items-center gap-3 rounded-lg px-4 py-3.5 text-left text-base font-semibold transition-colors ${
+                        isActive
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-foreground hover:bg-accent'
+                      }`}
+                    >
+                      <Icon className={`size-5 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} aria-hidden="true" />
+                      {label}
+                    </button>
+                  )
+                })}
+              </div>
+            </nav>
+
+            {/* Settings Footer */}
+            <div className="border-t border-border px-4 py-5">
+              {/* Language */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5 text-sm font-medium text-muted-foreground">
+                  <Globe className="size-4" aria-hidden="true" />
+                  {t('nav.language')}
+                </div>
+                <div className="flex overflow-hidden rounded-lg border border-border" role="radiogroup" aria-label={t('nav.language')}>
+                  {LANGUAGES.map(({ code, label }) => (
+                    <button
+                      key={code}
+                      role="radio"
+                      aria-checked={i18n.language === code}
+                      onClick={() => changeLanguage(code)}
+                      className={`px-4 py-1.5 text-sm font-semibold transition-colors ${
+                        i18n.language === code
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-background text-foreground hover:bg-accent'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Theme */}
+              <div className="mt-4 flex items-center justify-between">
+                <div className="flex items-center gap-2.5 text-sm font-medium text-muted-foreground">
+                  {theme === 'dark'
+                    ? <Moon className="size-4" aria-hidden="true" />
+                    : <Sun className="size-4" aria-hidden="true" />}
+                  {t('nav.theme')}
+                </div>
+                <div className="flex overflow-hidden rounded-lg border border-border" role="radiogroup" aria-label={t('nav.theme')}>
+                  <button
+                    role="radio"
+                    aria-checked={theme === 'light'}
+                    onClick={() => setTheme('light')}
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-semibold transition-colors ${
+                      theme === 'light'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-background text-foreground hover:bg-accent'
+                    }`}
+                  >
+                    <Sun className="size-3.5" aria-hidden="true" />
+                    {t('nav.themeLight')}
+                  </button>
+                  <button
+                    role="radio"
+                    aria-checked={theme === 'dark'}
+                    onClick={() => setTheme('dark')}
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-semibold transition-colors ${
+                      theme === 'dark'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-background text-foreground hover:bg-accent'
+                    }`}
+                  >
+                    <Moon className="size-3.5" aria-hidden="true" />
+                    {t('nav.themeDark')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </>

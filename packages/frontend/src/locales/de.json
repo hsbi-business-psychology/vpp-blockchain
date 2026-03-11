@@ -27,7 +27,11 @@
     "main": "Hauptnavigation",
     "openMenu": "Menü öffnen",
     "closeMenu": "Menü schließen",
-    "mobileMenu": "Navigation"
+    "mobileMenu": "Navigation",
+    "language": "Sprache",
+    "theme": "Darstellung",
+    "themeLight": "Hell",
+    "themeDark": "Dunkel"
   },
   "footer": {
     "title": "Versuchspersonenpunkte – Blockchain-Projekt",

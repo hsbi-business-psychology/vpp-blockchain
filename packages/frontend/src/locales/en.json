@@ -27,7 +27,11 @@
     "main": "Main navigation",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
-    "mobileMenu": "Navigation"
+    "mobileMenu": "Navigation",
+    "language": "Language",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark"
   },
   "footer": {
     "title": "Participant Points – Blockchain Project",
