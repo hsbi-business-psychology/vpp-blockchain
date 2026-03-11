@@ -27,9 +27,13 @@ vi.mock('../src/services/blockchain.js', () => ({
   unmarkWalletSubmitted: vi.fn(),
   isWalletSubmitted: vi.fn(),
   isAdmin: vi.fn(),
+  getMinterAddress: vi.fn().mockReturnValue('0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'),
+  getMinterBalance: vi.fn(),
   getBlockNumber: vi.fn(),
   getNetwork: vi.fn(),
-  provider: {},
+  provider: {
+    getFeeData: vi.fn().mockResolvedValue({ gasPrice: 1000000n }),
+  },
   contract: {},
   readOnlyContract: {},
 }))

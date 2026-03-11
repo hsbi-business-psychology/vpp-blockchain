@@ -182,6 +182,14 @@ export async function isWalletSubmitted(walletAddress: string): Promise<boolean>
   return readOnlyContract.isWalletSubmitted(walletAddress)
 }
 
+export function getMinterAddress(): string {
+  return wallet.address
+}
+
+export async function getMinterBalance(): Promise<bigint> {
+  return provider.getBalance(wallet.address)
+}
+
 export async function getBlockNumber(): Promise<number> {
   return provider.getBlockNumber()
 }

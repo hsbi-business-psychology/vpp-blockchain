@@ -9,6 +9,7 @@ import pointsRouter from './routes/points.js'
 import surveysRouter from './routes/surveys.js'
 import walletsRouter from './routes/wallets.js'
 import healthRouter from './routes/health.js'
+import statusRouter from './routes/status.js'
 
 export function createApp(): Express {
   const app = express()
@@ -28,6 +29,7 @@ export function createApp(): Express {
   app.use('/api/surveys', surveysRouter)
   app.use('/api/wallets', walletsRouter)
   app.use('/api/health', healthRouter)
+  app.use('/api/status', statusRouter)
 
   // Error handling (must be last)
   app.use(errorHandler)
