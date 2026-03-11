@@ -70,6 +70,27 @@
     "noWallet": "You don't have a wallet yet.",
     "connected": "Connected",
     "manage": "Manage wallet",
+    "chooseMethod": "How would you like to connect?",
+    "browser": {
+      "title": "Browser Wallet",
+      "tag": "Easiest option",
+      "description": "Your wallet is created and stored directly in your browser. No installation needed — one click is all it takes. Ideal if this is your first time using wallets.",
+      "button": "Create Wallet"
+    },
+    "metamask": {
+      "title": "MetaMask",
+      "tag": "More secure",
+      "description": "MetaMask is a browser extension that manages your private key securely with encryption. Your wallet persists even after clearing browser data.",
+      "button": "Connect MetaMask",
+      "notInstalled": "MetaMask is not installed.",
+      "installHint": "Install the MetaMask browser extension for free at",
+      "installLink": "metamask.io",
+      "connected": "Via MetaMask",
+      "disconnect": "Disconnect MetaMask",
+      "disconnectDescription": "The connection to MetaMask will be removed. Your wallet remains in MetaMask — you can reconnect at any time.",
+      "reconnect": "You can reconnect at any time.",
+      "switchedAccount": "MetaMask account changed"
+    },
     "create": {
       "title": "Create Wallet",
       "description": "Generate a new wallet directly in your browser. No registration needed.",
@@ -78,7 +99,8 @@
     },
     "import": {
       "title": "Import Wallet",
-      "description": "Already have a wallet? Import it with your private key to restore access on a new device.",
+      "tag": "Restore access",
+      "description": "Already have a private key? Import it to restore access on a new device.",
       "placeholder": "Enter your private key (0x...)",
       "button": "Import",
       "error": "Invalid private key format",

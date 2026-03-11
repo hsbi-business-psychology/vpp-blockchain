@@ -70,6 +70,27 @@
     "noWallet": "Du hast noch kein Wallet.",
     "connected": "Verbunden",
     "manage": "Wallet verwalten",
+    "chooseMethod": "Wie möchtest du dich verbinden?",
+    "browser": {
+      "title": "Browser-Wallet",
+      "tag": "Einfachste Option",
+      "description": "Dein Wallet wird direkt hier im Browser erstellt und gespeichert. Du musst nichts installieren – ein Klick genügt. Ideal, wenn du zum ersten Mal mit Wallets arbeitest.",
+      "button": "Wallet erstellen"
+    },
+    "metamask": {
+      "title": "MetaMask",
+      "tag": "Sicherer",
+      "description": "MetaMask ist eine Browser-Erweiterung, die deinen Private Key verschlüsselt verwaltet. Du behältst dein Wallet auch nach dem Löschen des Browserverlaufs.",
+      "button": "MetaMask verbinden",
+      "notInstalled": "MetaMask ist nicht installiert.",
+      "installHint": "Installiere die MetaMask Browser-Erweiterung kostenlos unter",
+      "installLink": "metamask.io",
+      "connected": "Via MetaMask",
+      "disconnect": "MetaMask trennen",
+      "disconnectDescription": "Die Verbindung zu MetaMask wird getrennt. Dein Wallet bleibt in MetaMask erhalten – du kannst dich jederzeit erneut verbinden.",
+      "reconnect": "Du kannst dich jederzeit wieder verbinden.",
+      "switchedAccount": "MetaMask-Account gewechselt"
+    },
     "create": {
       "title": "Wallet erstellen",
       "description": "Erstelle ein neues Wallet direkt im Browser. Keine Registrierung nötig.",
@@ -78,7 +99,8 @@
     },
     "import": {
       "title": "Wallet importieren",
-      "description": "Du hast bereits ein Wallet? Importiere es mit deinem Private Key, um den Zugriff auf einem neuen Gerät wiederherzustellen.",
+      "tag": "Wiederherstellen",
+      "description": "Du hast bereits einen Private Key? Importiere ihn, um den Zugriff auf einem neuen Gerät wiederherzustellen.",
       "placeholder": "Private Key eingeben (0x...)",
       "button": "Importieren",
       "error": "Ungültiges Private-Key-Format",

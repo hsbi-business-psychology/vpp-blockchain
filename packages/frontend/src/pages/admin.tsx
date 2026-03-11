@@ -1,7 +1,8 @@
-import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { ethers } from 'ethers'
+import { getMetaMaskSigner } from '@/lib/wallet'
 import { ShieldCheck, ShieldX, Loader2, LogOut, AlertTriangle, Download, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -40,7 +41,7 @@ interface SurveyRow {
 export default function AdminPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { wallet, hasWallet, sign } = useWallet()
+  const { wallet, hasWallet, isMetaMask, sign } = useWallet()
   const { getSurveys, registerSurvey, downloadTemplate, deactivateSurvey } = useApi()
 
   const [adminCheck, setAdminCheck] = useState<'loading' | 'admin' | 'denied'>('loading')
@@ -60,15 +61,30 @@ export default function AdminPage() {
   const rpcUrl = import.meta.env.VITE_RPC_URL || ''
   const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS || ''
 
-  const signer = useMemo(() => {
-    if (!wallet || !rpcUrl) return null
-    try {
-      const provider = new ethers.JsonRpcProvider(rpcUrl)
-      return new ethers.Wallet(wallet.privateKey, provider)
-    } catch {
-      return null
+  const [signer, setSigner] = useState<ethers.Signer | null>(null)
+  const signerInitRef = useRef(false)
+
+  useEffect(() => {
+    if (!wallet || !rpcUrl) {
+      setSigner(null)
+      return
     }
-  }, [wallet, rpcUrl])
+    if (signerInitRef.current) return
+    signerInitRef.current = true
+
+    if (isMetaMask) {
+      getMetaMaskSigner().then(setSigner).catch(() => setSigner(null))
+    } else {
+      try {
+        const provider = new ethers.JsonRpcProvider(rpcUrl)
+        setSigner(new ethers.Wallet(wallet.privateKey, provider))
+      } catch {
+        setSigner(null)
+      }
+    }
+
+    return () => { signerInitRef.current = false }
+  }, [wallet, rpcUrl, isMetaMask])
 
   useEffect(() => {
     if (!wallet || !rpcUrl || !contractAddress) {

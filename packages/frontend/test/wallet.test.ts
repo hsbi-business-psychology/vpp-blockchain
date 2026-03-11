@@ -61,10 +61,16 @@ describe('wallet utilities', () => {
 
   describe('localStorage persistence', () => {
     it('saves and loads a wallet', () => {
-      const wallet = { address: TEST_ADDRESS, privateKey: TEST_KEY }
+      const wallet = { address: TEST_ADDRESS, privateKey: TEST_KEY, type: 'local' as const }
       saveWallet(wallet)
       const loaded = loadWallet()
       expect(loaded).toEqual(wallet)
+    })
+
+    it('migrates old wallets without type to local', () => {
+      localStorage.setItem('vpp-wallet', JSON.stringify({ address: TEST_ADDRESS, privateKey: TEST_KEY }))
+      const loaded = loadWallet()
+      expect(loaded).toEqual({ address: TEST_ADDRESS, privateKey: TEST_KEY, type: 'local' })
     })
 
     it('returns null when no wallet is stored', () => {
@@ -72,9 +78,16 @@ describe('wallet utilities', () => {
     })
 
     it('deletes a stored wallet', () => {
-      saveWallet({ address: TEST_ADDRESS, privateKey: TEST_KEY })
+      saveWallet({ address: TEST_ADDRESS, privateKey: TEST_KEY, type: 'local' })
       deleteWallet()
       expect(loadWallet()).toBeNull()
+    })
+
+    it('loads a metamask wallet (no privateKey)', () => {
+      const wallet = { address: TEST_ADDRESS, privateKey: '', type: 'metamask' as const }
+      saveWallet(wallet)
+      const loaded = loadWallet()
+      expect(loaded).toEqual(wallet)
     })
 
     it('handles corrupted localStorage data', () => {

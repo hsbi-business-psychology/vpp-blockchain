@@ -21,6 +21,10 @@ import {
   Gift,
   BarChart3,
   CheckCircle2,
+  Unplug,
+  Globe,
+  Shield,
+  KeyRound,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -57,7 +61,7 @@ import { ethers } from 'ethers'
 
 export default function PointsPage() {
   const { t } = useTranslation()
-  const { wallet, hasWallet, loading: walletLoading, create, importKey, remove, downloadKey } = useWallet()
+  const { wallet, hasWallet, isMetaMask, hasMetaMask, loading: walletLoading, create, importKey, connectMetaMask, remove, downloadKey } = useWallet()
   const { getTotalPoints, getClaimHistory, isWalletSubmitted: checkSubmitted, loading } = useBlockchain()
 
   const [totalPoints, setTotalPoints] = useState<number | null>(null)
@@ -124,6 +128,28 @@ export default function PointsPage() {
     }
   }
 
+  async function handleConnectMetaMask() {
+    try {
+      await connectMetaMask()
+      toast.success(t('wallet.create.success'))
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : t('common.error')
+      if (msg.includes('not installed')) {
+        toast.error(t('wallet.metamask.notInstalled'))
+      } else {
+        toast.error(msg)
+      }
+    }
+  }
+
+  function handleDisconnect() {
+    remove()
+    setTotalPoints(null)
+    setHistory([])
+    setWalletExpanded(false)
+    toast.success(t('wallet.delete.success'))
+  }
+
   function handleDelete() {
     remove()
     setTotalPoints(null)
@@ -187,26 +213,90 @@ export default function PointsPage() {
       </div>
 
       {!hasWallet ? (
-        /* ─── No Wallet: Create or Import ─── */
-        <Card>
-          <CardHeader>
-            <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10">
-              <Wallet className="size-6 text-primary" />
-            </div>
-            <CardTitle>{t('wallet.create.title')}</CardTitle>
-            <CardDescription>{t('wallet.create.description')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button onClick={handleCreate} className="w-full">
-              <Wallet className="mr-2 size-4" />
-              {t('wallet.create.button')}
-            </Button>
-            <Separator />
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                {t('wallet.import.description')}
-              </p>
-              <div className="flex flex-col gap-2 sm:flex-row">
+        /* ─── No Wallet: Choose Method ─── */
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">{t('wallet.chooseMethod')}</h2>
+          <div className="grid gap-4 md:grid-cols-3">
+            {/* Browser Wallet */}
+            <Card className="relative flex flex-col">
+              <CardHeader className="flex-1 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                    <Globe className="size-5 text-primary" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base">{t('wallet.browser.title')}</CardTitle>
+                    <Badge variant="secondary" className="mt-0.5 text-xs">{t('wallet.browser.tag')}</Badge>
+                  </div>
+                </div>
+                <CardDescription className="mt-3 text-sm leading-relaxed">
+                  {t('wallet.browser.description')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <Button onClick={handleCreate} className="w-full">
+                  <Wallet className="mr-2 size-4" aria-hidden="true" />
+                  {t('wallet.browser.button')}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* MetaMask */}
+            <Card className="relative flex flex-col">
+              <CardHeader className="flex-1 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10">
+                    <Shield className="size-5 text-orange-500" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base">{t('wallet.metamask.title')}</CardTitle>
+                    <Badge variant="outline" className="mt-0.5 border-orange-500/30 text-xs text-orange-600 dark:text-orange-400">{t('wallet.metamask.tag')}</Badge>
+                  </div>
+                </div>
+                <CardDescription className="mt-3 text-sm leading-relaxed">
+                  {t('wallet.metamask.description')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
+                {hasMetaMask ? (
+                  <Button variant="outline" onClick={handleConnectMetaMask} className="w-full">
+                    <Shield className="mr-2 size-4" aria-hidden="true" />
+                    {t('wallet.metamask.button')}
+                  </Button>
+                ) : (
+                  <div className="space-y-2">
+                    <Button variant="outline" disabled className="w-full opacity-60">
+                      <Shield className="mr-2 size-4" aria-hidden="true" />
+                      {t('wallet.metamask.notInstalled')}
+                    </Button>
+                    <p className="text-center text-xs text-muted-foreground">
+                      {t('wallet.metamask.installHint')}{' '}
+                      <a href="https://metamask.io" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        {t('wallet.metamask.installLink')}
+                      </a>
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Import */}
+            <Card className="relative flex flex-col">
+              <CardHeader className="flex-1 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+                    <KeyRound className="size-5 text-muted-foreground" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base">{t('wallet.import.title')}</CardTitle>
+                    <Badge variant="secondary" className="mt-0.5 text-xs">{t('wallet.import.tag')}</Badge>
+                  </div>
+                </div>
+                <CardDescription className="mt-3 text-sm leading-relaxed">
+                  {t('wallet.import.description')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2 pt-0">
                 <Input
                   value={importValue}
                   onChange={(e) => setImportValue(e.target.value)}
@@ -216,13 +306,14 @@ export default function PointsPage() {
                   aria-label={t('wallet.import.title', 'Private Key')}
                   autoComplete="off"
                 />
-                <Button variant="outline" onClick={handleImport} disabled={!importValue.trim()} className="shrink-0">
+                <Button variant="outline" onClick={handleImport} disabled={!importValue.trim()} className="w-full">
+                  <Upload className="mr-2 size-4" aria-hidden="true" />
                   {t('wallet.import.button')}
                 </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       ) : (
         <>
           {/* ─── Wallet Card (Compact) ─── */}
@@ -230,14 +321,14 @@ export default function PointsPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary/10">
-                    <Wallet className="size-4 text-primary" />
+                  <div className={`flex size-9 shrink-0 items-center justify-center rounded-md ${isMetaMask ? 'bg-orange-500/10' : 'bg-primary/10'}`}>
+                    {isMetaMask ? <Shield className="size-4 text-orange-500" aria-hidden="true" /> : <Wallet className="size-4 text-primary" aria-hidden="true" />}
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium">{t('wallet.title')}</p>
                       <Badge variant="secondary" className="text-xs">
-                        {t('wallet.connected')}
+                        {isMetaMask ? t('wallet.metamask.connected') : t('wallet.connected')}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-1.5 mt-0.5">
@@ -284,53 +375,65 @@ export default function PointsPage() {
                     </div>
                   </div>
 
-                  {/* Private key */}
-                  <div>
-                    <div className="mb-1 flex items-center gap-1">
-                      <label className="text-xs font-medium text-muted-foreground">
-                        {t('wallet.info.privateKey')}
-                      </label>
-                      <InfoTip text={t('infoTips.privateKey')} />
-                    </div>
-                    {keyRevealed ? (
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <code className="flex-1 truncate rounded-md bg-destructive/5 border border-destructive/20 px-3 py-2 font-mono text-xs">
-                            {wallet!.privateKey}
-                          </code>
-                          <Button variant="ghost" size="icon" className="size-8" onClick={() => handleCopy(wallet!.privateKey)} aria-label={copied ? t('common.copied', 'Kopiert') : t('wallet.copyKey', 'Private Key kopieren')}>
-                            {copied ? <Check className="size-3.5" aria-hidden="true" /> : <Copy className="size-3.5" aria-hidden="true" />}
+                  {/* Private key (only for local wallets) */}
+                  {!isMetaMask && (
+                    <div>
+                      <div className="mb-1 flex items-center gap-1">
+                        <label className="text-xs font-medium text-muted-foreground">
+                          {t('wallet.info.privateKey')}
+                        </label>
+                        <InfoTip text={t('infoTips.privateKey')} />
+                      </div>
+                      {keyRevealed ? (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <code className="flex-1 truncate rounded-md bg-destructive/5 border border-destructive/20 px-3 py-2 font-mono text-xs">
+                              {wallet!.privateKey}
+                            </code>
+                            <Button variant="ghost" size="icon" className="size-8" onClick={() => handleCopy(wallet!.privateKey)} aria-label={copied ? t('common.copied', 'Kopiert') : t('wallet.copyKey', 'Private Key kopieren')}>
+                              {copied ? <Check className="size-3.5" aria-hidden="true" /> : <Copy className="size-3.5" aria-hidden="true" />}
+                            </Button>
+                          </div>
+                          <Button variant="outline" size="sm" onClick={handleHideKey}>
+                            <EyeOff className="mr-1.5 size-3.5" />
+                            {t('wallet.reveal.hide')}
                           </Button>
                         </div>
-                        <Button variant="outline" size="sm" onClick={handleHideKey}>
-                          <EyeOff className="mr-1.5 size-3.5" />
-                          {t('wallet.reveal.hide')}
+                      ) : (
+                        <Button variant="outline" size="sm" onClick={handleRevealRequest}>
+                          <Eye className="mr-1.5 size-3.5" />
+                          {t('wallet.info.showKey')}
                         </Button>
-                      </div>
-                    ) : (
-                      <Button variant="outline" size="sm" onClick={handleRevealRequest}>
-                        <Eye className="mr-1.5 size-3.5" />
-                        {t('wallet.info.showKey')}
-                      </Button>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  )}
 
                   <Separator />
 
                   {/* Actions */}
                   <div className="flex flex-wrap gap-2">
-                    <Button variant="outline" size="sm" onClick={downloadKey}>
-                      <Download className="mr-1.5 size-3.5" />
-                      {t('wallet.info.downloadKey')}
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => { setImportValue(''); setShowImportDialog(true) }}>
-                      <Upload className="mr-1.5 size-3.5" />
-                      {t('wallet.import.importAnother')}
-                    </Button>
-                    <Button variant="destructive" size="sm" onClick={() => setShowDeleteDialog(true)}>
-                      <Trash2 className="mr-1.5 size-3.5" />
-                      {t('wallet.delete.button')}
-                    </Button>
+                    {!isMetaMask && (
+                      <>
+                        <Button variant="outline" size="sm" onClick={downloadKey}>
+                          <Download className="mr-1.5 size-3.5" aria-hidden="true" />
+                          {t('wallet.info.downloadKey')}
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => { setImportValue(''); setShowImportDialog(true) }}>
+                          <Upload className="mr-1.5 size-3.5" aria-hidden="true" />
+                          {t('wallet.import.importAnother')}
+                        </Button>
+                        <Button variant="destructive" size="sm" onClick={() => setShowDeleteDialog(true)}>
+                          <Trash2 className="mr-1.5 size-3.5" aria-hidden="true" />
+                          {t('wallet.delete.button')}
+                        </Button>
+                      </>
+                    )}
+                    {isMetaMask && (
+                      <Button variant="outline" size="sm" onClick={handleDisconnect}>
+                        <Unplug className="mr-1.5 size-3.5" aria-hidden="true" />
+                        {t('wallet.metamask.disconnect')}
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}

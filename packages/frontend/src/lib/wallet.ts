@@ -2,9 +2,12 @@ import { ethers } from 'ethers'
 
 const STORAGE_KEY = 'vpp-wallet'
 
+export type WalletType = 'local' | 'metamask'
+
 export interface WalletData {
   address: string
   privateKey: string
+  type: WalletType
 }
 
 export function createWallet(): WalletData {
@@ -12,6 +15,7 @@ export function createWallet(): WalletData {
   return {
     address: wallet.address,
     privateKey: wallet.privateKey,
+    type: 'local',
   }
 }
 
@@ -21,12 +25,41 @@ export function importWallet(privateKey: string): WalletData {
   return {
     address: wallet.address,
     privateKey: wallet.privateKey,
+    type: 'local',
   }
 }
 
 export function signMessage(privateKey: string, message: string): Promise<string> {
   const wallet = new ethers.Wallet(privateKey)
   return wallet.signMessage(message)
+}
+
+export async function connectMetaMask(): Promise<WalletData> {
+  if (!window.ethereum) throw new Error('MetaMask is not installed')
+  const provider = new ethers.BrowserProvider(window.ethereum)
+  const signer = await provider.getSigner()
+  return {
+    address: signer.address,
+    privateKey: '',
+    type: 'metamask',
+  }
+}
+
+export async function signMessageMetaMask(message: string): Promise<string> {
+  if (!window.ethereum) throw new Error('MetaMask is not installed')
+  const provider = new ethers.BrowserProvider(window.ethereum)
+  const signer = await provider.getSigner()
+  return signer.signMessage(message)
+}
+
+export async function getMetaMaskSigner(): Promise<ethers.Signer> {
+  if (!window.ethereum) throw new Error('MetaMask is not installed')
+  const provider = new ethers.BrowserProvider(window.ethereum)
+  return provider.getSigner()
+}
+
+export function hasMetaMask(): boolean {
+  return typeof window !== 'undefined' && !!window.ethereum
 }
 
 export function isValidPrivateKey(key: string): boolean {
@@ -52,8 +85,12 @@ export function loadWallet(): WalletData | null {
   if (!raw) return null
   try {
     const data = JSON.parse(raw) as WalletData
-    if (data.address && data.privateKey) return data
-    return null
+    if (!data.address) return null
+    // Migrate old wallets without type
+    if (!data.type) data.type = 'local'
+    // Local wallets must have a privateKey
+    if (data.type === 'local' && !data.privateKey) return null
+    return data
   } catch {
     return null
   }
