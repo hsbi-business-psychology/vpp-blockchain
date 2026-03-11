@@ -25,14 +25,14 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
 
   return (
     <>
-      <header className="w-full border-b border-border bg-background">
-        <div className="mx-auto flex max-w-[1100px] items-center justify-between px-4 py-4 md:px-6">
+      <header className="w-full bg-background">
+        <div className="mx-auto flex max-w-[1100px] items-center justify-between px-4 py-5 md:px-6">
           <button
             onClick={() => handleNav('/')}
             className="flex items-center"
           >
-            <img src="/hsbi-logo-light.png" alt="HSBI" className="h-7 dark:hidden" />
-            <img src="/hsbi-logo-dark.png" alt="HSBI" className="hidden h-7 dark:block" />
+            <img src="/hsbi-logo-light.png" alt="HSBI" className="h-10 dark:hidden md:h-12" />
+            <img src="/hsbi-logo-dark.png" alt="HSBI" className="hidden h-10 dark:block md:h-12" />
           </button>
 
           <nav className="hidden items-center gap-1 md:flex">
@@ -67,13 +67,13 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
 
       {menuOpen && (
         <div className="fixed inset-0 z-50 bg-background md:hidden">
-          <div className="flex items-center justify-between border-b border-border px-4 py-4">
+          <div className="flex items-center justify-between px-4 py-5">
             <button
               onClick={() => handleNav('/')}
               className="flex items-center"
             >
-              <img src="/hsbi-logo-light.png" alt="HSBI" className="h-7 dark:hidden" />
-              <img src="/hsbi-logo-dark.png" alt="HSBI" className="hidden h-7 dark:block" />
+              <img src="/hsbi-logo-light.png" alt="HSBI" className="h-10 dark:hidden" />
+              <img src="/hsbi-logo-dark.png" alt="HSBI" className="hidden h-10 dark:block" />
             </button>
             <button
               onClick={() => setMenuOpen(false)}
