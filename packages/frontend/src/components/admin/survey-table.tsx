@@ -170,8 +170,9 @@ export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate, onSelec
                               size="icon"
                               className="size-8"
                               onClick={(e) => e.stopPropagation()}
+                              aria-label={t('admin.surveys.actions', 'Aktionen')}
                             >
-                              <MoreHorizontal className="size-4" />
+                              <MoreHorizontal className="size-4" aria-hidden="true" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -270,10 +271,11 @@ export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate, onSelec
                     className="size-8"
                     disabled={safePage === 0}
                     onClick={() => setPage(safePage - 1)}
+                    aria-label={t('admin.surveys.pagination.prev', 'Vorherige Seite')}
                   >
-                    <ChevronLeft className="size-4" />
+                    <ChevronLeft className="size-4" aria-hidden="true" />
                   </Button>
-                  <span className="text-xs tabular-nums text-muted-foreground">
+                  <span className="text-xs tabular-nums text-muted-foreground" aria-live="polite">
                     {safePage + 1}/{totalPages}
                   </span>
                   <Button
@@ -282,8 +284,9 @@ export function SurveyTable({ surveys, onDownloadTemplate, onDeactivate, onSelec
                     className="size-8"
                     disabled={safePage >= totalPages - 1}
                     onClick={() => setPage(safePage + 1)}
+                    aria-label={t('admin.surveys.pagination.next', 'Nächste Seite')}
                   >
-                    <ChevronRight className="size-4" />
+                    <ChevronRight className="size-4" aria-hidden="true" />
                   </Button>
                 </>
               )}

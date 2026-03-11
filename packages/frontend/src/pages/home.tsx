@@ -76,7 +76,7 @@ export default function HomePage() {
             <div className="flex flex-col items-center gap-3 pt-2 sm:flex-row sm:justify-center lg:justify-start">
               <Button size="lg" onClick={() => navigate('/points')} className="w-full sm:w-auto">
                 {t('home.hero.ctaStudent')}
-                <ArrowRight className="ml-2 size-4" />
+                <ArrowRight className="ml-2 size-4" aria-hidden="true" />
               </Button>
               <Button
                 size="lg"
@@ -116,7 +116,7 @@ export default function HomePage() {
           <FadeIn delay={0}>
             <div className="rounded-lg bg-card p-8 shadow-sm">
               <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10">
-                <GraduationCap className="size-6 text-primary" />
+                    <GraduationCap className="size-6 text-primary" aria-hidden="true" />
               </div>
               <h3 className="mb-2 text-lg font-semibold">{t('home.highlights.student.title')}</h3>
               <p className="text-base leading-relaxed text-muted-foreground">{t('home.highlights.student.text')}</p>
@@ -125,7 +125,7 @@ export default function HomePage() {
           <FadeIn delay={120}>
             <div className="rounded-lg bg-card p-8 shadow-sm">
               <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10">
-                <Users className="size-6 text-primary" />
+                    <Users className="size-6 text-primary" aria-hidden="true" />
               </div>
               <h3 className="mb-2 text-lg font-semibold">{t('home.highlights.lecturer.title')}</h3>
               <p className="text-base leading-relaxed text-muted-foreground">{t('home.highlights.lecturer.text')}</p>
@@ -142,7 +142,7 @@ export default function HomePage() {
             {t('home.docsCta.text')}
           </p>
           <Button variant="outline" size="lg" onClick={() => navigate('/docs')}>
-            <BookOpen className="mr-2 size-4" />
+                <BookOpen className="mr-2 size-4" aria-hidden="true" />
             {t('home.docsCta.button')}
           </Button>
         </section>

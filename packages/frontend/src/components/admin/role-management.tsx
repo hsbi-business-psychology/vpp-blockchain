@@ -114,8 +114,8 @@ export function RoleManagement({ walletAddress, signer }: RoleManagementProps) {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <button className="text-muted-foreground hover:text-foreground">
-                  <Info className="size-4" />
+                <button className="text-muted-foreground hover:text-foreground" aria-label="Info">
+                  <Info className="size-4" aria-hidden="true" />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="right" className="max-w-xs text-sm">
@@ -133,6 +133,8 @@ export function RoleManagement({ walletAddress, signer }: RoleManagementProps) {
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             className="font-mono sm:flex-1"
+            aria-label={t('admin.roles.placeholder')}
+            autoComplete="off"
           />
           <div className="flex gap-2">
             <Button onClick={handleAddAdmin} disabled={loading || !address} className="flex-1 sm:flex-none">

@@ -106,8 +106,8 @@ export function SubmissionManagement() {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button className="text-muted-foreground hover:text-foreground">
-                    <Info className="size-4" />
+                  <button className="text-muted-foreground hover:text-foreground" aria-label="Info">
+                    <Info className="size-4" aria-hidden="true" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="max-w-xs text-sm">
@@ -126,6 +126,8 @@ export function SubmissionManagement() {
               onChange={(e) => setSearchAddress(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               className="font-mono sm:flex-1"
+              aria-label={t('admin.submissions.searchPlaceholder')}
+              autoComplete="off"
             />
             <Button onClick={handleSearch} disabled={searchLoading || !searchAddress.trim()}>
               {searchLoading ? (
@@ -137,7 +139,7 @@ export function SubmissionManagement() {
             </Button>
           </div>
 
-          {searchError && <p className="text-sm text-destructive">{searchError}</p>}
+          {searchError && <p className="text-sm text-destructive" role="alert">{searchError}</p>}
 
           {result && (
             <div className="rounded-lg border border-border">

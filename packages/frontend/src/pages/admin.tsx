@@ -317,8 +317,8 @@ export default function AdminPage() {
             onRegister={handleRegister}
             nextSurveyId={surveys.length > 0 ? Math.max(...surveys.map((s) => s.surveyId)) + 1 : 1}
           />
-          <Button variant="ghost" size="icon" onClick={handleLogout}>
-            <LogOut className="size-4" />
+          <Button variant="ghost" size="icon" onClick={handleLogout} aria-label={t('admin.logout', 'Abmelden')}>
+            <LogOut className="size-4" aria-hidden="true" />
           </Button>
         </div>
       </div>

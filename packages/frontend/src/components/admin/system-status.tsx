@@ -85,10 +85,12 @@ export function SystemStatus({ adminSignature, adminMessage }: SystemStatusProps
       <button
         onClick={() => setExpanded(!expanded)}
         className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-muted/50"
+        aria-expanded={expanded}
+        aria-controls="system-status-details"
       >
         <div className="flex items-center gap-3">
           <div className="flex size-9 items-center justify-center rounded-md bg-muted">
-            <Activity className="size-4 text-muted-foreground" />
+            <Activity className="size-4 text-muted-foreground" aria-hidden="true" />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -96,7 +98,9 @@ export function SystemStatus({ adminSignature, adminMessage }: SystemStatusProps
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Info className="size-3.5 text-muted-foreground" />
+                    <span className="cursor-help" aria-label="Info">
+                      <Info className="size-3.5 text-muted-foreground" aria-hidden="true" />
+                    </span>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs text-xs">
                     {t('admin.systemStatus.infoTip')}
@@ -109,13 +113,13 @@ export function SystemStatus({ adminSignature, adminMessage }: SystemStatusProps
         </div>
 
         <div className="flex items-center gap-3">
-          {loading && <Loader2 className="size-4 animate-spin text-muted-foreground" />}
+          {loading && <Loader2 className="size-4 animate-spin text-muted-foreground" aria-hidden="true" />}
           {status && !loading && (
             <div className="flex items-center gap-1.5">
               {status.lowBalance ? (
-                <AlertTriangle className="size-4 text-amber-500" />
+                <AlertTriangle className="size-4 text-amber-500" aria-hidden="true" />
               ) : (
-                <CheckCircle2 className="size-4 text-emerald-500" />
+                <CheckCircle2 className="size-4 text-emerald-500" aria-hidden="true" />
               )}
               <span className={`text-xs font-medium ${status.lowBalance ? 'text-amber-500' : 'text-emerald-500'}`}>
                 {parseFloat(status.balance).toFixed(6)} ETH
@@ -126,15 +130,15 @@ export function SystemStatus({ adminSignature, adminMessage }: SystemStatusProps
             <span className="text-xs text-destructive">{t('admin.systemStatus.loadError')}</span>
           )}
           {expanded ? (
-            <ChevronUp className="size-4 text-muted-foreground" />
+            <ChevronUp className="size-4 text-muted-foreground" aria-hidden="true" />
           ) : (
-            <ChevronDown className="size-4 text-muted-foreground" />
+            <ChevronDown className="size-4 text-muted-foreground" aria-hidden="true" />
           )}
         </div>
       </button>
 
       {expanded && (
-        <div className="border-t border-border px-4 pb-4 pt-3">
+        <div id="system-status-details" className="border-t border-border px-4 pb-4 pt-3">
           {status?.lowBalance && (
             <div className="mb-4 flex items-start gap-2 rounded-md bg-amber-500/10 p-3">
               <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-500" />

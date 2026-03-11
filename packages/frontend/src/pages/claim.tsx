@@ -177,8 +177,8 @@ export default function ClaimPage() {
 
       {currentStep === 'submit' && (
         <Card>
-          <CardContent className="flex flex-col items-center gap-4 py-8">
-            <Loader2 className="size-8 animate-spin text-primary" />
+          <CardContent className="flex flex-col items-center gap-4 py-8" role="status" aria-live="polite">
+            <Loader2 className="size-8 animate-spin text-primary" aria-hidden="true" />
             <p className="text-muted-foreground">{t('claim.submitting')}</p>
           </CardContent>
         </Card>
@@ -208,7 +208,7 @@ export default function ClaimPage() {
                 className="flex items-center gap-2 text-sm text-primary hover:underline"
               >
                 <code className="truncate">{result.txHash}</code>
-                <ExternalLink className="size-3.5 shrink-0" />
+                <ExternalLink className="size-3.5 shrink-0" aria-hidden="true" />
               </a>
             </div>
             <Button variant="outline" onClick={() => navigate('/points')} className="w-full">

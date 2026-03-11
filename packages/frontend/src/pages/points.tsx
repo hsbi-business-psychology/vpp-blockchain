@@ -213,6 +213,8 @@ export default function PointsPage() {
                   placeholder={t('wallet.import.placeholder')}
                   type="password"
                   className="font-mono text-xs"
+                  aria-label={t('wallet.import.title', 'Private Key')}
+                  autoComplete="off"
                 />
                 <Button variant="outline" onClick={handleImport} disabled={!importValue.trim()} className="shrink-0">
                   {t('wallet.import.button')}
@@ -245,8 +247,9 @@ export default function PointsPage() {
                       <button
                         onClick={() => handleCopy(wallet!.address)}
                         className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                        aria-label={copied ? t('common.copied', 'Kopiert') : t('wallet.copy', 'Adresse kopieren')}
                       >
-                        {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
+                        {copied ? <Check className="size-3" aria-hidden="true" /> : <Copy className="size-3" aria-hidden="true" />}
                       </button>
                     </div>
                   </div>
@@ -256,9 +259,11 @@ export default function PointsPage() {
                   size="sm"
                   onClick={() => setWalletExpanded(!walletExpanded)}
                   className="shrink-0 text-xs text-muted-foreground"
+                  aria-expanded={walletExpanded}
+                  aria-label={t('wallet.manage')}
                 >
                   <span className="hidden sm:inline">{t('wallet.manage')}</span>
-                  {walletExpanded ? <ChevronUp className="size-4 sm:ml-1 sm:size-3.5" /> : <ChevronDown className="size-4 sm:ml-1 sm:size-3.5" />}
+                  {walletExpanded ? <ChevronUp className="size-4 sm:ml-1 sm:size-3.5" aria-hidden="true" /> : <ChevronDown className="size-4 sm:ml-1 sm:size-3.5" aria-hidden="true" />}
                 </Button>
               </div>
 
@@ -273,8 +278,8 @@ export default function PointsPage() {
                       <code className="flex-1 truncate rounded-md bg-muted px-3 py-2 font-mono text-xs">
                         {wallet!.address}
                       </code>
-                      <Button variant="ghost" size="icon" className="size-8" onClick={() => handleCopy(wallet!.address)}>
-                        {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+                      <Button variant="ghost" size="icon" className="size-8" onClick={() => handleCopy(wallet!.address)} aria-label={copied ? t('common.copied', 'Kopiert') : t('wallet.copy', 'Adresse kopieren')}>
+                        {copied ? <Check className="size-3.5" aria-hidden="true" /> : <Copy className="size-3.5" aria-hidden="true" />}
                       </Button>
                     </div>
                   </div>
@@ -293,8 +298,8 @@ export default function PointsPage() {
                           <code className="flex-1 truncate rounded-md bg-destructive/5 border border-destructive/20 px-3 py-2 font-mono text-xs">
                             {wallet!.privateKey}
                           </code>
-                          <Button variant="ghost" size="icon" className="size-8" onClick={() => handleCopy(wallet!.privateKey)}>
-                            {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+                          <Button variant="ghost" size="icon" className="size-8" onClick={() => handleCopy(wallet!.privateKey)} aria-label={copied ? t('common.copied', 'Kopiert') : t('wallet.copyKey', 'Private Key kopieren')}>
+                            {copied ? <Check className="size-3.5" aria-hidden="true" /> : <Copy className="size-3.5" aria-hidden="true" />}
                           </Button>
                         </div>
                         <Button variant="outline" size="sm" onClick={handleHideKey}>
@@ -436,7 +441,8 @@ export default function PointsPage() {
                                 className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
                               >
                                 {entry.txHash.slice(0, 10)}...
-                                <ExternalLink className="size-3" />
+                                <ExternalLink className="size-3" aria-hidden="true" />
+                                <span className="sr-only">{t('points.table.viewTx', 'Transaktion anzeigen')}</span>
                               </a>
                             </TableCell>
                           </TableRow>
@@ -457,7 +463,7 @@ export default function PointsPage() {
                             className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                           >
                             {entry.txHash.slice(0, 10)}...
-                            <ExternalLink className="size-3" />
+                            <ExternalLink className="size-3" aria-hidden="true" />
                           </a>
                         </div>
                         <Badge variant="secondary" className="text-sm font-semibold">
@@ -490,6 +496,8 @@ export default function PointsPage() {
               placeholder={t('points.explorer.placeholder')}
               className="font-mono text-xs"
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              aria-label={t('points.explorer.title')}
+              autoComplete="off"
             />
             <Button onClick={handleSearch} disabled={searchLoading} className="shrink-0">
               {searchLoading ? (
@@ -499,7 +507,7 @@ export default function PointsPage() {
               )}
             </Button>
           </div>
-          {searchError && <p className="text-sm text-destructive">{searchError}</p>}
+          {searchError && <p className="text-sm text-destructive" role="alert">{searchError}</p>}
           {searchPoints !== null && (
             <div className="space-y-3 border-t border-border pt-4">
               <div className="flex items-center gap-3">
@@ -638,6 +646,8 @@ export default function PointsPage() {
               placeholder={t('wallet.import.placeholder')}
               type="password"
               className="font-mono text-xs"
+              aria-label={t('wallet.import.title', 'Private Key')}
+              autoComplete="off"
             />
           </div>
           <DialogFooter>
@@ -659,8 +669,8 @@ function InfoTip({ text }: { text: string }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button className="inline-flex size-5 items-center justify-center rounded-full text-muted-foreground hover:text-foreground">
-          <Info className="size-3.5" />
+        <button className="inline-flex size-5 items-center justify-center rounded-full text-muted-foreground hover:text-foreground" aria-label="Info">
+          <Info className="size-3.5" aria-hidden="true" />
         </button>
       </TooltipTrigger>
       <TooltipContent side="top" className="max-w-xs text-xs">
