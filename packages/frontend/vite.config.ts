@@ -22,5 +22,14 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router'],
+          ethers: ['ethers'],
+          i18n: ['i18next', 'react-i18next'],
+        },
+      },
+    },
   },
 })
