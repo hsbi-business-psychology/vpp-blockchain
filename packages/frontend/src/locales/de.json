@@ -199,10 +199,11 @@
   },
   "points": {
     "title": "Meine Punkte",
+    "subtitle": "Hier siehst du deinen aktuellen Punktestand und alle bisherigen Einlösungen. Deine Punkte werden direkt von der Blockchain gelesen – fälschungssicher und jederzeit nachvollziehbar.",
     "total": "Gesamtpunkte",
     "noWallet": "Erstelle oder importiere ein Wallet, um deine Punkte zu sehen.",
-    "surveys": "Aufschlüsselung nach Umfrage",
     "history": "Transaktionsverlauf",
+    "historyDescription": "Jede Einlösung wird als Transaktion auf der Blockchain gespeichert. Klicke auf den Link, um die Transaktion im Block-Explorer zu verifizieren.",
     "table": {
       "surveyId": "Umfrage-ID",
       "points": "Punkte",
@@ -210,9 +211,18 @@
       "tx": "Transaktion"
     },
     "empty": "Noch keine Punkte. Nimm an einer Umfrage teil, um deine ersten Punkte zu sammeln!",
+    "howItWorks": {
+      "title": "Wie funktioniert das?",
+      "step1title": "Studie teilnehmen",
+      "step1text": "Nimm an einer Studie teil und bestätige am Ende deine Teilnahme über den bereitgestellten Link.",
+      "step2title": "Punkte erhalten",
+      "step2text": "Das System vergibt dir automatisch die Punkte – kostenlos und ohne Kryptoguthaben.",
+      "step3title": "Fortschritt prüfen",
+      "step3text": "Dein Punktestand wird direkt aus der Blockchain gelesen und ist hier jederzeit einsehbar."
+    },
     "explorer": {
       "title": "Wallet-Suche",
-      "description": "Punkte für beliebige Wallet-Adressen nachschlagen.",
+      "description": "Punkte für beliebige Wallet-Adressen nachschlagen – z. B. um deinen eigenen Stand auf einem anderen Gerät zu prüfen.",
       "placeholder": "Wallet-Adresse eingeben (0x...)",
       "search": "Suchen",
       "invalidAddress": "Bitte gib eine gültige Wallet-Adresse ein.",

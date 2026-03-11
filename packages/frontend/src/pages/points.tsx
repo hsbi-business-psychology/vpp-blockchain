@@ -15,9 +15,11 @@ import {
   ChevronDown,
   ChevronUp,
   ShieldAlert,
-  KeyRound,
   Upload,
   Award,
+  ClipboardCheck,
+  Gift,
+  BarChart3,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -178,7 +180,10 @@ export default function PointsPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <h1 className="text-2xl font-bold">{t('points.title')}</h1>
+      <div>
+        <h1 className="text-2xl font-bold">{t('points.title')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground sm:text-base">{t('points.subtitle')}</p>
+      </div>
 
       {!hasWallet ? (
         /* ─── No Wallet: Create or Import ─── */
@@ -200,7 +205,7 @@ export default function PointsPage() {
               <p className="text-sm text-muted-foreground">
                 {t('wallet.import.description')}
               </p>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <Input
                   value={importValue}
                   onChange={(e) => setImportValue(e.target.value)}
@@ -208,7 +213,7 @@ export default function PointsPage() {
                   type="password"
                   className="font-mono text-xs"
                 />
-                <Button variant="outline" onClick={handleImport} disabled={!importValue.trim()}>
+                <Button variant="outline" onClick={handleImport} disabled={!importValue.trim()} className="shrink-0">
                   {t('wallet.import.button')}
                 </Button>
               </div>
@@ -251,8 +256,8 @@ export default function PointsPage() {
                   onClick={() => setWalletExpanded(!walletExpanded)}
                   className="shrink-0 text-xs text-muted-foreground"
                 >
-                  {t('wallet.manage')}
-                  {walletExpanded ? <ChevronUp className="ml-1 size-3.5" /> : <ChevronDown className="ml-1 size-3.5" />}
+                  <span className="hidden sm:inline">{t('wallet.manage')}</span>
+                  {walletExpanded ? <ChevronUp className="size-4 sm:ml-1 sm:size-3.5" /> : <ChevronDown className="size-4 sm:ml-1 sm:size-3.5" />}
                 </Button>
               </div>
 
@@ -327,43 +332,57 @@ export default function PointsPage() {
           </Card>
 
           {/* ─── Points Overview ─── */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-4">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10">
-                <Award className="size-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-3xl font-bold leading-none">
-                  {loading && totalPoints === null ? (
-                    <Loader2 className="size-6 animate-spin" />
-                  ) : (
-                    totalPoints ?? 0
-                  )}
-                </p>
-                <p className="mt-0.5 text-sm text-muted-foreground">{t('points.total')}</p>
-              </div>
+          <div className="flex items-center gap-4 rounded-lg border border-border bg-card p-4 sm:p-5">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 sm:size-14">
+              <Award className="size-6 text-primary sm:size-7" />
             </div>
-            <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-4">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-blue-500/10">
-                <KeyRound className="size-5 text-blue-500" />
-              </div>
-              <div>
-                <p className="text-3xl font-bold leading-none">
-                  {loading && history.length === 0 ? (
-                    <Loader2 className="size-6 animate-spin" />
-                  ) : (
-                    history.length
-                  )}
-                </p>
-                <p className="mt-0.5 text-sm text-muted-foreground">{t('points.surveys')}</p>
-              </div>
+            <div>
+              <p className="text-4xl font-bold leading-none sm:text-5xl">
+                {loading && totalPoints === null ? (
+                  <Loader2 className="size-8 animate-spin" />
+                ) : (
+                  totalPoints ?? 0
+                )}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground sm:text-base">{t('points.total')}</p>
             </div>
           </div>
+
+          {/* ─── How It Works (visible when no points yet or on first visit) ─── */}
+          {history.length === 0 && !loading && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">{t('points.howItWorks.title')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  {[
+                    { icon: ClipboardCheck, color: 'text-blue-500', bg: 'bg-blue-500/10', titleKey: 'points.howItWorks.step1title', textKey: 'points.howItWorks.step1text', step: '1' },
+                    { icon: Gift, color: 'text-green-500', bg: 'bg-green-500/10', titleKey: 'points.howItWorks.step2title', textKey: 'points.howItWorks.step2text', step: '2' },
+                    { icon: BarChart3, color: 'text-primary', bg: 'bg-primary/10', titleKey: 'points.howItWorks.step3title', textKey: 'points.howItWorks.step3text', step: '3' },
+                  ].map(({ icon: Icon, color, bg, titleKey, textKey, step }) => (
+                    <div key={step} className="flex gap-3 sm:flex-col sm:items-center sm:text-center">
+                      <div className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${bg} sm:size-12`}>
+                        <Icon className={`size-5 ${color} sm:size-6`} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold sm:mt-2">{t(titleKey)}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">{t(textKey)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* ─── Claim History ─── */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">{t('points.history')}</CardTitle>
+              {history.length > 0 && (
+                <CardDescription>{t('points.historyDescription')}</CardDescription>
+              )}
             </CardHeader>
             <CardContent>
               {loading && history.length === 0 ? (
@@ -446,7 +465,7 @@ export default function PointsPage() {
           <CardDescription>{t('points.explorer.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
             <Input
               value={searchAddress}
               onChange={(e) => setSearchAddress(e.target.value)}
@@ -454,7 +473,7 @@ export default function PointsPage() {
               className="font-mono text-xs"
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             />
-            <Button onClick={handleSearch} disabled={searchLoading}>
+            <Button onClick={handleSearch} disabled={searchLoading} className="shrink-0">
               {searchLoading ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (

@@ -199,10 +199,11 @@
   },
   "points": {
     "title": "My Points",
+    "subtitle": "View your current points balance and all past claims. Your points are read directly from the blockchain — tamper-proof and verifiable at any time.",
     "total": "Total Points",
     "noWallet": "Create or import a wallet to view your points.",
-    "surveys": "Survey Breakdown",
     "history": "Transaction History",
+    "historyDescription": "Each claim is stored as a transaction on the blockchain. Click the link to verify the transaction in the block explorer.",
     "table": {
       "surveyId": "Survey ID",
       "points": "Points",
@@ -210,9 +211,18 @@
       "tx": "Transaction"
     },
     "empty": "No points yet. Complete a survey to earn your first points!",
+    "howItWorks": {
+      "title": "How does it work?",
+      "step1title": "Take part in a study",
+      "step1text": "Participate in a study and confirm your participation at the end via the provided link.",
+      "step2title": "Receive points",
+      "step2text": "The system awards your points automatically — free of charge, no crypto balance needed.",
+      "step3title": "Check your progress",
+      "step3text": "Your balance is read directly from the blockchain and visible here at any time."
+    },
     "explorer": {
       "title": "Wallet Lookup",
-      "description": "Look up points for any wallet address.",
+      "description": "Look up points for any wallet address — e.g. to check your own balance on another device.",
       "placeholder": "Enter wallet address (0x...)",
       "search": "Search",
       "invalidAddress": "Please enter a valid wallet address.",
