@@ -23,7 +23,11 @@
     "home": "Startseite",
     "points": "Meine Punkte",
     "admin": "Lehrenden-Bereich",
-    "docs": "Doku"
+    "docs": "Doku",
+    "main": "Hauptnavigation",
+    "openMenu": "Menü öffnen",
+    "closeMenu": "Menü schließen",
+    "mobileMenu": "Navigation"
   },
   "footer": {
     "title": "Versuchspersonenpunkte – Blockchain-Projekt",
@@ -70,6 +74,8 @@
     "noWallet": "Du hast noch kein Wallet.",
     "connected": "Verbunden",
     "manage": "Wallet verwalten",
+    "copy": "Adresse kopieren",
+    "copyKey": "Private Key kopieren",
     "chooseMethod": "Wie möchtest du dich verbinden?",
     "browser": {
       "title": "Browser-Wallet",
@@ -168,7 +174,8 @@
       "title": "Punkte eingelöst!",
       "points": "{{points}} Punkte vergeben",
       "tx": "Transaktion",
-      "viewExplorer": "Auf Explorer anzeigen"
+      "viewExplorer": "Auf Explorer anzeigen",
+      "viewPoints": "Meine Punkte ansehen"
     },
     "error": {
       "missingParams": "Survey-ID oder Secret fehlen in der URL.",
@@ -193,7 +200,8 @@
       "surveyId": "Umfrage-ID",
       "points": "Punkte",
       "date": "Datum",
-      "tx": "Transaktion"
+      "tx": "Transaktion",
+      "viewTx": "Transaktion anzeigen"
     },
     "empty": "Noch keine Punkte. Nimm an einer Umfrage teil, um deine ersten Punkte zu sammeln!",
     "howItWorks": {
@@ -216,6 +224,7 @@
   },
   "admin": {
     "title": "Lehrenden-Bereich",
+    "logout": "Abmelden",
     "auth": {
       "title": "Admin-Authentifizierung",
       "description": "Signiere eine Nachricht mit deinem Admin-Wallet, um auf das Dashboard zuzugreifen.",

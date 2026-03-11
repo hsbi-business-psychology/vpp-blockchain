@@ -23,7 +23,11 @@
     "home": "Home",
     "points": "My Points",
     "admin": "Lecturers' Area",
-    "docs": "Docs"
+    "docs": "Docs",
+    "main": "Main navigation",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "mobileMenu": "Navigation"
   },
   "footer": {
     "title": "Participant Points – Blockchain Project",
@@ -70,6 +74,8 @@
     "noWallet": "You don't have a wallet yet.",
     "connected": "Connected",
     "manage": "Manage wallet",
+    "copy": "Copy address",
+    "copyKey": "Copy private key",
     "chooseMethod": "How would you like to connect?",
     "browser": {
       "title": "Browser Wallet",
@@ -168,7 +174,8 @@
       "title": "Points Claimed!",
       "points": "{{points}} points awarded",
       "tx": "Transaction",
-      "viewExplorer": "View on Explorer"
+      "viewExplorer": "View on Explorer",
+      "viewPoints": "View my points"
     },
     "error": {
       "missingParams": "Missing survey ID or secret in the URL.",
@@ -193,7 +200,8 @@
       "surveyId": "Survey ID",
       "points": "Points",
       "date": "Date",
-      "tx": "Transaction"
+      "tx": "Transaction",
+      "viewTx": "View transaction"
     },
     "empty": "No points yet. Complete a survey to earn your first points!",
     "howItWorks": {
@@ -216,6 +224,7 @@
   },
   "admin": {
     "title": "Lecturers' Area",
+    "logout": "Sign out",
     "auth": {
       "title": "Admin Authentication",
       "description": "Sign a message with your admin wallet to access the dashboard.",

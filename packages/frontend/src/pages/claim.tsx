@@ -212,7 +212,7 @@ export default function ClaimPage() {
               </a>
             </div>
             <Button variant="outline" onClick={() => navigate('/points')} className="w-full">
-              {t('home.hero.cta.points')}
+              {t('claim.success.viewPoints')}
             </Button>
           </CardContent>
         </Card>
