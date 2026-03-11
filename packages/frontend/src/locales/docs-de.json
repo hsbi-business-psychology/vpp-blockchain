@@ -8,6 +8,11 @@
       "prev": "Vorheriger Artikel",
       "next": "Nächster Artikel"
     },
+    "notFound": {
+      "title": "Artikel nicht gefunden",
+      "description": "Der angeforderte Dokumentationsartikel existiert nicht.",
+      "back": "Zur Übersicht"
+    },
     "categories": {
       "students": "Für Studierende",
       "lecturers": "Für Lehrende",

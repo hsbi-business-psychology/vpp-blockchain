@@ -8,6 +8,11 @@
       "prev": "Previous article",
       "next": "Next article"
     },
+    "notFound": {
+      "title": "Article not found",
+      "description": "The requested documentation article does not exist.",
+      "back": "Back to overview"
+    },
     "categories": {
       "students": "For Students",
       "lecturers": "For Lecturers",

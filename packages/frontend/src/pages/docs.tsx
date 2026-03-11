@@ -78,7 +78,18 @@ export default function DocsPage() {
       <DesktopSidebar activeSlug={slug} onNavigate={handleNavigate} />
       <div className="min-w-0 flex-1">
         <MobileSidebar activeSlug={slug} onNavigate={handleNavigate} />
-        {slug && article ? (
+        {slug && !article ? (
+          <div className="space-y-4 py-12 text-center">
+            <h1 className="text-2xl font-bold">{t('docs.notFound.title')}</h1>
+            <p className="text-muted-foreground">{t('docs.notFound.description')}</p>
+            <button
+              onClick={() => handleNavigate('')}
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              {t('docs.notFound.back')}
+            </button>
+          </div>
+        ) : slug && article ? (
           <div className="space-y-8">
             <ArticleRenderer slug={slug} />
 

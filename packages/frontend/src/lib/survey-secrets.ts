@@ -25,7 +25,3 @@ export function getSecret(surveyId: number): string | null {
   const map = load()
   return map[String(surveyId)] ?? null
 }
-
-export function hasSecret(surveyId: number): boolean {
-  return getSecret(surveyId) !== null
-}

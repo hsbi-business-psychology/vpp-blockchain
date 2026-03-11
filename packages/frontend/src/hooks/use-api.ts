@@ -23,27 +23,6 @@ interface SurveyRegisterResult {
   templateDownloadUrl: string
 }
 
-interface PointsResult {
-  wallet: string
-  totalPoints: number
-  surveys: Array<{
-    surveyId: number
-    points: number
-    claimedAt: string
-    txHash: string
-  }>
-}
-
-interface HealthResult {
-  status: string
-  uptime: number
-  blockchain: {
-    connected: boolean
-    network: string | null
-    blockNumber: number | null
-  }
-}
-
 interface SystemStatus {
   minterAddress: string
   balance: string
@@ -93,10 +72,6 @@ export function useApi() {
     },
     [],
   )
-
-  const getPoints = useCallback(async (wallet: string): Promise<PointsResult> => {
-    return apiFetch<PointsResult>(`/api/points/${wallet}`)
-  }, [])
 
   const getSurveys = useCallback(async (signature: string, message: string): Promise<SurveyInfo[]> => {
     return apiFetch<SurveyInfo[]>('/api/surveys', {
@@ -184,10 +159,6 @@ export function useApi() {
     [],
   )
 
-  const getHealth = useCallback(async (): Promise<HealthResult> => {
-    return apiFetch<HealthResult>('/api/health')
-  }, [])
-
   const getSystemStatus = useCallback(
     async (signature: string, message: string): Promise<SystemStatus> => {
       return apiFetch<SystemStatus>('/api/status', {
@@ -203,7 +174,6 @@ export function useApi() {
 
   return {
     claimPoints,
-    getPoints,
     getSurveys,
     registerSurvey,
     downloadTemplate,
@@ -211,7 +181,6 @@ export function useApi() {
     getWalletSubmissionStatus,
     markWalletSubmitted,
     unmarkWalletSubmitted,
-    getHealth,
     getSystemStatus,
   }
 }
