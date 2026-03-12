@@ -87,14 +87,21 @@ jobs:
           })
           EOF
 
-      # 5. Deploy to Plesk via FTPS
+      # 5. Deploy to Plesk via FTPS (lftp)
+      - name: Install lftp
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
       - name: Deploy via FTPS
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: hosting.hsbi.de
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          local-dir: deploy/
-          server-dir: /httpdocs/
-          dangerous-clean-slate: false
+        run: |
+          lftp -c "
+            set ftp:ssl-allow yes;
+            set ftp:ssl-force yes;
+            set ftp:ssl-protect-data yes;
+            set ssl:verify-certificate no;
+            set ftp:passive-mode yes;
+            set net:max-retries 3;
+            set net:reconnect-interval-base 5;
+            open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ftps://hosting.hsbi.de;
+            mirror --reverse --verbose --delete deploy/ /httpdocs/;
+            quit;
+          "
