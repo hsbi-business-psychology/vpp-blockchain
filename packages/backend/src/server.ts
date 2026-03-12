@@ -32,10 +32,10 @@ export function createApp(): Express {
           fontSrc: ["'self'"],
           connectSrc: [
             "'self'",
+            'https://1rpc.io',
             'https://base.publicnode.com',
             'https://mainnet.base.org',
             'https://*.base.org',
-            'https://*.publicnode.com',
             'https://*.basescan.org',
           ],
         },
