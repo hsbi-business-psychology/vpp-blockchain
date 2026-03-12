@@ -3,21 +3,27 @@ set -euo pipefail
 
 # Build everything into a deploy-ready folder structure for Plesk.
 #
+# The folder structure mirrors the monorepo layout so that compiled
+# path references (../../contracts, ../public etc.) resolve correctly.
+#
 # Result:
 #   deploy/
-#   ├── app.js              ← Plesk entry point
-#   ├── package.json        ← Production deps only
-#   ├── .env                ← Must be created on the server
-#   ├── dist/               ← Compiled backend
-#   │   └── public/         ← Built frontend (SPA)
-#   └── contracts/artifacts ← Contract ABI
+#   ├── app.js                              ← Plesk entry point
+#   ├── package.json                        ← Production deps only
+#   ├── .env                                ← Must be created on the server
+#   ├── node_modules/
+#   └── packages/
+#       ├── backend/
+#       │   ├── dist/                       ← Compiled backend
+#       │   └── public/                     ← Built frontend (SPA)
+#       └── contracts/
+#           └── artifacts/contracts/…       ← Contract ABI
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DEPLOY="$ROOT/deploy"
 
 echo "=== Building for Plesk deployment ==="
 
-# Clean previous build
 rm -rf "$DEPLOY"
 mkdir -p "$DEPLOY"
 
@@ -33,21 +39,22 @@ pnpm --filter @vpp/backend run build
 echo "[3/5] Building frontend..."
 pnpm --filter @vpp/frontend run build
 
-# 4. Assemble deploy folder
+# 4. Assemble deploy folder (mirror monorepo structure for correct paths)
 echo "[4/5] Assembling deploy folder..."
 
-# Backend compiled output
-cp -r "$ROOT/packages/backend/dist" "$DEPLOY/dist"
+# Backend compiled output → packages/backend/dist/
+mkdir -p "$DEPLOY/packages/backend"
+cp -r "$ROOT/packages/backend/dist" "$DEPLOY/packages/backend/dist"
 
-# Frontend build → dist/public/ (so the backend serves it)
-cp -r "$ROOT/packages/frontend/dist" "$DEPLOY/dist/public"
+# Frontend build → packages/backend/public/ (server.ts resolves ../public relative to dist/)
+cp -r "$ROOT/packages/frontend/dist" "$DEPLOY/packages/backend/public"
 
-# Contract ABI (relative path expected by blockchain.ts)
-mkdir -p "$DEPLOY/contracts/artifacts/contracts/SurveyPoints.sol"
+# Contract ABI → packages/contracts/artifacts/ (blockchain.ts resolves ../../../contracts relative to dist/services/)
+mkdir -p "$DEPLOY/packages/contracts/artifacts/contracts/SurveyPoints.sol"
 cp "$ROOT/packages/contracts/artifacts/contracts/SurveyPoints.sol/SurveyPoints.json" \
-   "$DEPLOY/contracts/artifacts/contracts/SurveyPoints.sol/SurveyPoints.json"
+   "$DEPLOY/packages/contracts/artifacts/contracts/SurveyPoints.sol/SurveyPoints.json"
 
-# Production package.json (backend deps only)
+# Production package.json
 cat > "$DEPLOY/package.json" << 'PKGJSON'
 {
   "name": "vpp-blockchain-deploy",
@@ -66,20 +73,33 @@ cat > "$DEPLOY/package.json" << 'PKGJSON'
 }
 PKGJSON
 
-# Plesk entry point
+# Plesk entry point — loads dotenv with explicit path, then starts the server
 cat > "$DEPLOY/app.js" << 'APPJS'
-import { createApp } from './dist/server.js'
+import { config as loadEnv } from 'dotenv'
+import { fileURLToPath } from 'node:url'
+import { dirname, resolve } from 'node:path'
 
-const app = createApp()
-const port = process.env.PORT || 3000
+const __dirname = dirname(fileURLToPath(import.meta.url))
+loadEnv({ path: resolve(__dirname, '.env') })
 
-app.listen(port, () => {
-  console.log(`VPP Backend listening on port ${port}`)
-})
+try {
+  const { createApp } = await import('./packages/backend/dist/server.js')
+  const app = createApp()
+  const port = process.env.PORT || 3000
+
+  app.listen(port, () => {
+    console.log(`VPP Backend listening on port ${port}`)
+  })
+} catch (err) {
+  console.error('Failed to start VPP Backend:', err)
+  process.exit(1)
+}
 APPJS
 
 # .env template
-cp "$ROOT/packages/backend/.env.example" "$DEPLOY/.env.example"
+if [ -f "$ROOT/packages/backend/.env.example" ]; then
+  cp "$ROOT/packages/backend/.env.example" "$DEPLOY/.env.example"
+fi
 
 echo "[5/5] Installing production dependencies..."
 cd "$DEPLOY" && npm install --omit=dev
@@ -91,5 +111,5 @@ echo "Next steps:"
 echo "  1. Copy .env.example to .env and fill in production values"
 echo "  2. Upload the deploy/ folder contents to /httpdocs/ on Plesk"
 echo "  3. In Plesk: set Application startup file to 'app.js'"
-echo "  4. In Plesk: set Document root to '/httpdocs/dist/public'"
+echo "  4. In Plesk: set Document root to '/httpdocs/packages/backend/public'"
 echo "  5. Click 'Restart' in the Node.js panel"

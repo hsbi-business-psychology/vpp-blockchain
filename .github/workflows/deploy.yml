@@ -49,49 +49,13 @@ jobs:
 
       # 4. Assemble deploy folder
       - name: Assemble deploy folder
-        run: |
-          mkdir -p deploy/dist/public
-          mkdir -p deploy/contracts/artifacts/contracts/SurveyPoints.sol
+        run: bash scripts/build-deploy-ci.sh
 
-          cp -r packages/backend/dist/* deploy/dist/
-          cp -r packages/frontend/dist/* deploy/dist/public/
-          cp packages/contracts/artifacts/contracts/SurveyPoints.sol/SurveyPoints.json \
-             deploy/contracts/artifacts/contracts/SurveyPoints.sol/SurveyPoints.json
-
-          cat > deploy/package.json << 'EOF'
-          {
-            "name": "vpp-blockchain-deploy",
-            "version": "1.0.0",
-            "private": true,
-            "type": "module",
-            "dependencies": {
-              "cors": "^2.8.5",
-              "dotenv": "^16.4.0",
-              "ethers": "^6.13.0",
-              "express": "^4.21.0",
-              "express-rate-limit": "^7.5.0",
-              "helmet": "^8.0.0",
-              "zod": "^3.24.0"
-            }
-          }
-          EOF
-
-          cat > deploy/app.js << 'EOF'
-          import { createApp } from './dist/server.js'
-
-          const app = createApp()
-          const port = process.env.PORT || 3000
-
-          app.listen(port, () => {
-            console.log(`VPP Backend listening on port ${port}`)
-          })
-          EOF
-
-      # 5. Deploy to Plesk via FTPS (lftp)
+      # 5. Deploy to Plesk via FTP with explicit TLS (STARTTLS on port 21)
       - name: Install lftp
         run: sudo apt-get update && sudo apt-get install -y lftp
 
-      - name: Deploy via FTPS
+      - name: Deploy via FTP/TLS
         run: |
           lftp -c "
             set ftp:ssl-allow yes;
@@ -99,9 +63,11 @@ jobs:
             set ftp:ssl-protect-data yes;
             set ssl:verify-certificate no;
             set ftp:passive-mode yes;
+            set ftp:ssl-protect-list yes;
             set net:max-retries 3;
             set net:reconnect-interval-base 5;
-            open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ftps://hosting.hsbi.de;
-            mirror --reverse --verbose --delete deploy/ /httpdocs/;
+            set mirror:parallel-transfer-count 3;
+            open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ftp://hosting.hsbi.de;
+            mirror --reverse --verbose --exclude .bin/ --exclude .env deploy/ /httpdocs/;
             quit;
           "
