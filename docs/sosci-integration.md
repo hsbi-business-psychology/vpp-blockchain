@@ -43,15 +43,14 @@ The downloaded XML file is a native SoSci Survey project export. Only the goodby
 2. Click **Import project** and upload the downloaded XML file
 3. SoSci creates a new survey project with the VPP goodbye page already set up
 4. Add your questions to the questionnaire as usual
-5. When participants complete the survey, they see a styled "Punkte jetzt einlösen" button with automatic redirect
+5. When participants complete the survey, they see a styled "Punkte jetzt einlösen" button
 
 ### 3. Template Format
 
 The generated XML uses the native SoSci Survey project format (`<surveyProject>`). The only modification is the goodbye page, which contains:
 
+- A thank-you message with point count
 - A styled HTML button linking to the VPP claim URL
-- An automatic redirect (meta-refresh) after 8 seconds
-- A fallback link for manual navigation
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -59,7 +58,7 @@ The generated XML uses the native SoSci Survey project format (`<surveyProject>`
 <surveyProject version="2.4" ...>
   ...
   <attr id="goodbye">
-    <!-- VPP claim button + auto-redirect -->
+    <!-- VPP claim button -->
   </attr>
   ...
 </surveyProject>

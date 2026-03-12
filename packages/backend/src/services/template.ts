@@ -5,7 +5,7 @@ import { config } from '../config.js'
  *
  * The file matches the native SoSci Survey export format (<surveyProject>).
  * Only the goodbye page is customised — it shows a styled "claim your points"
- * button and auto-redirects to the VPP claim URL after 8 seconds.
+ * button linking to the VPP claim URL.
  */
 export function generateSoSciTemplate(surveyId: number, secret: string, points: number): string {
   const claimUrl = `${config.frontendUrl}/claim?surveyId=${surveyId}&secret=${encodeURIComponent(
@@ -24,11 +24,6 @@ export function generateSoSciTemplate(surveyId: number, secret: string, points: 
   <a href="${claimUrl}" style="display:inline-block;margin:1rem 0;padding:0.7rem 2rem;background:#2563eb;color:#fff;text-decoration:none;border-radius:0.5rem;font-weight:600;font-size:1rem;">
     Punkte jetzt einl&#246;sen &#8594;
   </a>
-  <p style="margin-top:1.25rem;font-size:0.8rem;color:#999;">
-    Du wirst in 8 Sekunden automatisch weitergeleitet.<br/>
-    <a href="${claimUrl}" style="color:#2563eb;word-break:break-all;">${claimUrl}</a>
-  </p>
-  <meta http-equiv="refresh" content="8;url=${claimUrl}" />
 </div>`
 
   return `<?xml version="1.0" encoding="UTF-8" ?>
