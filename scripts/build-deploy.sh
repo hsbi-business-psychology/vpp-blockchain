@@ -101,15 +101,11 @@ if [ -f "$ROOT/packages/backend/.env.example" ]; then
   cp "$ROOT/packages/backend/.env.example" "$DEPLOY/.env.example"
 fi
 
-echo "[5/5] Installing production dependencies..."
-cd "$DEPLOY" && npm install --omit=dev
-
 echo ""
-echo "=== Deploy folder ready: $DEPLOY ==="
+echo "=== Deploy folder ready: $DEPLOY (without node_modules) ==="
 echo ""
 echo "Next steps:"
-echo "  1. Copy .env.example to .env and fill in production values"
-echo "  2. Upload the deploy/ folder contents to /httpdocs/ on Plesk"
-echo "  3. In Plesk: set Application startup file to 'app.js'"
-echo "  4. In Plesk: set Document root to '/httpdocs/packages/backend/public'"
-echo "  5. Click 'Restart' in the Node.js panel"
+echo "  1. Upload the deploy/ folder contents to /httpdocs/ on Plesk"
+echo "  2. In Plesk: set Application startup file to 'app.js'"
+echo "  3. In Plesk: set Document root to '/httpdocs/packages/backend/public'"
+echo "  4. In Plesk: click 'NPM install' then 'Restart'"

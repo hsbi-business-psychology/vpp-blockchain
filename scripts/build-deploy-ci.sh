@@ -4,6 +4,9 @@ set -euo pipefail
 # Assemble the deploy/ folder from already-built artifacts (CI use).
 # Expects contracts, backend, and frontend to be built already.
 # Mirrors the monorepo layout so compiled path references resolve correctly.
+#
+# node_modules are NOT included — they are already on the server.
+# If package.json dependencies change, run "NPM install" in Plesk.
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DEPLOY="$ROOT/deploy"
@@ -22,7 +25,7 @@ cp -r "$ROOT/packages/frontend/dist" "$DEPLOY/packages/backend/public"
 cp "$ROOT/packages/contracts/artifacts/contracts/SurveyPoints.sol/SurveyPoints.json" \
    "$DEPLOY/packages/contracts/artifacts/contracts/SurveyPoints.sol/SurveyPoints.json"
 
-# Production package.json
+# Production package.json + lock (for npm install on server)
 cat > "$DEPLOY/package.json" << 'PKGJSON'
 {
   "name": "vpp-blockchain-deploy",
@@ -64,7 +67,4 @@ try {
 }
 APPJS
 
-# Install production dependencies
-cd "$DEPLOY" && npm install --omit=dev
-
-echo "Deploy folder ready: $DEPLOY"
+echo "Deploy folder ready: $DEPLOY (without node_modules)"

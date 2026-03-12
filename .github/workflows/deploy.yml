@@ -66,8 +66,13 @@ jobs:
             set ftp:ssl-protect-list yes;
             set net:max-retries 3;
             set net:reconnect-interval-base 5;
-            set mirror:parallel-transfer-count 3;
+            set mirror:parallel-transfer-count 5;
             open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ftp://hosting.hsbi.de;
-            mirror --reverse --verbose --exclude .bin/ --exclude .env deploy/ /httpdocs/;
+            mirror --reverse --verbose --only-newer \
+              --exclude .bin/ \
+              --exclude .env \
+              --exclude node_modules/ \
+              --exclude tmp/ \
+              deploy/ /httpdocs/;
             quit;
           "
