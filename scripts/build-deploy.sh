@@ -82,14 +82,9 @@ import { dirname, resolve } from 'node:path'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 loadEnv({ path: resolve(__dirname, '.env') })
 
+// server.js auto-starts when NODE_ENV !== 'test'
 try {
-  const { createApp } = await import('./dist/server.js')
-  const app = createApp()
-  const port = process.env.PORT || 3000
-
-  app.listen(port, () => {
-    console.log(`VPP Backend listening on port ${port}`)
-  })
+  await import('./dist/server.js')
 } catch (err) {
   console.error('Failed to start VPP Backend:', err)
   process.exit(1)

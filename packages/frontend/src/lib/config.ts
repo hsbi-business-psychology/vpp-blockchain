@@ -1,6 +1,6 @@
 export const config = {
   appName: import.meta.env.VITE_APP_NAME || 'VPP Blockchain',
-  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+  apiUrl: import.meta.env.VITE_API_URL ?? 'http://localhost:3000',
   rpcUrl: import.meta.env.VITE_RPC_URL || 'https://sepolia.base.org',
   contractAddress: import.meta.env.VITE_CONTRACT_ADDRESS || '',
   contractDeployBlock: parseInt(import.meta.env.VITE_CONTRACT_DEPLOY_BLOCK || '0', 10),
