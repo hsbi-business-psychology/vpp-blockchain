@@ -87,13 +87,14 @@ jobs:
           })
           EOF
 
-      # 5. Deploy to Plesk via FTP
-      - name: Deploy via FTP
+      # 5. Deploy to Plesk via FTPS
+      - name: Deploy via FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: hosting.hsbi.de
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
           local-dir: deploy/
           server-dir: /httpdocs/
           dangerous-clean-slate: false
