@@ -32,9 +32,8 @@ export function createApp(): Express {
           fontSrc: ["'self'"],
           connectSrc: [
             "'self'",
+            'https://base.drpc.org',
             'https://1rpc.io',
-            'https://base.publicnode.com',
-            'https://mainnet.base.org',
             'https://*.base.org',
             'https://*.basescan.org',
           ],
