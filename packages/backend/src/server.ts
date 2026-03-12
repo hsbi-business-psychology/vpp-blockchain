@@ -1,6 +1,9 @@
 import express, { type Express } from 'express'
 import helmet from 'helmet'
 import cors from 'cors'
+import { resolve, dirname } from 'node:path'
+import { existsSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { config } from './config.js'
 import { apiLimiter } from './middleware/rateLimit.js'
 import { errorHandler } from './middleware/errorHandler.js'
@@ -10,6 +13,8 @@ import surveysRouter from './routes/surveys.js'
 import walletsRouter from './routes/wallets.js'
 import healthRouter from './routes/health.js'
 import statusRouter from './routes/status.js'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export function createApp(): Express {
   const app = express()
@@ -31,8 +36,17 @@ export function createApp(): Express {
   app.use('/api/health', healthRouter)
   app.use('/api/status', statusRouter)
 
-  // Error handling (must be last)
+  // Error handling for API routes
   app.use(errorHandler)
+
+  // Serve frontend in production (static SPA files next to the backend)
+  const publicDir = resolve(__dirname, '../public')
+  if (existsSync(publicDir)) {
+    app.use(express.static(publicDir))
+    app.get('*', (_req, res) => {
+      res.sendFile(resolve(publicDir, 'index.html'))
+    })
+  }
 
   return app
 }

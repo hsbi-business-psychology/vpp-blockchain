@@ -1,0 +1,99 @@
+name: Deploy to Plesk
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      # 1. Compile contracts (ABI needed by backend)
+      - name: Compile contracts
+        run: pnpm --filter @vpp/contracts run compile
+
+      # 2. Build backend
+      - name: Build backend
+        run: pnpm --filter @vpp/backend run build
+
+      # 3. Build frontend with production env
+      - name: Build frontend
+        run: pnpm --filter @vpp/frontend run build
+        env:
+          VITE_APP_NAME: 'VPP Blockchain'
+          VITE_API_URL: ''
+          VITE_RPC_URL: ${{ secrets.VITE_RPC_URL }}
+          VITE_CONTRACT_ADDRESS: ${{ secrets.VITE_CONTRACT_ADDRESS }}
+          VITE_CONTRACT_DEPLOY_BLOCK: ${{ secrets.VITE_CONTRACT_DEPLOY_BLOCK }}
+          VITE_EXPLORER_URL: ${{ secrets.VITE_EXPLORER_URL }}
+          VITE_DEFAULT_LOCALE: 'de'
+
+      # 4. Assemble deploy folder
+      - name: Assemble deploy folder
+        run: |
+          mkdir -p deploy/dist/public
+          mkdir -p deploy/contracts/artifacts/contracts/SurveyPoints.sol
+
+          cp -r packages/backend/dist/* deploy/dist/
+          cp -r packages/frontend/dist/* deploy/dist/public/
+          cp packages/contracts/artifacts/contracts/SurveyPoints.sol/SurveyPoints.json \
+             deploy/contracts/artifacts/contracts/SurveyPoints.sol/SurveyPoints.json
+
+          cat > deploy/package.json << 'EOF'
+          {
+            "name": "vpp-blockchain-deploy",
+            "version": "1.0.0",
+            "private": true,
+            "type": "module",
+            "dependencies": {
+              "cors": "^2.8.5",
+              "dotenv": "^16.4.0",
+              "ethers": "^6.13.0",
+              "express": "^4.21.0",
+              "express-rate-limit": "^7.5.0",
+              "helmet": "^8.0.0",
+              "zod": "^3.24.0"
+            }
+          }
+          EOF
+
+          cat > deploy/app.js << 'EOF'
+          import { createApp } from './dist/server.js'
+
+          const app = createApp()
+          const port = process.env.PORT || 3000
+
+          app.listen(port, () => {
+            console.log(`VPP Backend listening on port ${port}`)
+          })
+          EOF
+
+      # 5. Deploy to Plesk via FTP
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: hosting.hsbi.de
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: deploy/
+          server-dir: /httpdocs/
+          dangerous-clean-slate: false

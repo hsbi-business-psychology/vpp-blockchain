@@ -85,50 +85,91 @@ cp packages/backend/.env.example packages/backend/.env
 pm2 start packages/backend/dist/server.js --name vpp-backend
 ```
 
-### Option C: Plesk / Shared Hosting
+### Option C: Plesk (Recommended for HSBI)
 
-1. Upload the built backend (`packages/backend/dist/`) to the server
-2. Configure the Node.js application in Plesk
-3. Set environment variables in the Plesk panel
-4. Point the domain to the Node.js application
+Plesk with the Node.js extension runs the backend and serves the frontend from the same domain. A GitHub Actions workflow deploys automatically on every push to `main`.
+
+#### Initial Setup (one-time)
+
+1. Log in to your Plesk panel (e.g., `https://hosting.hsbi.de:8443/`)
+2. Go to your domain → **Node.js**
+3. Configure:
+   - **Node.js-Version**: 21+ (or highest available)
+   - **Package Manager**: npm
+   - **Application root**: `/httpdocs`
+   - **Application startup file**: `app.js`
+   - **Application mode**: production
+4. Set **environment variables** in the Plesk Node.js panel (see `.env.production.example`):
+   - `NODE_ENV` = `production`
+   - `PORT` = `3000`
+   - `RPC_URL` = your Base RPC endpoint
+   - `CONTRACT_ADDRESS` = your deployed contract
+   - `MINTER_PRIVATE_KEY` = your backend wallet key
+   - `EXPLORER_BASE_URL` = `https://basescan.org`
+   - `FRONTEND_URL` = `https://vpstunden.hsbi.de`
+5. Click **Enable Node.js** and then **NPM Install**
+
+#### GitHub Actions Deployment
+
+The repository includes a `.github/workflows/deploy.yml` workflow that:
+
+1. Builds contracts, backend, and frontend
+2. Assembles everything into a deploy folder
+3. Uploads via FTP to the Plesk server
+
+Set these **GitHub Secrets** (Repository → Settings → Secrets and variables → Actions):
+
+| Secret                       | Value                          |
+| ---------------------------- | ------------------------------ |
+| `FTP_USERNAME`               | Your Plesk FTP username        |
+| `FTP_PASSWORD`               | Your Plesk FTP password        |
+| `VITE_RPC_URL`               | `https://mainnet.base.org`     |
+| `VITE_CONTRACT_ADDRESS`      | Your deployed contract address |
+| `VITE_CONTRACT_DEPLOY_BLOCK` | Block number at deployment     |
+| `VITE_EXPLORER_URL`          | `https://basescan.org`         |
+
+The workflow runs on every push to `main` and can also be triggered manually via the Actions tab.
+
+#### Manual Deployment
+
+```bash
+# Build everything into deploy/ folder
+bash scripts/build-deploy.sh
+
+# Upload deploy/ contents to /httpdocs/ via FTP or Plesk File Manager
+# Then restart the Node.js app in the Plesk panel
+```
 
 ## 3. Deploy the Frontend
 
-The frontend is a static SPA — it can be served by any web server.
+### Standalone (without Plesk)
 
-### Build
+If running the backend separately, the frontend is a static SPA served by any web server.
 
 ```bash
-# Set production environment variables
-cp packages/frontend/.env.example packages/frontend/.env
-# Edit with production values:
-#   VITE_API_URL=https://vpp.your-university.edu/api
-#   VITE_RPC_URL=https://mainnet.base.org
-#   VITE_CONTRACT_ADDRESS=0x_YOUR_CONTRACT
-
-# Build
 pnpm --filter @vpp/frontend build
 ```
 
-The build output is in `packages/frontend/dist/`.
+The build output is in `packages/frontend/dist/`. Set `VITE_API_URL` to your backend URL at build time.
 
-### Serve with Nginx
+### Combined with Backend (Plesk)
+
+When using Plesk deployment (Option C above), the frontend is automatically bundled with the backend and served from the same Node.js process. Set `VITE_API_URL=""` (empty) so API calls use relative URLs.
+
+### Serve with Nginx (alternative)
 
 ```nginx
 server {
     listen 80;
     server_name vpp.your-university.edu;
 
-    # Frontend (static files)
     root /var/www/vpp-frontend;
     index index.html;
 
-    # SPA fallback
     location / {
         try_files $uri $uri/ /index.html;
     }
 
-    # Proxy API requests to the backend
     location /api/ {
         proxy_pass http://localhost:3000;
         proxy_set_header Host $host;
@@ -137,12 +178,6 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
-```
-
-### Copy Build Files
-
-```bash
-cp -r packages/frontend/dist/* /var/www/vpp-frontend/
 ```
 
 ## 4. Environment Variables Reference
