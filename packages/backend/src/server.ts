@@ -21,7 +21,25 @@ export function createApp(): Express {
 
   // Security & parsing
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  app.use(helmet() as any)
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'blob:'],
+          fontSrc: ["'self'"],
+          connectSrc: [
+            "'self'",
+            'https://mainnet.base.org',
+            'https://*.base.org',
+            'https://*.basescan.org',
+          ],
+        },
+      },
+    }) as any,
+  )
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   app.use(cors({ origin: config.frontendUrl, methods: ['GET', 'POST'] }) as any)
   app.use(express.json())
