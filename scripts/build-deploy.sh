@@ -54,13 +54,15 @@ cp -r "$ROOT/packages/frontend/dist" "$DEPLOY/packages/backend/public"
 cp "$ROOT/packages/contracts/artifacts/contracts/SurveyPoints.sol/SurveyPoints.json" \
    "$DEPLOY/packages/contracts/artifacts/contracts/SurveyPoints.sol/SurveyPoints.json"
 
-# package.json at Plesk app root
+# package.json at Plesk app root (CJS — Passenger can't load ESM entry points)
 cat > "$DEPLOY/packages/backend/package.json" << 'PKGJSON'
 {
   "name": "vpp-blockchain-deploy",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
+  "scripts": {
+    "start": "node app.js"
+  },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.0",
@@ -73,23 +75,35 @@ cat > "$DEPLOY/packages/backend/package.json" << 'PKGJSON'
 }
 PKGJSON
 
-# Plesk entry point
-cat > "$DEPLOY/packages/backend/app.js" << 'APPJS'
-import { config as loadEnv } from 'dotenv'
-import { fileURLToPath } from 'node:url'
-import { dirname, resolve } from 'node:path'
+# dist/ files are ESM (compiled TypeScript), so they need their own type marker
+cat > "$DEPLOY/packages/backend/dist/package.json" << 'DISTPKG'
+{ "type": "module" }
+DISTPKG
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
+# Plesk entry point — CJS wrapper that dynamically imports the ESM backend
+cat > "$DEPLOY/packages/backend/app.js" << 'APPJS'
+const { config: loadEnv } = require('dotenv')
+const { resolve } = require('path')
+
 loadEnv({ path: resolve(__dirname, '.env') })
 
-// server.js auto-starts when NODE_ENV !== 'test'
-try {
-  await import('./dist/server.js')
-} catch (err) {
-  console.error('Failed to start VPP Backend:', err)
-  process.exit(1)
-}
+import('./dist/server.js')
+  .then(() => console.log('VPP Backend started'))
+  .catch(err => {
+    console.error('Failed to start VPP Backend:', err)
+    process.exit(1)
+  })
 APPJS
+
+# .htaccess at httpdocs root — override any leftover WordPress/legacy rules
+cat > "$DEPLOY/.htaccess" << 'HTACCESS'
+RewriteEngine On
+RewriteRule ^gsn/ - [L,NC]
+RewriteRule ^vpp/ - [L,NC]
+RewriteRule ^kits/ - [L,NC]
+AddType application/javascript .js
+AddType application/xml .xml
+HTACCESS
 
 echo ""
 echo "=== Deploy folder ready: $DEPLOY ==="
