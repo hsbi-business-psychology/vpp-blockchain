@@ -104,14 +104,21 @@ export function useApi() {
     [],
   )
 
-  const downloadTemplate = useCallback(async (surveyId: number, secret: string): Promise<Blob> => {
-    const url = `${config.apiUrl}/api/surveys/${surveyId}/template?secret=${encodeURIComponent(
-      secret,
-    )}`
-    const res = await fetch(url)
-    if (!res.ok) throw new Error('Failed to download template')
-    return res.blob()
-  }, [])
+  const downloadTemplate = useCallback(
+    async (
+      surveyId: number,
+      secret: string,
+      format: 'sosci' | 'limesurvey' = 'sosci',
+    ): Promise<Blob> => {
+      const url = `${config.apiUrl}/api/surveys/${surveyId}/template?secret=${encodeURIComponent(
+        secret,
+      )}&format=${format}`
+      const res = await fetch(url)
+      if (!res.ok) throw new Error('Failed to download template')
+      return res.blob()
+    },
+    [],
+  )
 
   const deactivateSurvey = useCallback(
     async (surveyId: number, signature: string, message: string): Promise<{ txHash: string }> => {

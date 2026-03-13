@@ -1,20 +1,14 @@
 import { config } from '../config.js'
 
-/**
- * Generates a SoSci Survey project XML that can be imported directly.
- *
- * The file matches the native SoSci Survey export format (<surveyProject>).
- * Only the goodbye page is customised — it shows a styled "claim your points"
- * button linking to the VPP claim URL.
- */
-export function generateSoSciTemplate(surveyId: number, secret: string, points: number): string {
-  const claimUrl = `${config.frontendUrl}/claim?surveyId=${surveyId}&secret=${encodeURIComponent(
-    secret,
-  )}`
-  const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19)
-  const pointLabel = points > 1 ? 'Versuchspersonenpunkte' : 'Versuchspersonenpunkt'
+export type TemplateFormat = 'sosci' | 'limesurvey'
 
-  const goodbyeHtml = `<div style="max-width:480px;margin:2rem auto;text-align:center;font-family:system-ui,-apple-system,sans-serif;">
+function buildClaimUrl(surveyId: number, secret: string): string {
+  return `${config.frontendUrl}/claim?surveyId=${surveyId}&secret=${encodeURIComponent(secret)}`
+}
+
+function buildClaimHtml(claimUrl: string, points: number): string {
+  const pointLabel = points > 1 ? 'Versuchspersonenpunkte' : 'Versuchspersonenpunkt'
+  return `<div style="max-width:480px;margin:2rem auto;text-align:center;font-family:system-ui,-apple-system,sans-serif;">
   <div style="font-size:2.5rem;margin-bottom:0.5rem;">&#10003;</div>
   <h2 style="margin:0 0 0.5rem;font-size:1.35rem;color:#111;">Vielen Dank f&#252;r deine Teilnahme!</h2>
   <p style="margin:0.75rem 0;color:#555;font-size:0.95rem;">
@@ -25,6 +19,19 @@ export function generateSoSciTemplate(surveyId: number, secret: string, points: 
     Punkte jetzt einl&#246;sen &#8594;
   </a>
 </div>`
+}
+
+/**
+ * Generates a SoSci Survey project XML that can be imported directly.
+ *
+ * The file matches the native SoSci Survey export format (<surveyProject>).
+ * Only the goodbye page is customised — it shows a styled "claim your points"
+ * button linking to the VPP claim URL.
+ */
+export function generateSoSciTemplate(surveyId: number, secret: string, points: number): string {
+  const claimUrl = buildClaimUrl(surveyId, secret)
+  const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19)
+  const goodbyeHtml = buildClaimHtml(claimUrl, points)
 
   return `<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE surveyProject SYSTEM "doctype.survey.dtd">
@@ -56,5 +63,92 @@ export function generateSoSciTemplate(surveyId: number, secret: string, points: 
 </attributes.specific>
 </questionnaire>
 </surveyProject>
+`
+}
+
+/**
+ * Generates a LimeSurvey Question export (.lsq) that can be imported into
+ * any LimeSurvey survey. The question uses type "X" (Boilerplate/Display)
+ * which renders pure HTML — the styled claim button linking to the VPP
+ * claim URL.
+ *
+ * Import instructions: Survey > Structure > Import question > upload .lsq
+ */
+export function generateLimeSurveyTemplate(
+  surveyId: number,
+  secret: string,
+  points: number,
+): string {
+  const claimUrl = buildClaimUrl(surveyId, secret)
+  const claimHtml = buildClaimHtml(claimUrl, points)
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<document>
+ <LimeSurveyDocType>Question</LimeSurveyDocType>
+ <DBVersion>640</DBVersion>
+ <languages>
+  <language>de</language>
+ </languages>
+ <questions>
+  <fields>
+   <fieldname>qid</fieldname>
+   <fieldname>parent_qid</fieldname>
+   <fieldname>sid</fieldname>
+   <fieldname>gid</fieldname>
+   <fieldname>type</fieldname>
+   <fieldname>title</fieldname>
+   <fieldname>preg</fieldname>
+   <fieldname>other</fieldname>
+   <fieldname>mandatory</fieldname>
+   <fieldname>encrypted</fieldname>
+   <fieldname>question_order</fieldname>
+   <fieldname>scale_id</fieldname>
+   <fieldname>same_default</fieldname>
+   <fieldname>relevance</fieldname>
+   <fieldname>question_theme_name</fieldname>
+   <fieldname>modulename</fieldname>
+   <fieldname>same_script</fieldname>
+  </fields>
+  <rows>
+   <row>
+    <qid><![CDATA[0]]></qid>
+    <parent_qid><![CDATA[0]]></parent_qid>
+    <sid><![CDATA[0]]></sid>
+    <gid><![CDATA[0]]></gid>
+    <type><![CDATA[X]]></type>
+    <title><![CDATA[VPP${surveyId}]]></title>
+    <other><![CDATA[N]]></other>
+    <mandatory><![CDATA[N]]></mandatory>
+    <encrypted><![CDATA[N]]></encrypted>
+    <question_order><![CDATA[999]]></question_order>
+    <scale_id><![CDATA[0]]></scale_id>
+    <same_default><![CDATA[0]]></same_default>
+    <relevance><![CDATA[1]]></relevance>
+    <question_theme_name><![CDATA[boilerplate]]></question_theme_name>
+    <same_script><![CDATA[0]]></same_script>
+   </row>
+  </rows>
+ </questions>
+ <question_l10ns>
+  <fields>
+   <fieldname>id</fieldname>
+   <fieldname>qid</fieldname>
+   <fieldname>question</fieldname>
+   <fieldname>help</fieldname>
+   <fieldname>script</fieldname>
+   <fieldname>language</fieldname>
+  </fields>
+  <rows>
+   <row>
+    <id><![CDATA[0]]></id>
+    <qid><![CDATA[0]]></qid>
+    <question><![CDATA[${claimHtml}]]></question>
+    <help/>
+    <script/>
+    <language><![CDATA[de]]></language>
+   </row>
+  </rows>
+ </question_l10ns>
+</document>
 `
 }

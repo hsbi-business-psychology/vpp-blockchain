@@ -6,7 +6,11 @@ import { AppError } from '../middleware/errorHandler.js'
 import { requireAdmin } from '../middleware/auth.js'
 import * as blockchain from '../services/blockchain.js'
 import { getSurveysWithCache, invalidateCache } from '../services/survey-cache.js'
-import { generateSoSciTemplate } from '../services/template.js'
+import {
+  generateSoSciTemplate,
+  generateLimeSurveyTemplate,
+  type TemplateFormat,
+} from '../services/template.js'
 import type { SurveyRegisterResult } from '../types.js'
 
 const router: Router = Router()
@@ -101,7 +105,7 @@ router.post(
   },
 )
 
-// GET /api/surveys/:id/template — download SoSci Survey XML template
+// GET /api/surveys/:id/template — download survey template (SoSci or LimeSurvey)
 router.get('/:id/template', async (req, res, next) => {
   try {
     const surveyId = parseInt(req.params.id as string, 10)
@@ -114,16 +118,27 @@ router.get('/:id/template', async (req, res, next) => {
       throw new AppError(400, 'MISSING_SECRET', 'Secret query parameter is required')
     }
 
+    const format = ((req.query.format as string) || 'sosci') as TemplateFormat
+    if (format !== 'sosci' && format !== 'limesurvey') {
+      throw new AppError(400, 'INVALID_FORMAT', 'Format must be "sosci" or "limesurvey"')
+    }
+
     const info = await blockchain.getSurveyInfo(surveyId)
     if (info.points === 0) {
       throw new AppError(404, 'SURVEY_NOT_FOUND', 'Survey does not exist')
     }
 
-    const xml = generateSoSciTemplate(surveyId, secret, info.points)
-
-    res.setHeader('Content-Type', 'application/xml')
-    res.setHeader('Content-Disposition', `attachment; filename="vpp-survey-${surveyId}.xml"`)
-    res.send(xml)
+    if (format === 'limesurvey') {
+      const lsq = generateLimeSurveyTemplate(surveyId, secret, info.points)
+      res.setHeader('Content-Type', 'application/xml')
+      res.setHeader('Content-Disposition', `attachment; filename="vpp-survey-${surveyId}.lsq"`)
+      res.send(lsq)
+    } else {
+      const xml = generateSoSciTemplate(surveyId, secret, info.points)
+      res.setHeader('Content-Type', 'application/xml')
+      res.setHeader('Content-Disposition', `attachment; filename="vpp-survey-${surveyId}.xml"`)
+      res.send(xml)
+    }
   } catch (err) {
     next(err)
   }

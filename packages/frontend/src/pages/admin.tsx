@@ -128,18 +128,19 @@ export default function AdminPage() {
     }
   }, [authenticated, fetchSurveys])
 
-  const triggerTemplateDownload = async (surveyId: number, secret: string) => {
-    try {
-      const blob = await downloadTemplate(surveyId, secret)
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `vpp-survey-${surveyId}.xml`
-      a.click()
-      URL.revokeObjectURL(url)
-    } catch {
-      // Non-critical — survey was registered successfully
-    }
+  const triggerTemplateDownload = async (
+    surveyId: number,
+    secret: string,
+    format: 'sosci' | 'limesurvey',
+  ) => {
+    const blob = await downloadTemplate(surveyId, secret, format)
+    const ext = format === 'limesurvey' ? 'lsq' : 'xml'
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `vpp-survey-${surveyId}.${ext}`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   const handleRegister = async (data: {
@@ -164,34 +165,31 @@ export default function AdminPage() {
       storeSecret(data.surveyId, data.secret)
       toast.success(t('admin.register.success'))
       await fetchSurveys()
-
-      triggerTemplateDownload(data.surveyId, data.secret)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('admin.register.error'))
       throw err
     }
   }
 
-  const handleDownloadTemplate = async (surveyId: number) => {
-    const stored = getSecret(surveyId)
-    if (stored) {
-      await triggerTemplateDownload(surveyId, stored)
-      return
-    }
+  const handleDownloadTemplate = (surveyId: number) => {
     const survey = surveys.find((s) => s.surveyId === surveyId)
-    if (survey) {
-      setTemplateTarget(survey)
-      setTemplateSecret('')
-    }
+    if (!survey) return
+    const stored = getSecret(surveyId)
+    setTemplateTarget(survey)
+    setTemplateSecret(stored || '')
   }
 
-  const handleTemplateDialogDownload = async () => {
+  const handleTemplateFormatDownload = async (format: 'sosci' | 'limesurvey') => {
     if (!templateTarget || !templateSecret.trim()) return
     setTemplateLoading(true)
     try {
       storeSecret(templateTarget.surveyId, templateSecret.trim())
-      await triggerTemplateDownload(templateTarget.surveyId, templateSecret.trim())
-      setTemplateTarget(null)
+      await triggerTemplateDownload(templateTarget.surveyId, templateSecret.trim(), format)
+      toast.success(
+        format === 'sosci'
+          ? t('admin.surveys.templateDialog.sosci.title')
+          : t('admin.surveys.templateDialog.limesurvey.title'),
+      )
     } catch {
       toast.error(t('common.error'))
     } finally {
@@ -419,59 +417,99 @@ export default function AdminPage() {
 
       {/* ─── Template Download Dialog ─── */}
       <Dialog open={!!templateTarget} onOpenChange={() => setTemplateTarget(null)}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10 mb-2">
+            <div className="mb-2 flex size-12 items-center justify-center rounded-lg bg-primary/10">
               <Download className="size-6 text-primary" />
             </div>
             <DialogTitle>{t('admin.surveys.templateDialog.title')}</DialogTitle>
             <DialogDescription>{t('admin.surveys.templateDialog.description')}</DialogDescription>
           </DialogHeader>
+
           {templateTarget && (
-            <div className="rounded-lg bg-muted p-3 space-y-1">
+            <div className="space-y-1 rounded-lg bg-muted p-3">
               <p className="text-sm font-medium">
                 {templateTarget.title || `Survey #${templateTarget.surveyId}`}
               </p>
               <p className="text-xs text-muted-foreground">
-                ID: {templateTarget.surveyId} · {templateTarget.points} Punkte
+                ID: {templateTarget.surveyId} · {templateTarget.points} {t('admin.register.points')}
               </p>
             </div>
           )}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              {t('admin.surveys.templateDialog.secretLabel')}
-            </label>
-            <Input
-              value={templateSecret}
-              onChange={(e) => setTemplateSecret(e.target.value)}
-              placeholder={t('admin.surveys.templateDialog.secretPlaceholder')}
-              type="password"
-              className="font-mono text-xs"
-              onKeyDown={(e) =>
-                e.key === 'Enter' && templateSecret.trim() && handleTemplateDialogDownload()
-              }
-            />
-            <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
-              <Info className="mt-0.5 size-3 shrink-0" />
-              {t('admin.surveys.templateDialog.hint')}
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setTemplateTarget(null)}>
-              {t('common.cancel')}
-            </Button>
-            <Button
-              onClick={handleTemplateDialogDownload}
+
+          {!templateSecret.trim() && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                {t('admin.surveys.templateDialog.secretLabel')}
+              </label>
+              <Input
+                value={templateSecret}
+                onChange={(e) => setTemplateSecret(e.target.value)}
+                placeholder={t('admin.surveys.templateDialog.secretPlaceholder')}
+                type="password"
+                className="font-mono text-xs"
+              />
+              <p className="text-xs text-muted-foreground">
+                {t('admin.surveys.templateDialog.secretDescription')}
+              </p>
+              <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                <Info className="mt-0.5 size-3 shrink-0" />
+                {t('admin.surveys.templateDialog.secretHint')}
+              </p>
+            </div>
+          )}
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button
+              onClick={() => handleTemplateFormatDownload('sosci')}
               disabled={!templateSecret.trim() || templateLoading}
+              className="flex flex-col items-start gap-2 rounded-lg border border-border p-4 text-left transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
             >
-              {templateLoading ? (
-                <Loader2 className="mr-1.5 size-4 animate-spin" />
-              ) : (
-                <Download className="mr-1.5 size-4" />
-              )}
-              {t('admin.surveys.templateDialog.download')}
-            </Button>
-          </DialogFooter>
+              <div className="flex w-full items-center justify-between">
+                <span className="text-sm font-semibold">
+                  {t('admin.surveys.templateDialog.sosci.title')}
+                </span>
+                <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  .xml
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t('admin.surveys.templateDialog.sosci.description')}
+              </p>
+              <span className="mt-auto inline-flex items-center gap-1.5 text-xs font-medium text-primary">
+                <Download className="size-3" />
+                {t('admin.surveys.templateDialog.sosci.download')}
+              </span>
+            </button>
+
+            <button
+              onClick={() => handleTemplateFormatDownload('limesurvey')}
+              disabled={!templateSecret.trim() || templateLoading}
+              className="flex flex-col items-start gap-2 rounded-lg border border-border p-4 text-left transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
+            >
+              <div className="flex w-full items-center justify-between">
+                <span className="text-sm font-semibold">
+                  {t('admin.surveys.templateDialog.limesurvey.title')}
+                </span>
+                <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  .lsq
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t('admin.surveys.templateDialog.limesurvey.description')}
+              </p>
+              <span className="mt-auto inline-flex items-center gap-1.5 text-xs font-medium text-primary">
+                <Download className="size-3" />
+                {t('admin.surveys.templateDialog.limesurvey.download')}
+              </span>
+            </button>
+          </div>
+
+          {templateLoading && (
+            <div className="flex items-center justify-center py-2">
+              <Loader2 className="size-5 animate-spin text-muted-foreground" />
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
