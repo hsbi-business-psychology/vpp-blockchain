@@ -14,6 +14,7 @@ process.env.EXPLORER_BASE_URL = 'https://sepolia.basescan.org'
 process.env.FRONTEND_URL = 'http://localhost:5173'
 
 // Mock the blockchain service globally
+// Using vi.fn(() => ...) so restoreAllMocks() keeps the factory defaults
 vi.mock('../src/services/blockchain.js', () => ({
   awardPoints: vi.fn(),
   registerSurvey: vi.fn(),
@@ -21,8 +22,8 @@ vi.mock('../src/services/blockchain.js', () => ({
   getTotalPoints: vi.fn(),
   getSurveyPoints: vi.fn(),
   hasClaimed: vi.fn(),
-  getPointsAwardedEvents: vi.fn(),
-  getSurveyRegisteredEvents: vi.fn(),
+  getPointsAwardedEvents: vi.fn(() => Promise.resolve([])),
+  getSurveyRegisteredEvents: vi.fn(() => Promise.resolve([])),
   deactivateSurvey: vi.fn(),
   markWalletSubmitted: vi.fn(),
   unmarkWalletSubmitted: vi.fn(),
@@ -30,25 +31,27 @@ vi.mock('../src/services/blockchain.js', () => ({
   isAdmin: vi.fn(),
   addAdmin: vi.fn(),
   removeAdmin: vi.fn(),
-  getMinterAddress: vi.fn().mockReturnValue('0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'),
+  getAdminAddresses: vi.fn(() => Promise.resolve([])),
+  getMinterAddress: vi.fn(() => '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'),
   getMinterBalance: vi.fn(),
   getBlockNumber: vi.fn(),
   getNetwork: vi.fn(),
   provider: {
-    getFeeData: vi.fn().mockResolvedValue({ gasPrice: 1000000n }),
+    getFeeData: vi.fn(() => Promise.resolve({ gasPrice: 1000000n })),
   },
   contract: {},
   readOnlyContract: {},
   queryFilterChunked: vi.fn(),
 }))
 
-// Mock the event store globally
+// Mock the event store globally (isReady returns true so routes use the event store path)
 vi.mock('../src/services/event-store.js', () => ({
-  sync: vi.fn().mockResolvedValue(undefined),
-  getSurveyRegisteredEvents: vi.fn().mockReturnValue([]),
-  getPointsAwardedByWallet: vi.fn().mockReturnValue([]),
-  getCurrentAdmins: vi.fn().mockReturnValue([]),
-  getLastSyncedBlock: vi.fn().mockReturnValue(0),
-  startEventStore: vi.fn().mockResolvedValue(undefined),
+  sync: vi.fn(() => Promise.resolve()),
+  getSurveyRegisteredEvents: vi.fn(() => []),
+  getPointsAwardedByWallet: vi.fn(() => []),
+  getCurrentAdmins: vi.fn(() => []),
+  getLastSyncedBlock: vi.fn(() => 1),
+  isReady: vi.fn(() => true),
+  startEventStore: vi.fn(() => Promise.resolve()),
   stopEventStore: vi.fn(),
 }))

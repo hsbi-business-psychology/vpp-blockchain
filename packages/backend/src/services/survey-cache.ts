@@ -2,8 +2,9 @@
  * @module survey-cache
  *
  * In-memory cache for the survey list with a 30-second TTL.
- * Survey events are read from the local event store (instant),
- * then live survey info (claimCount, active status) is fetched
+ * When the event store is ready, survey events are read from the local
+ * file cache (instant). Otherwise falls back to direct RPC queries.
+ * Live survey info (claimCount, active status) is always fetched
  * via individual view-function calls.
  */
 import * as blockchain from './blockchain.js'
@@ -20,10 +21,16 @@ export async function getSurveysWithCache(): Promise<SurveyInfo[]> {
     return cachedSurveys
   }
 
-  const events = eventStore.getSurveyRegisteredEvents()
+  let surveyEvents: Array<{ surveyId: number }>
+
+  if (eventStore.isReady()) {
+    surveyEvents = eventStore.getSurveyRegisteredEvents()
+  } else {
+    surveyEvents = await blockchain.getSurveyRegisteredEvents()
+  }
 
   const surveys: SurveyInfo[] = await Promise.all(
-    events.map(async (event) => {
+    surveyEvents.map(async (event) => {
       const info = await blockchain.getSurveyInfo(event.surveyId)
       return {
         surveyId: event.surveyId,

@@ -248,4 +248,44 @@ async function queryFilterChunked(
   return results
 }
 
+/**
+ * Fallback: queries RoleGranted/RoleRevoked events directly from the RPC
+ * to compute the current admin list. Used when the event store is cold.
+ */
+export async function getAdminAddresses(): Promise<string[]> {
+  const fromBlock = config.contractDeployBlock || 0
+  const adminRole: string = await readOnlyContract.ADMIN_ROLE()
+
+  const [grantedEvents, revokedEvents] = await Promise.all([
+    queryFilterChunked(
+      readOnlyContract,
+      readOnlyContract.filters.RoleGranted(adminRole),
+      fromBlock,
+    ),
+    queryFilterChunked(
+      readOnlyContract,
+      readOnlyContract.filters.RoleRevoked(adminRole),
+      fromBlock,
+    ),
+  ])
+
+  const adminSet = new Set<string>()
+  const allEvents = [
+    ...grantedEvents.map((e) => ({ type: 'grant' as const, ...e })),
+    ...revokedEvents.map((e) => ({ type: 'revoke' as const, ...e })),
+  ].sort((a, b) => a.blockNumber - b.blockNumber || a.index - b.index)
+
+  for (const event of allEvents) {
+    if (!('args' in event)) continue
+    const account = (event.args as unknown as [string, string, string])[1]
+    if (event.type === 'grant') {
+      adminSet.add(account)
+    } else {
+      adminSet.delete(account)
+    }
+  }
+
+  return Array.from(adminSet)
+}
+
 export { provider, contract, readOnlyContract, queryFilterChunked }

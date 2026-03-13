@@ -92,16 +92,13 @@ export function createApp(): Express {
 
 // Start the server only when this file is the entry point (not during tests)
 if (process.env.NODE_ENV !== 'test') {
-  startEventStore()
-    .then(() => {
-      const app = createApp()
-      app.listen(config.port, () => {
-        console.log(`VPP Backend listening on port ${config.port}`)
-        console.log(`  Health: http://localhost:${config.port}/api/health`)
-      })
-    })
-    .catch((err) => {
-      console.error('Failed to start event store:', err)
-      process.exit(1)
-    })
+  const app = createApp()
+  app.listen(config.port, () => {
+    console.log(`VPP Backend listening on port ${config.port}`)
+    console.log(`  Health: http://localhost:${config.port}/api/health`)
+  })
+
+  startEventStore().catch((err) => {
+    console.error('Event store initial sync failed (will retry periodically):', err)
+  })
 }

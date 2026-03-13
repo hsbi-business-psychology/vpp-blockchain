@@ -222,6 +222,11 @@ export function getLastSyncedBlock(): number {
   return store.lastSyncedBlock
 }
 
+/** Returns true when at least one full sync has completed. */
+export function isReady(): boolean {
+  return store.lastSyncedBlock > 0
+}
+
 export async function startEventStore(): Promise<void> {
   load()
   await sync()

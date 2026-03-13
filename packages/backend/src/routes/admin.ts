@@ -5,7 +5,7 @@
  * through the backend's Minter wallet so that admins don't need to hold
  * ETH themselves — only a valid EIP-191 signature is required.
  *
- *   GET    /       – List current admin addresses (from local event store).
+ *   GET    /       – List current admin addresses (event store or RPC fallback).
  *   POST   /add    – Grant ADMIN_ROLE to a new address.
  *   POST   /remove – Revoke ADMIN_ROLE from an address.
  */
@@ -26,9 +26,18 @@ const roleSchema = z.object({
   adminMessage: z.string().min(1),
 })
 
-router.get('/', async (_req, res) => {
-  const admins = eventStore.getCurrentAdmins()
-  res.json({ success: true, data: { admins } })
+router.get('/', async (_req, res, next) => {
+  try {
+    let admins: string[]
+    if (eventStore.isReady()) {
+      admins = eventStore.getCurrentAdmins()
+    } else {
+      admins = await blockchain.getAdminAddresses()
+    }
+    res.json({ success: true, data: { admins } })
+  } catch (err) {
+    next(err)
+  }
 })
 
 router.post('/add', requireAdmin as unknown as RequestHandler, async (req, res, next) => {

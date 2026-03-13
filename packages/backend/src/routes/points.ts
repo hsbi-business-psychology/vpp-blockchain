@@ -2,8 +2,8 @@
  * @route /api/points
  *
  * Public endpoint for querying a wallet's point balance and claim history.
- * Events are read from the local event store (instant, no RPC event queries).
- * Only `totalPoints` is fetched live from the contract for accuracy.
+ * Uses the event store when ready (instant), otherwise falls back to
+ * direct RPC event queries. `totalPoints` is always fetched live.
  */
 import { Router } from 'express'
 import type {} from 'express-serve-static-core'
@@ -23,15 +23,31 @@ router.get('/:wallet', async (req, res, next) => {
       throw new AppError(400, 'INVALID_ADDRESS', 'The provided wallet address is not valid')
     }
 
-    const [totalPoints, events] = await Promise.all([
-      blockchain.getTotalPoints(wallet),
-      Promise.resolve(eventStore.getPointsAwardedByWallet(wallet)),
-    ])
+    let claimEvents: Array<{
+      surveyId: number
+      points: number
+      timestamp: number
+      txHash: string
+    }>
+
+    if (eventStore.isReady()) {
+      claimEvents = eventStore.getPointsAwardedByWallet(wallet)
+    } else {
+      const rpcEvents = await blockchain.getPointsAwardedEvents(wallet)
+      claimEvents = rpcEvents.map((e) => ({
+        surveyId: e.surveyId,
+        points: e.points,
+        timestamp: e.timestamp,
+        txHash: e.transactionHash,
+      }))
+    }
+
+    const totalPoints = await blockchain.getTotalPoints(wallet)
 
     const result: PointsResult = {
       wallet: ethers.getAddress(wallet),
       totalPoints,
-      surveys: events.map((event) => ({
+      surveys: claimEvents.map((event) => ({
         surveyId: event.surveyId,
         points: event.points,
         claimedAt: new Date(event.timestamp * 1000).toISOString(),
