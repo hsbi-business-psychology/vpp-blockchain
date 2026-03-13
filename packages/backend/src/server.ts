@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { config } from './config.js'
 import { apiLimiter } from './middleware/rateLimit.js'
 import { errorHandler } from './middleware/errorHandler.js'
+import adminRouter from './routes/admin.js'
 import claimRouter from './routes/claim.js'
 import pointsRouter from './routes/points.js'
 import surveysRouter from './routes/surveys.js'
@@ -48,6 +49,7 @@ export function createApp(): Express {
   app.use(apiLimiter as any)
 
   // Routes
+  app.use('/api/admin', adminRouter)
   app.use('/api/claim', claimRouter)
   app.use('/api/points', pointsRouter)
   app.use('/api/surveys', surveysRouter)

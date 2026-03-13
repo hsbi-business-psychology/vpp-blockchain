@@ -179,6 +179,34 @@ export function useApi() {
     [],
   )
 
+  const addAdmin = useCallback(
+    async (
+      address: string,
+      adminSignature: string,
+      adminMessage: string,
+    ): Promise<{ txHash: string; explorerUrl: string }> => {
+      return apiFetch<{ txHash: string; explorerUrl: string }>('/api/admin/add', {
+        method: 'POST',
+        body: JSON.stringify({ address, adminSignature, adminMessage }),
+      })
+    },
+    [],
+  )
+
+  const removeAdmin = useCallback(
+    async (
+      address: string,
+      adminSignature: string,
+      adminMessage: string,
+    ): Promise<{ txHash: string; explorerUrl: string }> => {
+      return apiFetch<{ txHash: string; explorerUrl: string }>('/api/admin/remove', {
+        method: 'POST',
+        body: JSON.stringify({ address, adminSignature, adminMessage }),
+      })
+    },
+    [],
+  )
+
   return {
     claimPoints,
     getSurveys,
@@ -189,5 +217,7 @@ export function useApi() {
     markWalletSubmitted,
     unmarkWalletSubmitted,
     getSystemStatus,
+    addAdmin,
+    removeAdmin,
   }
 }

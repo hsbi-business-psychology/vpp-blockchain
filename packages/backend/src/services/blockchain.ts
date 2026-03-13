@@ -156,6 +156,20 @@ export async function isAdmin(address: string): Promise<boolean> {
   return readOnlyContract.isAdmin(address)
 }
 
+export async function addAdmin(address: string): Promise<ethers.TransactionReceipt> {
+  const tx = await contract.addAdmin(address)
+  const receipt = await tx.wait()
+  if (!receipt) throw new Error('Transaction receipt is null')
+  return receipt
+}
+
+export async function removeAdmin(address: string): Promise<ethers.TransactionReceipt> {
+  const tx = await contract.removeAdmin(address)
+  const receipt = await tx.wait()
+  if (!receipt) throw new Error('Transaction receipt is null')
+  return receipt
+}
+
 export async function markWalletSubmitted(
   walletAddress: string,
 ): Promise<ethers.TransactionReceipt> {

@@ -10,14 +10,16 @@ import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { SURVEY_POINTS_ABI } from '@/lib/contract-abi'
 import { config } from '@/lib/config'
+import { useApi } from '@/hooks/use-api'
 
 interface RoleManagementProps {
   walletAddress: string
-  signer: ethers.Signer
+  sign: (message: string) => Promise<string>
 }
 
-export function RoleManagement({ walletAddress, signer }: RoleManagementProps) {
+export function RoleManagement({ walletAddress, sign }: RoleManagementProps) {
   const { t } = useTranslation()
+  const { addAdmin, removeAdmin } = useApi()
   const [address, setAddress] = useState('')
   const [loading, setLoading] = useState(false)
   const [admins, setAdmins] = useState<string[]>([])
@@ -78,9 +80,11 @@ export function RoleManagement({ walletAddress, signer }: RoleManagementProps) {
     }
     setLoading(true)
     try {
-      const contract = new ethers.Contract(contractAddress, SURVEY_POINTS_ABI, signer)
-      const tx = await contract.addAdmin(address)
-      await tx.wait()
+      const timestamp = Date.now()
+      const message = `Add admin ${address} by ${walletAddress} at ${timestamp}`
+      const signature = await sign(message)
+
+      await addAdmin(address, signature, message)
       toast.success(t('admin.roles.successAdd'))
       setAddress('')
       await fetchAdmins()
@@ -94,9 +98,11 @@ export function RoleManagement({ walletAddress, signer }: RoleManagementProps) {
   const handleRemoveAdmin = async (addr: string) => {
     setLoading(true)
     try {
-      const contract = new ethers.Contract(contractAddress, SURVEY_POINTS_ABI, signer)
-      const tx = await contract.removeAdmin(addr)
-      await tx.wait()
+      const timestamp = Date.now()
+      const message = `Remove admin ${addr} by ${walletAddress} at ${timestamp}`
+      const signature = await sign(message)
+
+      await removeAdmin(addr, signature, message)
       toast.success(t('admin.roles.successRemove'))
       await fetchAdmins()
     } catch (err) {
