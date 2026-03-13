@@ -1,3 +1,16 @@
+/**
+ * @module wallet
+ *
+ * Low-level wallet operations (create, import, sign, persist).
+ *
+ * Wallets are stored as JSON in `localStorage` under `vpp-wallet`.
+ * For local wallets the private key is included; for MetaMask wallets
+ * it is always empty since the extension handles signing.
+ *
+ * Security note: local wallets keep the private key in the browser.
+ * Users are warned during creation and advised to back up the key
+ * in a password manager or on paper.
+ */
 import { ethers } from 'ethers'
 
 const STORAGE_KEY = 'vpp-wallet'

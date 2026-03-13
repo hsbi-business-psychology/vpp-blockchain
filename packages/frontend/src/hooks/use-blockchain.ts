@@ -1,3 +1,13 @@
+/**
+ * @module use-blockchain
+ *
+ * React hook for read-only smart contract queries from the frontend.
+ * Uses ethers.js `JsonRpcProvider` (no wallet needed) to call view functions
+ * and query event logs directly against the public RPC.
+ *
+ * Used on the student points page to display total points, claim history,
+ * and wallet submission status without going through the backend.
+ */
 import { useState, useCallback } from 'react'
 import { ethers } from 'ethers'
 import { config } from '@/lib/config'

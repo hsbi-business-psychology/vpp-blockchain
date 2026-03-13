@@ -1,3 +1,17 @@
+/**
+ * @route POST /api/claim
+ *
+ * Lets a student claim survey points. The flow:
+ *   1. Validate the request body (wallet address, survey ID, secret, signature).
+ *   2. Check timestamp freshness to prevent replay attacks.
+ *   3. Recover the signer from the EIP-191 signature and verify it matches
+ *      the declared wallet address.
+ *   4. Query the smart contract to ensure the survey exists, is active,
+ *      and has not already been claimed by this wallet.
+ *   5. Call `awardPoints()` on-chain via the Minter wallet.
+ *
+ * Rate-limited to prevent abuse (see `claimLimiter`).
+ */
 import { Router, type RequestHandler } from 'express'
 import { z } from 'zod'
 import { ethers } from 'ethers'

@@ -1,3 +1,13 @@
+/**
+ * @module config
+ *
+ * Loads and validates all environment variables at startup.
+ * Required variables throw immediately if missing so the server
+ * fails fast rather than crashing later on the first request.
+ *
+ * @see .env.development   – local defaults (Hardhat node)
+ * @see .env.production.example – template for Plesk / production
+ */
 import 'dotenv/config'
 
 function required(key: string): string {

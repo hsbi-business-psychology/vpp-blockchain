@@ -1,3 +1,16 @@
+/**
+ * @module errorHandler
+ *
+ * Centralised error handling for the Express API.
+ *
+ * - `AppError` is thrown by route handlers for expected errors (validation,
+ *   auth failures, business logic). Each carries an HTTP status code and a
+ *   machine-readable error code.
+ * - `parseContractError` maps Solidity custom revert reasons (e.g.
+ *   `AlreadyClaimed`, `MaxClaimsReached`) to matching `AppError` instances
+ *   so the frontend receives a useful error instead of a generic 500.
+ * - The `errorHandler` middleware is registered last and catches everything.
+ */
 import type { Request, Response, NextFunction } from 'express'
 
 export class AppError extends Error {

@@ -1,3 +1,11 @@
+/**
+ * @module survey-cache
+ *
+ * Simple in-memory cache for the survey list. Fetching all surveys requires
+ * multiple RPC calls (one `queryFilter` + one `getSurveyInfo` per survey),
+ * which is expensive on public RPCs. The cache keeps results for 30 seconds
+ * and is invalidated explicitly whenever a survey is registered or deactivated.
+ */
 import * as blockchain from './blockchain.js'
 import type { SurveyInfo } from '../types.js'
 

@@ -1,3 +1,17 @@
+/**
+ * Production deployment script for the SurveyPoints contract.
+ *
+ * Usage:
+ *   npx hardhat run scripts/deploy.ts --network baseMainnet
+ *
+ * Environment variables:
+ *   DEPLOYER_PRIVATE_KEY – private key of the deploying wallet
+ *   ADMIN_ADDRESS        – wallet receiving ADMIN_ROLE (defaults to deployer)
+ *   MINTER_ADDRESS       – wallet receiving MINTER_ROLE (defaults to deployer)
+ *
+ * After deployment the script prints the contract address and deploy block
+ * which need to be added to the backend/frontend environment variables.
+ */
 import { ethers, network, run } from 'hardhat'
 
 async function main() {

@@ -1,3 +1,12 @@
+/**
+ * @module survey-secrets
+ *
+ * Persists survey secrets in localStorage so admins can download
+ * templates later without re-entering the secret. Keyed by survey ID.
+ *
+ * Secrets never leave the browser — they are not sent to the backend
+ * except as a query parameter when downloading a template.
+ */
 const STORAGE_KEY = 'vpp-survey-secrets'
 
 type SecretMap = Record<string, string>

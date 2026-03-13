@@ -1,3 +1,13 @@
+/**
+ * @route /api/admin
+ *
+ * Manages ADMIN_ROLE on the smart contract. All transactions are executed
+ * through the backend's Minter wallet so that admins don't need to hold
+ * ETH themselves — only a valid EIP-191 signature is required.
+ *
+ *   POST /add    – Grant ADMIN_ROLE to a new address.
+ *   POST /remove – Revoke ADMIN_ROLE from an address.
+ */
 import { Router, type RequestHandler } from 'express'
 import { z } from 'zod'
 import { ethers } from 'ethers'

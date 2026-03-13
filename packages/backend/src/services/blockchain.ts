@@ -1,3 +1,17 @@
+/**
+ * @module blockchain
+ *
+ * Thin wrapper around the SurveyPoints smart contract.
+ *
+ * Two contract instances are maintained:
+ *   - `contract`         – connected to the Minter wallet, used for state-changing
+ *                          transactions (awardPoints, registerSurvey, role management).
+ *   - `readOnlyContract` – connected to a plain provider, used for gas-free reads
+ *                          and event queries.
+ *
+ * Every write function waits for the transaction receipt before returning,
+ * so callers can rely on the operation being mined.
+ */
 import { ethers } from 'ethers'
 import { readFileSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'

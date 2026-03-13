@@ -1,3 +1,21 @@
+/**
+ * @module use-api
+ *
+ * React hook providing typed wrappers around the VPP Backend REST API.
+ * All functions use `apiFetch` which automatically prepends the API base URL,
+ * sets JSON headers, and throws on non-success responses.
+ *
+ * Exposed methods map 1:1 to backend routes:
+ *   - claimPoints       → POST /api/claim
+ *   - getSurveys        → GET  /api/surveys
+ *   - registerSurvey    → POST /api/surveys
+ *   - downloadTemplate  → GET  /api/surveys/:id/template
+ *   - deactivateSurvey  → POST /api/surveys/:id/deactivate
+ *   - addAdmin          → POST /api/admin/add
+ *   - removeAdmin       → POST /api/admin/remove
+ *   - getSystemStatus   → GET  /api/status
+ *   - wallet submission → GET/POST /api/wallets/:address/*
+ */
 import { useCallback } from 'react'
 import { config } from '@/lib/config'
 

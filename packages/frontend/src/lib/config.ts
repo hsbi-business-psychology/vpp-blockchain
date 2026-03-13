@@ -1,3 +1,10 @@
+/**
+ * @module config
+ *
+ * Frontend configuration sourced from Vite environment variables (`VITE_*`).
+ * Defaults point to a local dev setup; production values are injected at
+ * build time via `.env.production`.
+ */
 export const config = {
   appName: import.meta.env.VITE_APP_NAME || 'VPP Blockchain',
   apiUrl: import.meta.env.VITE_API_URL ?? 'http://localhost:3000',

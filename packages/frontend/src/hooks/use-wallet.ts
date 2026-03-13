@@ -1,3 +1,16 @@
+/**
+ * @module use-wallet
+ *
+ * React hook for wallet lifecycle management. Supports two wallet types:
+ *
+ *   - **Local wallet** – a random Ethereum keypair generated client-side and
+ *     stored in localStorage. Simple for students but requires manual backup.
+ *   - **MetaMask**     – delegates key management to the browser extension.
+ *     More secure, listens for account/chain changes automatically.
+ *
+ * The hook persists the active wallet across page reloads and provides
+ * a unified `sign(message)` function regardless of wallet type.
+ */
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import i18n from '@/lib/i18n'

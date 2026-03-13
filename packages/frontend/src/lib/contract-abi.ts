@@ -1,3 +1,8 @@
+/**
+ * Human-readable ABI for the SurveyPoints smart contract.
+ * This subset includes only the functions and events needed by the frontend.
+ * The full ABI lives in `packages/contracts/artifacts/`.
+ */
 export const SURVEY_POINTS_ABI = [
   'function totalPoints(address wallet) external view returns (uint256)',
   'function surveyPoints(address wallet, uint256 surveyId) external view returns (uint8)',

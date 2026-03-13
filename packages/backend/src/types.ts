@@ -1,3 +1,11 @@
+/**
+ * @module types
+ *
+ * Shared TypeScript interfaces for the VPP Backend.
+ * These types define the shape of API request/response payloads and
+ * internal data structures passed between routes and services.
+ */
+
 export interface ClaimRequest {
   walletAddress: string
   surveyId: number
