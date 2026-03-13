@@ -116,7 +116,7 @@ export interface PointsAwardedEvent {
 export async function getPointsAwardedEvents(walletAddress: string): Promise<PointsAwardedEvent[]> {
   const fromBlock = config.contractDeployBlock || 0
   const filter = readOnlyContract.filters.PointsAwarded(walletAddress)
-  const events = await readOnlyContract.queryFilter(filter, fromBlock)
+  const events = await queryFilterChunked(readOnlyContract, filter, fromBlock)
 
   const results: PointsAwardedEvent[] = []
   for (const event of events) {
@@ -147,7 +147,7 @@ export interface SurveyRegisteredEvent {
 export async function getSurveyRegisteredEvents(): Promise<SurveyRegisteredEvent[]> {
   const fromBlock = config.contractDeployBlock || 0
   const filter = readOnlyContract.filters.SurveyRegistered()
-  const events = await readOnlyContract.queryFilter(filter, fromBlock)
+  const events = await queryFilterChunked(readOnlyContract, filter, fromBlock)
 
   const results: SurveyRegisteredEvent[] = []
   for (const event of events) {
@@ -223,4 +223,29 @@ export async function getNetwork(): Promise<string> {
   return network.name
 }
 
-export { provider, contract, readOnlyContract }
+/**
+ * Queries event logs in chunks to stay within RPC provider block-range limits.
+ * Most free-tier RPCs (drpc, publicnode) cap at 10,000 blocks per request.
+ */
+const CHUNK_SIZE = 9_000
+
+async function queryFilterChunked(
+  contract: ethers.Contract,
+  filter: ethers.ContractEventName,
+  fromBlock: number,
+): Promise<(ethers.EventLog | ethers.Log)[]> {
+  const latestBlock = await contract.runner!.provider!.getBlockNumber()
+  if (latestBlock - fromBlock <= CHUNK_SIZE) {
+    return contract.queryFilter(filter, fromBlock, latestBlock)
+  }
+
+  const results: (ethers.EventLog | ethers.Log)[] = []
+  for (let start = fromBlock; start <= latestBlock; start += CHUNK_SIZE + 1) {
+    const end = Math.min(start + CHUNK_SIZE, latestBlock)
+    const chunk = await contract.queryFilter(filter, start, end)
+    results.push(...chunk)
+  }
+  return results
+}
+
+export { provider, contract, readOnlyContract, queryFilterChunked }

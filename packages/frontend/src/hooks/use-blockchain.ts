@@ -20,12 +20,37 @@ interface SurveyClaimEntry {
   blockNumber: number
 }
 
+const CHUNK_SIZE = 9_000
+
 function getContract() {
   if (!config.contractAddress) {
     throw new Error('Contract address not configured')
   }
   const provider = new ethers.JsonRpcProvider(config.rpcUrl)
   return new ethers.Contract(config.contractAddress, SURVEY_POINTS_ABI, provider)
+}
+
+/**
+ * Queries event logs in chunks to avoid free-tier RPC block-range limits
+ * (most providers cap at 10,000 blocks per request).
+ */
+export async function queryFilterChunked(
+  contract: ethers.Contract,
+  filter: ethers.ContractEventName,
+  fromBlock: number,
+): Promise<(ethers.EventLog | ethers.Log)[]> {
+  const latestBlock = await contract.runner!.provider!.getBlockNumber()
+  if (latestBlock - fromBlock <= CHUNK_SIZE) {
+    return contract.queryFilter(filter, fromBlock, latestBlock)
+  }
+
+  const results: (ethers.EventLog | ethers.Log)[] = []
+  for (let start = fromBlock; start <= latestBlock; start += CHUNK_SIZE + 1) {
+    const end = Math.min(start + CHUNK_SIZE, latestBlock)
+    const chunk = await contract.queryFilter(filter, start, end)
+    results.push(...chunk)
+  }
+  return results
 }
 
 export function useBlockchain() {
@@ -92,7 +117,7 @@ export function useBlockchain() {
       const contract = getContract()
       const fromBlock = config.contractDeployBlock || 0
       const filter = contract.filters.PointsAwarded(address)
-      const events = await contract.queryFilter(filter, fromBlock)
+      const events = await queryFilterChunked(contract, filter, fromBlock)
       return events.map((event) => {
         const log = event as ethers.EventLog
         return {

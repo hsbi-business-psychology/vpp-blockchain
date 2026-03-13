@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { SURVEY_POINTS_ABI } from '@/lib/contract-abi'
 import { config } from '@/lib/config'
 import { useApi } from '@/hooks/use-api'
+import { queryFilterChunked } from '@/hooks/use-blockchain'
 
 interface RoleManagementProps {
   walletAddress: string
@@ -41,8 +42,8 @@ export function RoleManagement({ walletAddress, sign }: RoleManagementProps) {
 
       const fromBlock = config.contractDeployBlock || 0
       const [grantedEvents, revokedEvents] = await Promise.all([
-        contract.queryFilter(grantedFilter, fromBlock),
-        contract.queryFilter(revokedFilter, fromBlock),
+        queryFilterChunked(contract, grantedFilter, fromBlock),
+        queryFilterChunked(contract, revokedFilter, fromBlock),
       ])
 
       const adminSet = new Set<string>()
