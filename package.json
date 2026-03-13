@@ -30,13 +30,25 @@
     "dev:node": "pnpm --filter @vpp/contracts node",
     "dev:deploy": "pnpm --filter @vpp/contracts deploy:dev",
     "dev:backend": "cp -n packages/backend/.env.development packages/backend/.env 2>/dev/null; pnpm --filter @vpp/backend dev",
-    "dev:frontend": "pnpm --filter @vpp/frontend dev"
+    "dev:frontend": "pnpm --filter @vpp/frontend dev",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{json,md,yml,yaml,css,html}": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@typescript-eslint/eslint-plugin": "^8.57.0",
     "@typescript-eslint/parser": "^8.57.0",
     "concurrently": "^9.2.1",
-    "eslint": "^10.0.3"
+    "eslint": "^10.0.3",
+    "husky": "^9.1.7",
+    "lint-staged": "15"
   }
 }
