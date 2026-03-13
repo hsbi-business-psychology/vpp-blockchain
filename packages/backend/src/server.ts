@@ -1,3 +1,20 @@
+/**
+ * @module server
+ *
+ * Express application factory for the VPP Backend.
+ *
+ * The backend acts as a stateless relayer between the frontend and the
+ * Base blockchain. It never stores data itself — all state lives on-chain.
+ *
+ * Responsibilities:
+ *   1. Verify EIP-191 signatures from students and admins.
+ *   2. Forward validated requests to the SurveyPoints smart contract
+ *      using the Minter wallet (gas is paid by the project, not users).
+ *   3. Serve the compiled frontend SPA in production.
+ *
+ * In test mode (`NODE_ENV=test`) the server is not started automatically;
+ * test suites call `createApp()` directly.
+ */
 import express, { type Express } from 'express'
 import helmet from 'helmet'
 import cors from 'cors'
@@ -21,7 +38,6 @@ export function createApp(): Express {
   const app = express()
 
   // Security & parsing
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   app.use(
     helmet({
       contentSecurityPolicy: {
@@ -40,6 +56,7 @@ export function createApp(): Express {
           ],
         },
       },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as any,
   )
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

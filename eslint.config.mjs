@@ -9,6 +9,7 @@ export default [
       '**/dist/',
       '**/build/',
       '**/coverage/',
+      'deploy/',
       'packages/contracts/artifacts/',
       'packages/contracts/cache/',
       'packages/contracts/typechain-types/',
