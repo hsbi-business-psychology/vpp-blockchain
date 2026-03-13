@@ -1,3 +1,14 @@
+/**
+ * @route /api/surveys
+ *
+ * CRUD-like endpoints for survey management (admin-only except GET).
+ *
+ *   POST   /              – Register a new survey on-chain.
+ *   GET    /              – List all registered surveys (cached, 30 s TTL).
+ *   POST   /:id/deactivate – Deactivate a survey (no more claims accepted).
+ *   GET    /:id/template  – Download a SoSci or LimeSurvey template file
+ *                           with the embedded claim button.
+ */
 import { Router, type RequestHandler } from 'express'
 import { z } from 'zod'
 import { ethers } from 'ethers'
@@ -129,10 +140,10 @@ router.get('/:id/template', async (req, res, next) => {
     }
 
     if (format === 'limesurvey') {
-      const lsq = generateLimeSurveyTemplate(surveyId, secret, info.points)
+      const lss = generateLimeSurveyTemplate(surveyId, secret, info.points)
       res.setHeader('Content-Type', 'application/xml')
-      res.setHeader('Content-Disposition', `attachment; filename="vpp-survey-${surveyId}.lsq"`)
-      res.send(lsq)
+      res.setHeader('Content-Disposition', `attachment; filename="vpp-survey-${surveyId}.lss"`)
+      res.send(lss)
     } else {
       const xml = generateSoSciTemplate(surveyId, secret, info.points)
       res.setHeader('Content-Type', 'application/xml')

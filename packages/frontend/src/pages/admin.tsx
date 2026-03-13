@@ -134,7 +134,7 @@ export default function AdminPage() {
     format: 'sosci' | 'limesurvey',
   ) => {
     const blob = await downloadTemplate(surveyId, secret, format)
-    const ext = format === 'limesurvey' ? 'lsq' : 'xml'
+    const ext = format === 'limesurvey' ? 'lss' : 'xml'
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url

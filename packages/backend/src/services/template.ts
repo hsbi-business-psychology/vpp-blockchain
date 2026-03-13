@@ -1,3 +1,15 @@
+/**
+ * @module template
+ *
+ * Generates downloadable survey templates for SoSci Survey (.xml) and
+ * LimeSurvey (.lss). Each template embeds a styled "claim your points"
+ * button that links back to the VPP frontend.
+ *
+ * Supported formats:
+ *   - **SoSci Survey** – project XML with the claim button on the goodbye page.
+ *   - **LimeSurvey**   – survey structure (.lss) with the claim button as the
+ *                        survey's end message. Imported via "Create survey > Import".
+ */
 import { config } from '../config.js'
 
 export type TemplateFormat = 'sosci' | 'limesurvey'
@@ -67,12 +79,12 @@ export function generateSoSciTemplate(surveyId: number, secret: string, points: 
 }
 
 /**
- * Generates a LimeSurvey Question export (.lsq) that can be imported into
- * any LimeSurvey survey. The question uses type "X" (Boilerplate/Display)
- * which renders pure HTML — the styled claim button linking to the VPP
- * claim URL.
+ * Generates a LimeSurvey Survey Structure (.lss) that can be imported via
+ * "Create survey > Import". The claim button HTML is embedded in the
+ * survey's end message (surveyls_endtext). The survey contains one empty
+ * question group where the admin adds their actual questions.
  *
- * Import instructions: Survey > Structure > Import question > upload .lsq
+ * Import: LimeSurvey > Create survey > Import > choose .lss file
  */
 export function generateLimeSurveyTemplate(
   surveyId: number,
@@ -84,71 +96,101 @@ export function generateLimeSurveyTemplate(
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <document>
- <LimeSurveyDocType>Question</LimeSurveyDocType>
+ <LimeSurveyDocType>Survey</LimeSurveyDocType>
  <DBVersion>640</DBVersion>
  <languages>
   <language>de</language>
  </languages>
- <questions>
+ <groups>
   <fields>
-   <fieldname>qid</fieldname>
-   <fieldname>parent_qid</fieldname>
-   <fieldname>sid</fieldname>
    <fieldname>gid</fieldname>
-   <fieldname>type</fieldname>
-   <fieldname>title</fieldname>
-   <fieldname>preg</fieldname>
-   <fieldname>other</fieldname>
-   <fieldname>mandatory</fieldname>
-   <fieldname>encrypted</fieldname>
-   <fieldname>question_order</fieldname>
-   <fieldname>scale_id</fieldname>
-   <fieldname>same_default</fieldname>
-   <fieldname>relevance</fieldname>
-   <fieldname>question_theme_name</fieldname>
-   <fieldname>modulename</fieldname>
-   <fieldname>same_script</fieldname>
+   <fieldname>sid</fieldname>
+   <fieldname>group_order</fieldname>
+   <fieldname>randomization_group</fieldname>
+   <fieldname>grelevance</fieldname>
   </fields>
   <rows>
    <row>
-    <qid><![CDATA[0]]></qid>
-    <parent_qid><![CDATA[0]]></parent_qid>
+    <gid><![CDATA[1]]></gid>
     <sid><![CDATA[0]]></sid>
-    <gid><![CDATA[0]]></gid>
-    <type><![CDATA[X]]></type>
-    <title><![CDATA[VPP${surveyId}]]></title>
-    <other><![CDATA[N]]></other>
-    <mandatory><![CDATA[N]]></mandatory>
-    <encrypted><![CDATA[N]]></encrypted>
-    <question_order><![CDATA[999]]></question_order>
-    <scale_id><![CDATA[0]]></scale_id>
-    <same_default><![CDATA[0]]></same_default>
-    <relevance><![CDATA[1]]></relevance>
-    <question_theme_name><![CDATA[boilerplate]]></question_theme_name>
-    <same_script><![CDATA[0]]></same_script>
+    <group_order><![CDATA[1]]></group_order>
+    <randomization_group/>
+    <grelevance><![CDATA[1]]></grelevance>
    </row>
   </rows>
- </questions>
- <question_l10ns>
+ </groups>
+ <group_l10ns>
   <fields>
    <fieldname>id</fieldname>
-   <fieldname>qid</fieldname>
-   <fieldname>question</fieldname>
-   <fieldname>help</fieldname>
-   <fieldname>script</fieldname>
+   <fieldname>gid</fieldname>
+   <fieldname>group_name</fieldname>
+   <fieldname>description</fieldname>
    <fieldname>language</fieldname>
   </fields>
   <rows>
    <row>
-    <id><![CDATA[0]]></id>
-    <qid><![CDATA[0]]></qid>
-    <question><![CDATA[${claimHtml}]]></question>
-    <help/>
-    <script/>
+    <id><![CDATA[1]]></id>
+    <gid><![CDATA[1]]></gid>
+    <group_name><![CDATA[Umfrage]]></group_name>
+    <description><![CDATA[F\u00fcge hier deine Fragen hinzu.]]></description>
     <language><![CDATA[de]]></language>
    </row>
   </rows>
- </question_l10ns>
+ </group_l10ns>
+ <surveys>
+  <fields>
+   <fieldname>sid</fieldname>
+   <fieldname>gsid</fieldname>
+   <fieldname>admin</fieldname>
+   <fieldname>active</fieldname>
+   <fieldname>anonymized</fieldname>
+   <fieldname>format</fieldname>
+   <fieldname>language</fieldname>
+   <fieldname>datestamp</fieldname>
+   <fieldname>usecookie</fieldname>
+   <fieldname>showwelcome</fieldname>
+   <fieldname>autoredirect</fieldname>
+  </fields>
+  <rows>
+   <row>
+    <sid><![CDATA[0]]></sid>
+    <gsid><![CDATA[1]]></gsid>
+    <admin><![CDATA[Admin]]></admin>
+    <active><![CDATA[N]]></active>
+    <anonymized><![CDATA[Y]]></anonymized>
+    <format><![CDATA[G]]></format>
+    <language><![CDATA[de]]></language>
+    <datestamp><![CDATA[N]]></datestamp>
+    <usecookie><![CDATA[N]]></usecookie>
+    <showwelcome><![CDATA[Y]]></showwelcome>
+    <autoredirect><![CDATA[N]]></autoredirect>
+   </row>
+  </rows>
+ </surveys>
+ <surveys_languagesettings>
+  <fields>
+   <fieldname>surveyls_survey_id</fieldname>
+   <fieldname>surveyls_language</fieldname>
+   <fieldname>surveyls_title</fieldname>
+   <fieldname>surveyls_description</fieldname>
+   <fieldname>surveyls_welcometext</fieldname>
+   <fieldname>surveyls_endtext</fieldname>
+   <fieldname>surveyls_dateformat</fieldname>
+   <fieldname>surveyls_numberformat</fieldname>
+  </fields>
+  <rows>
+   <row>
+    <surveyls_survey_id><![CDATA[0]]></surveyls_survey_id>
+    <surveyls_language><![CDATA[de]]></surveyls_language>
+    <surveyls_title><![CDATA[VPP Umfrage ${surveyId}]]></surveyls_title>
+    <surveyls_description/>
+    <surveyls_welcometext><![CDATA[Willkommen zur Umfrage. Deine Antworten werden anonym erfasst.]]></surveyls_welcometext>
+    <surveyls_endtext><![CDATA[${claimHtml}]]></surveyls_endtext>
+    <surveyls_dateformat><![CDATA[1]]></surveyls_dateformat>
+    <surveyls_numberformat><![CDATA[0]]></surveyls_numberformat>
+   </row>
+  </rows>
+ </surveys_languagesettings>
 </document>
 `
 }

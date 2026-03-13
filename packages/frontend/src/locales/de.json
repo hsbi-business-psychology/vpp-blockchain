@@ -309,7 +309,7 @@
         },
         "limesurvey": {
           "title": "LimeSurvey",
-          "description": "Frage-Export (.lsq) für LimeSurvey. Importiere die Frage auf der letzten Seite deiner Umfrage.",
+          "description": "Umfrage-Vorlage (.lss) f\u00fcr LimeSurvey. Importiere sie \u00fcber Umfrage erstellen \u2192 Importieren. Der Claim-Button ist in der Endnachricht enthalten.",
           "download": "LimeSurvey-Vorlage herunterladen"
         }
       },

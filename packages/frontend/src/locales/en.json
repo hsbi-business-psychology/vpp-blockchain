@@ -309,7 +309,7 @@
         },
         "limesurvey": {
           "title": "LimeSurvey",
-          "description": "Question export (.lsq) for LimeSurvey. Import the question on the last page of your survey.",
+          "description": "Survey template (.lss) for LimeSurvey. Import via \"Create survey → Import\". The claim button is included in the end message.",
           "download": "Download LimeSurvey template"
         }
       },

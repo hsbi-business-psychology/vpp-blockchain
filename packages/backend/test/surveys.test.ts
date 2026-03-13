@@ -130,6 +130,115 @@ describe('GET /api/surveys', () => {
   })
 })
 
+describe('GET /api/surveys/:id/template', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('should return a SoSci template by default', async () => {
+    vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
+      secretHash: ethers.ZeroHash,
+      points: 2,
+      maxClaims: 100n,
+      claimCount: 5n,
+      active: true,
+      registeredAt: 1710000000n,
+      title: 'Test Survey',
+    })
+
+    const res = await request(app).get('/api/surveys/1/template?secret=vpp-test-secret')
+
+    expect(res.status).toBe(200)
+    expect(res.headers['content-type']).toContain('application/xml')
+    expect(res.headers['content-disposition']).toContain('vpp-survey-1.xml')
+    expect(res.text).toContain('surveyProject')
+    expect(res.text).toContain('vpp-test-secret')
+    expect(res.text).toContain('Punkte jetzt')
+  })
+
+  it('should return a SoSci template with format=sosci', async () => {
+    vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
+      secretHash: ethers.ZeroHash,
+      points: 3,
+      maxClaims: 0n,
+      claimCount: 0n,
+      active: true,
+      registeredAt: 1710000000n,
+      title: 'Test',
+    })
+
+    const res = await request(app).get('/api/surveys/5/template?secret=my-secret&format=sosci')
+
+    expect(res.status).toBe(200)
+    expect(res.headers['content-disposition']).toContain('vpp-survey-5.xml')
+    expect(res.text).toContain('surveyProject')
+    expect(res.text).toContain('my-secret')
+  })
+
+  it('should return a LimeSurvey template with format=limesurvey', async () => {
+    vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
+      secretHash: ethers.ZeroHash,
+      points: 1,
+      maxClaims: 50n,
+      claimCount: 10n,
+      active: true,
+      registeredAt: 1710000000n,
+      title: 'LS Survey',
+    })
+
+    const res = await request(app).get('/api/surveys/7/template?secret=ls-secret&format=limesurvey')
+
+    expect(res.status).toBe(200)
+    expect(res.headers['content-type']).toContain('application/xml')
+    expect(res.headers['content-disposition']).toContain('vpp-survey-7.lss')
+    expect(res.text).toContain('LimeSurveyDocType')
+    expect(res.text).toContain('surveyls_endtext')
+    expect(res.text).toContain('ls-secret')
+    expect(res.text).toContain('Punkte jetzt')
+  })
+
+  it('should reject an invalid format parameter', async () => {
+    vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
+      secretHash: ethers.ZeroHash,
+      points: 2,
+      maxClaims: 0n,
+      claimCount: 0n,
+      active: true,
+      registeredAt: 1710000000n,
+      title: 'Test',
+    })
+
+    const res = await request(app).get('/api/surveys/1/template?secret=test&format=invalid')
+
+    expect(res.status).toBe(400)
+    expect(res.body.error).toBe('INVALID_FORMAT')
+  })
+
+  it('should reject without secret parameter', async () => {
+    const res = await request(app).get('/api/surveys/1/template')
+
+    expect(res.status).toBe(400)
+    expect(res.body.error).toBe('MISSING_SECRET')
+  })
+
+  it('should return 404 for non-existent survey', async () => {
+    vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
+      secretHash: ethers.ZeroHash,
+      points: 0,
+      maxClaims: 0n,
+      claimCount: 0n,
+      active: false,
+      registeredAt: 0n,
+      title: '',
+    })
+
+    const res = await request(app).get('/api/surveys/999/template?secret=test')
+
+    expect(res.status).toBe(404)
+    expect(res.body.error).toBe('SURVEY_NOT_FOUND')
+  })
+})
+
 describe('POST /api/surveys/:id/deactivate', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
