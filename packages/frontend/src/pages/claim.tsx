@@ -69,15 +69,19 @@ export default function ClaimPage() {
       setResult({ txHash: res.txHash, points: res.points })
       setCurrentStep('done')
     } catch (err) {
-      const msg = err instanceof Error ? err.message : t('claim.error.generic')
-      if (msg.includes('already claimed') || msg.includes('AlreadyClaimed')) {
+      const msg = err instanceof Error ? err.message : ''
+      if (msg.includes('already claimed') || msg.includes('ALREADY_CLAIMED')) {
         setError(t('claim.error.alreadyClaimed'))
-      } else if (msg.includes('InvalidSecret') || msg.includes('invalid secret')) {
+      } else if (msg.includes('InvalidSecret') || msg.includes('INVALID_SECRET')) {
         setError(t('claim.error.invalidSecret'))
-      } else if (msg.includes('not active') || msg.includes('SurveyNotActive')) {
+      } else if (msg.includes('not active') || msg.includes('SURVEY_INACTIVE')) {
         setError(t('claim.error.surveyInactive'))
+      } else if (msg.includes('MAX_CLAIMS_REACHED') || msg.includes('MaxClaimsReached')) {
+        setError(t('claim.error.maxClaims'))
+      } else if (msg.includes('EXPIRED_MESSAGE') || msg.includes('expired')) {
+        setError(t('claim.error.expired'))
       } else {
-        setError(msg)
+        setError(t('claim.error.generic'))
       }
       setCurrentStep('sign')
     } finally {

@@ -28,22 +28,42 @@ const REVERT_MAP: Record<string, { status: number; code: string; message: string
   AlreadyClaimed: {
     status: 409,
     code: 'ALREADY_CLAIMED',
-    message: 'This wallet has already claimed this survey',
+    message:
+      'This wallet has already claimed points for this survey. Each wallet can only claim once per survey.',
   },
-  SurveyNotActive: { status: 400, code: 'SURVEY_INACTIVE', message: 'Survey is no longer active' },
+  SurveyNotActive: {
+    status: 400,
+    code: 'SURVEY_INACTIVE',
+    message:
+      'This survey has been deactivated and no longer accepts claims. Contact the survey administrator.',
+  },
   MaxClaimsReached: {
     status: 400,
     code: 'MAX_CLAIMS_REACHED',
-    message: 'Maximum number of claims reached for this survey',
+    message:
+      'The maximum number of participants for this survey has been reached. No more claims are accepted.',
   },
-  InvalidSecret: { status: 400, code: 'INVALID_SECRET', message: 'Invalid survey secret' },
+  InvalidSecret: {
+    status: 400,
+    code: 'INVALID_SECRET',
+    message:
+      'The survey secret is incorrect. Make sure you are using the original claim link from the survey.',
+  },
   SurveyAlreadyExists: {
     status: 409,
     code: 'SURVEY_EXISTS',
-    message: 'A survey with this ID already exists',
+    message: 'A survey with this ID is already registered. Choose a different survey ID.',
   },
-  InvalidSurveyId: { status: 400, code: 'INVALID_SURVEY_ID', message: 'Invalid survey ID' },
-  InvalidPoints: { status: 400, code: 'INVALID_POINTS', message: 'Invalid point value' },
+  InvalidSurveyId: {
+    status: 400,
+    code: 'INVALID_SURVEY_ID',
+    message: 'The survey ID must be a positive integer (e.g. 1, 2, 3).',
+  },
+  InvalidPoints: {
+    status: 400,
+    code: 'INVALID_POINTS',
+    message: 'Points must be between 1 and 255.',
+  },
 }
 
 /**
@@ -91,6 +111,6 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
   res.status(500).json({
     success: false,
     error: 'INTERNAL_ERROR',
-    message: 'An unexpected error occurred',
+    message: 'An unexpected error occurred. Please try again later or contact the administrator.',
   })
 }

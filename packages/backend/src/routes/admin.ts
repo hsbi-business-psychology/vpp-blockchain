@@ -33,7 +33,11 @@ router.post('/add', requireAdmin as unknown as RequestHandler, async (req, res, 
 
     const alreadyAdmin = await blockchain.isAdmin(parsed.data.address)
     if (alreadyAdmin) {
-      throw new AppError(409, 'ALREADY_ADMIN', 'Address already has ADMIN_ROLE')
+      throw new AppError(
+        409,
+        'ALREADY_ADMIN',
+        'This address already has admin permissions. No action needed.',
+      )
     }
 
     const receipt = await blockchain.addAdmin(parsed.data.address)
@@ -59,7 +63,11 @@ router.post('/remove', requireAdmin as unknown as RequestHandler, async (req, re
 
     const isCurrentAdmin = await blockchain.isAdmin(parsed.data.address)
     if (!isCurrentAdmin) {
-      throw new AppError(404, 'NOT_ADMIN', 'Address does not have ADMIN_ROLE')
+      throw new AppError(
+        404,
+        'NOT_ADMIN',
+        'This address does not have admin permissions, so there is nothing to remove.',
+      )
     }
 
     const receipt = await blockchain.removeAdmin(parsed.data.address)

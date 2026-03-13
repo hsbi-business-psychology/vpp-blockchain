@@ -49,7 +49,11 @@ router.post('/', requireAdmin as unknown as RequestHandler, async (req, res, nex
     // Check if survey already exists
     const existing = await blockchain.getSurveyInfo(surveyId)
     if (existing.points !== 0) {
-      throw new AppError(409, 'SURVEY_EXISTS', 'A survey with this ID already exists')
+      throw new AppError(
+        409,
+        'SURVEY_EXISTS',
+        'A survey with this ID is already registered. Choose a different survey ID.',
+      )
     }
 
     const secretHash = ethers.keccak256(ethers.toUtf8Bytes(secret))
@@ -88,15 +92,23 @@ router.post(
     try {
       const surveyId = parseInt(req.params.id as string, 10)
       if (isNaN(surveyId) || surveyId <= 0) {
-        throw new AppError(400, 'INVALID_SURVEY_ID', 'Survey ID must be a positive integer')
+        throw new AppError(
+          400,
+          'INVALID_SURVEY_ID',
+          'The survey ID must be a positive integer (e.g. 1, 2, 3).',
+        )
       }
 
       const info = await blockchain.getSurveyInfo(surveyId)
       if (info.points === 0) {
-        throw new AppError(404, 'SURVEY_NOT_FOUND', 'Survey does not exist')
+        throw new AppError(
+          404,
+          'SURVEY_NOT_FOUND',
+          'No survey found with this ID. It may not have been registered yet.',
+        )
       }
       if (!info.active) {
-        throw new AppError(409, 'ALREADY_INACTIVE', 'Survey is already inactive')
+        throw new AppError(409, 'ALREADY_INACTIVE', 'This survey is already deactivated.')
       }
 
       const receipt = await blockchain.deactivateSurvey(surveyId)
@@ -121,22 +133,38 @@ router.get('/:id/template', async (req, res, next) => {
   try {
     const surveyId = parseInt(req.params.id as string, 10)
     if (isNaN(surveyId) || surveyId <= 0) {
-      throw new AppError(400, 'INVALID_SURVEY_ID', 'Survey ID must be a positive integer')
+      throw new AppError(
+        400,
+        'INVALID_SURVEY_ID',
+        'The survey ID must be a positive integer (e.g. 1, 2, 3).',
+      )
     }
 
     const secret = req.query.secret as string | undefined
     if (!secret) {
-      throw new AppError(400, 'MISSING_SECRET', 'Secret query parameter is required')
+      throw new AppError(
+        400,
+        'MISSING_SECRET',
+        'The survey secret is required to generate the template. Enter the secret you set when registering the survey.',
+      )
     }
 
     const format = ((req.query.format as string) || 'sosci') as TemplateFormat
     if (format !== 'sosci' && format !== 'limesurvey') {
-      throw new AppError(400, 'INVALID_FORMAT', 'Format must be "sosci" or "limesurvey"')
+      throw new AppError(
+        400,
+        'INVALID_FORMAT',
+        'Unsupported template format. Choose either "sosci" or "limesurvey".',
+      )
     }
 
     const info = await blockchain.getSurveyInfo(surveyId)
     if (info.points === 0) {
-      throw new AppError(404, 'SURVEY_NOT_FOUND', 'Survey does not exist')
+      throw new AppError(
+        404,
+        'SURVEY_NOT_FOUND',
+        'No survey found with this ID. It may not have been registered yet.',
+      )
     }
 
     if (format === 'limesurvey') {

@@ -17,7 +17,7 @@
   "common": {
     "appName": "VPP Blockchain",
     "loading": "Laden...",
-    "error": "Ein Fehler ist aufgetreten",
+    "error": "Ein Fehler ist aufgetreten. Bitte versuche es erneut oder lade die Seite neu.",
     "retry": "Erneut versuchen",
     "copy": "Kopieren",
     "copied": "Kopiert!",
@@ -116,7 +116,7 @@
       "disconnectDescription": "Die Verbindung zu MetaMask wird getrennt. Dein Wallet bleibt in MetaMask erhalten – du kannst dich jederzeit erneut verbinden.",
       "reconnect": "Du kannst dich jederzeit wieder verbinden.",
       "switchedAccount": "MetaMask-Account gewechselt",
-      "networkChanged": "MetaMask-Netzwerk wurde gewechselt. Stelle sicher, dass du mit dem richtigen Netzwerk verbunden bist."
+      "networkChanged": "MetaMask-Netzwerk wurde gewechselt. Das Netzwerk hat keinen Einfluss auf die Signatur, aber stelle sicher, dass alles korrekt funktioniert."
     },
     "create": {
       "title": "Wallet erstellen",
@@ -144,7 +144,7 @@
       "description": "Du hast bereits einen Private Key? Importiere ihn, um den Zugriff auf einem neuen Gerät wiederherzustellen.",
       "placeholder": "Private Key eingeben (0x...)",
       "button": "Importieren",
-      "error": "Ungültiges Private-Key-Format",
+      "error": "Das Private-Key-Format ist ung\u00fcltig. Der Key muss 64 Hex-Zeichen lang sein (mit oder ohne 0x-Pr\u00e4fix).",
       "importAnother": "Anderes Wallet importieren"
     },
     "info": {
@@ -199,18 +199,20 @@
       "viewPoints": "Meine Punkte ansehen"
     },
     "error": {
-      "missingParams": "Survey-ID oder Secret fehlen in der URL.",
-      "alreadyClaimed": "Du hast für diese Umfrage bereits Punkte eingelöst.",
-      "invalidSecret": "Ungültiges Secret. Der Claim-Link könnte beschädigt sein.",
-      "surveyInactive": "Diese Umfrage ist nicht mehr aktiv.",
-      "generic": "Punkte konnten nicht eingelöst werden. Bitte versuche es erneut."
+      "missingParams": "Der Claim-Link ist unvollst\u00e4ndig \u2013 es fehlt die Survey-ID oder das Secret. Bitte verwende den originalen Link aus der Umfrage.",
+      "alreadyClaimed": "Du hast f\u00fcr diese Umfrage bereits Punkte eingelöst. Jedes Wallet kann nur einmal pro Umfrage Punkte erhalten.",
+      "invalidSecret": "Das Secret ist ung\u00fcltig. Bitte stelle sicher, dass du den originalen Claim-Link aus der Umfrage verwendest und dieser nicht ver\u00e4ndert wurde.",
+      "surveyInactive": "Diese Umfrage wurde deaktiviert und nimmt keine Claims mehr an. Wende dich bei Fragen an die Studienleitung.",
+      "maxClaims": "Die maximale Teilnehmerzahl f\u00fcr diese Umfrage wurde erreicht. Es k\u00f6nnen keine weiteren Punkte vergeben werden.",
+      "expired": "Deine Signatur ist abgelaufen. Bitte lade die Seite neu und versuche es erneut.",
+      "generic": "Die Punkte konnten nicht eingelöst werden. Bitte pr\u00fcfe deine Internetverbindung und versuche es erneut. Falls das Problem bestehen bleibt, wende dich an vpstunden@hsbi.de."
     }
   },
   "points": {
     "title": "Meine Punkte",
     "subtitle": "Hier siehst du deinen aktuellen Punktestand und alle bisherigen Einlösungen. Deine Punkte werden direkt von der Blockchain gelesen – fälschungssicher und jederzeit nachvollziehbar.",
     "total": "Gesamtpunkte",
-    "dataError": "Blockchain-Daten konnten nicht vollständig geladen werden. Bitte prüfe deine Internetverbindung und lade die Seite neu.",
+    "dataError": "Die Blockchain-Daten konnten nicht geladen werden. Das kann an einer instabilen Internetverbindung oder einem \u00fcberlasteten RPC-Server liegen. Bitte lade die Seite in einigen Sekunden neu.",
     "submittedBanner": {
       "title": "Punkte abgegeben",
       "description": "Dein Wallet wurde als abgegeben markiert. Deine Punkte wurden zur Zulassung zur Bachelorarbeit vorgelegt und akzeptiert."
@@ -240,7 +242,7 @@
       "description": "Punkte für beliebige Wallet-Adressen nachschlagen – z. B. um deinen eigenen Stand auf einem anderen Gerät zu prüfen.",
       "placeholder": "Wallet-Adresse eingeben (0x...)",
       "search": "Suchen",
-      "invalidAddress": "Bitte gib eine gültige Wallet-Adresse ein.",
+      "invalidAddress": "Bitte gib eine g\u00fcltige Wallet-Adresse ein (beginnt mit 0x, gefolgt von 40 Zeichen).",
       "results": "Ergebnisse für {{address}}"
     }
   },
@@ -254,8 +256,8 @@
     },
     "accessDenied": {
       "title": "Kein Zugriff",
-      "description": "Dieser Bereich ist ausschließlich für Lehrende mit Admin-Rolle vorgesehen. Dein Wallet besitzt aktuell keine ADMIN_ROLE im Smart Contract.",
-      "hint": "Falls du Lehrende:r bist, wende dich an eine:n bestehende:n Admin, damit dir die Rolle zugewiesen wird.",
+      "description": "Dieser Bereich ist ausschlie\u00dflich f\u00fcr Lehrende mit Admin-Rolle vorgesehen. Dein Wallet besitzt aktuell keine Admin-Berechtigung im Smart Contract.",
+      "hint": "Falls du Lehrende:r bist, wende dich an eine:n bestehende:n Admin (z.\u00a0B. Prof. Haubrock), damit dir die Rolle zugewiesen wird.",
       "back": "Zur Startseite"
     },
     "metrics": {
@@ -337,7 +339,7 @@
       "secret": "Secret",
       "button": "Registrieren",
       "success": "Umfrage erfolgreich registriert! Du kannst die Vorlage jetzt in der Tabelle herunterladen.",
-      "error": "Umfrage konnte nicht registriert werden",
+      "error": "Umfrage konnte nicht registriert werden. Pr\u00fcfe, ob die ID bereits vergeben ist und ob das Backend-Wallet \u00fcber ausreichend Guthaben verf\u00fcgt.",
       "autoGenerated": "Automatisch generiert"
     },
     "info": {
@@ -351,7 +353,7 @@
       "description": "Suche ein Studierenden-Wallet und markiere es als abgegeben, sobald die Punkte zur Zulassung vorgelegt wurden. So wird sichergestellt, dass das gleiche Wallet nicht mehrfach verwendet wird.",
       "searchPlaceholder": "Studierenden-Wallet-Adresse (0x...)",
       "search": "Suchen",
-      "invalidAddress": "Bitte gib eine gültige Wallet-Adresse ein.",
+      "invalidAddress": "Bitte gib eine g\u00fcltige Wallet-Adresse ein (beginnt mit 0x, gefolgt von 40 Zeichen).",
       "noResults": "Noch keine Suche durchgeführt.",
       "points": "Punkte",
       "status": "Status",
@@ -361,8 +363,8 @@
       "unmarkSubmitted": "Markierung aufheben",
       "markSuccess": "Wallet wurde als abgegeben markiert!",
       "unmarkSuccess": "Markierung wurde aufgehoben!",
-      "markError": "Wallet konnte nicht markiert werden",
-      "unmarkError": "Markierung konnte nicht aufgehoben werden",
+      "markError": "Wallet konnte nicht als abgegeben markiert werden. M\u00f6glicherweise wurde es bereits markiert oder das Backend-Wallet hat nicht genug Guthaben.",
+      "unmarkError": "Die Markierung konnte nicht aufgehoben werden. M\u00f6glicherweise ist das Wallet bereits nicht mehr markiert.",
       "confirmMark": {
         "title": "Wallet als abgegeben markieren",
         "description": "Damit wird auf der Blockchain gespeichert, dass dieses Wallet seine Punkte für die Thesis-Zulassung vorgelegt hat. Das Wallet kann dann nicht erneut zur Zulassung verwendet werden.",
@@ -383,11 +385,11 @@
       "addAdmin": "Als Admin hinzufügen",
       "removeAdmin": "Admin entfernen",
       "currentAdmins": "Aktuelle Admins",
-      "noAdmins": "Keine Admin-Events gefunden",
+      "noAdmins": "Keine Admins gefunden. Das kann an einer langsamen RPC-Verbindung liegen \u2013 bitte lade die Seite neu.",
       "successAdd": "Admin-Rolle erfolgreich vergeben!",
       "successRemove": "Admin-Rolle erfolgreich entzogen!",
-      "errorAdd": "Admin konnte nicht hinzugefügt werden",
-      "errorRemove": "Admin konnte nicht entfernt werden",
+      "errorAdd": "Admin konnte nicht hinzugef\u00fcgt werden. Pr\u00fcfe, ob die Adresse g\u00fcltig ist und ob das Backend-Wallet ausreichend Guthaben hat.",
+      "errorRemove": "Admin konnte nicht entfernt werden. M\u00f6glicherweise hat diese Adresse bereits keine Admin-Rolle.",
       "infoTip": "Die ADMIN_ROLE wird direkt im Smart Contract gespeichert. Jeder Admin kann anderen Wallets die Admin-Rolle geben oder entziehen. Diese Änderungen sind auf der Blockchain sichtbar und unveränderlich protokolliert.",
       "you": "(Du)",
       "checking": "Prüfe Rolle..."
@@ -407,7 +409,7 @@
       "lowBalanceWarning": "Niedriges Guthaben! Bitte lade das Backend-Wallet auf, um den Betrieb sicherzustellen.",
       "statusOk": "Ausreichend",
       "statusLow": "Niedrig",
-      "loadError": "Status konnte nicht geladen werden",
+      "loadError": "System-Status konnte nicht geladen werden. Pr\u00fcfe, ob das Backend erreichbar ist.",
       "infoTip": "Das Backend-Wallet bezahlt alle Transaktionskosten (Gas-Fees) auf der Blockchain. Wenn das Guthaben aufgebraucht ist, können keine neuen Claims oder Umfragen mehr verarbeitet werden. Lade rechtzeitig ETH auf die angezeigte Adresse nach."
     }
   },

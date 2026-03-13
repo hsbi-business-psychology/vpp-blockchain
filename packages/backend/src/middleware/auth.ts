@@ -19,7 +19,7 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
     res.status(401).json({
       success: false,
       error: 'UNAUTHORIZED',
-      message: 'Missing admin signature or message',
+      message: 'Admin authentication required. Please sign in with your admin wallet first.',
     })
     return
   }
@@ -32,7 +32,8 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
       res.status(403).json({
         success: false,
         error: 'FORBIDDEN',
-        message: 'Signer does not hold ADMIN_ROLE on the contract',
+        message:
+          'Your wallet does not have admin permissions. Ask an existing admin to grant you the ADMIN_ROLE.',
       })
       return
     }
@@ -42,7 +43,7 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
     res.status(401).json({
       success: false,
       error: 'INVALID_SIGNATURE',
-      message: 'Could not recover a valid address from the signature',
+      message: 'The signature is invalid or corrupted. Please sign in again with your wallet.',
     })
   }
 }

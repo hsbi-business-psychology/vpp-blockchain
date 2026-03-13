@@ -9,7 +9,11 @@ const router: Router = Router()
 
 function validateAddress(address: string): string {
   if (!ethers.isAddress(address)) {
-    throw new AppError(400, 'INVALID_ADDRESS', 'Invalid wallet address')
+    throw new AppError(
+      400,
+      'INVALID_ADDRESS',
+      'The wallet address is not valid. It must start with 0x followed by 40 hex characters.',
+    )
   }
   return ethers.getAddress(address)
 }
@@ -40,7 +44,11 @@ router.post(
 
       const alreadySubmitted = await blockchain.isWalletSubmitted(address)
       if (alreadySubmitted) {
-        throw new AppError(409, 'ALREADY_SUBMITTED', 'Wallet is already marked as submitted')
+        throw new AppError(
+          409,
+          'ALREADY_SUBMITTED',
+          'This wallet is already marked as submitted. It has already been used for thesis admission.',
+        )
       }
 
       const receipt = await blockchain.markWalletSubmitted(address)
@@ -69,7 +77,11 @@ router.post(
 
       const isSubmitted = await blockchain.isWalletSubmitted(address)
       if (!isSubmitted) {
-        throw new AppError(409, 'NOT_SUBMITTED', 'Wallet is not marked as submitted')
+        throw new AppError(
+          409,
+          'NOT_SUBMITTED',
+          'This wallet is not marked as submitted, so there is nothing to undo.',
+        )
       }
 
       const receipt = await blockchain.unmarkWalletSubmitted(address)

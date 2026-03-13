@@ -44,14 +44,26 @@ router.post('/', claimLimiter as RequestHandler, async (req, res, next) => {
     const parts = message.split(':')
     const timestamp = parseInt(parts[parts.length - 1], 10)
     if (isNaN(timestamp)) {
-      throw new AppError(400, 'INVALID_MESSAGE', 'Message does not contain a valid timestamp')
+      throw new AppError(
+        400,
+        'INVALID_MESSAGE',
+        'The signed message is malformed. Please reload the page and try again.',
+      )
     }
     const messageAge = Date.now() - timestamp * 1000
     if (messageAge > config.maxMessageAgeMs) {
-      throw new AppError(400, 'EXPIRED_MESSAGE', 'Signed message has expired')
+      throw new AppError(
+        400,
+        'EXPIRED_MESSAGE',
+        'Your signature has expired (older than 5 minutes). Please reload the page and sign again.',
+      )
     }
     if (messageAge < -60_000) {
-      throw new AppError(400, 'INVALID_TIMESTAMP', 'Message timestamp is in the future')
+      throw new AppError(
+        400,
+        'INVALID_TIMESTAMP',
+        'Your device clock appears to be incorrect. Please check your system time and try again.',
+      )
     }
 
     // Verify EIP-191 signature
@@ -59,23 +71,43 @@ router.post('/', claimLimiter as RequestHandler, async (req, res, next) => {
     try {
       recoveredAddress = ethers.verifyMessage(message, signature)
     } catch {
-      throw new AppError(400, 'INVALID_SIGNATURE', 'Could not recover address from signature')
+      throw new AppError(
+        400,
+        'INVALID_SIGNATURE',
+        'The signature could not be verified. Please reload the page and try again.',
+      )
     }
 
     if (recoveredAddress.toLowerCase() !== walletAddress.toLowerCase()) {
-      throw new AppError(400, 'INVALID_SIGNATURE', 'Signature does not match wallet address')
+      throw new AppError(
+        400,
+        'INVALID_SIGNATURE',
+        'The signature does not match your wallet address. Make sure you are signing with the correct wallet.',
+      )
     }
 
     // Check on-chain state
     const surveyInfo = await blockchain.getSurveyInfo(surveyId)
     if (surveyInfo.points === 0) {
-      throw new AppError(404, 'SURVEY_NOT_FOUND', 'Survey does not exist')
+      throw new AppError(
+        404,
+        'SURVEY_NOT_FOUND',
+        'This survey does not exist. The claim link may be invalid or the survey has not been registered yet.',
+      )
     }
     if (!surveyInfo.active) {
-      throw new AppError(400, 'SURVEY_INACTIVE', 'Survey is no longer active')
+      throw new AppError(
+        400,
+        'SURVEY_INACTIVE',
+        'This survey has been deactivated and no longer accepts claims. Contact the survey administrator.',
+      )
     }
     if (await blockchain.hasClaimed(walletAddress, surveyId)) {
-      throw new AppError(409, 'ALREADY_CLAIMED', 'This wallet has already claimed this survey')
+      throw new AppError(
+        409,
+        'ALREADY_CLAIMED',
+        'You have already claimed points for this survey. Each wallet can only claim once per survey.',
+      )
     }
 
     // Submit transaction
