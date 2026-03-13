@@ -42,6 +42,9 @@ pnpm-debug.log*
 # Testing
 *.lcov
 
+# Runtime data (event store cache)
+data/
+
 # Misc
 .cache/
 tmp/

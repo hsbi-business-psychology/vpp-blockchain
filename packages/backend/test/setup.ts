@@ -39,4 +39,16 @@ vi.mock('../src/services/blockchain.js', () => ({
   },
   contract: {},
   readOnlyContract: {},
+  queryFilterChunked: vi.fn(),
+}))
+
+// Mock the event store globally
+vi.mock('../src/services/event-store.js', () => ({
+  sync: vi.fn().mockResolvedValue(undefined),
+  getSurveyRegisteredEvents: vi.fn().mockReturnValue([]),
+  getPointsAwardedByWallet: vi.fn().mockReturnValue([]),
+  getCurrentAdmins: vi.fn().mockReturnValue([]),
+  getLastSyncedBlock: vi.fn().mockReturnValue(0),
+  startEventStore: vi.fn().mockResolvedValue(undefined),
+  stopEventStore: vi.fn(),
 }))

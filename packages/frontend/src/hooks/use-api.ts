@@ -41,6 +41,21 @@ interface SurveyRegisterResult {
   templateDownloadUrl: string
 }
 
+interface PointsData {
+  wallet: string
+  totalPoints: number
+  surveys: Array<{
+    surveyId: number
+    points: number
+    claimedAt: string
+    txHash: string
+  }>
+}
+
+interface AdminListData {
+  admins: string[]
+}
+
 interface SystemStatus {
   minterAddress: string
   balance: string
@@ -204,6 +219,15 @@ export function useApi() {
     [],
   )
 
+  const getAdmins = useCallback(async (): Promise<string[]> => {
+    const data = await apiFetch<AdminListData>('/api/admin')
+    return data.admins
+  }, [])
+
+  const getPointsData = useCallback(async (address: string): Promise<PointsData> => {
+    return apiFetch<PointsData>(`/api/points/${address}`)
+  }, [])
+
   const addAdmin = useCallback(
     async (
       address: string,
@@ -242,6 +266,8 @@ export function useApi() {
     markWalletSubmitted,
     unmarkWalletSubmitted,
     getSystemStatus,
+    getAdmins,
+    getPointsData,
     addAdmin,
     removeAdmin,
   }

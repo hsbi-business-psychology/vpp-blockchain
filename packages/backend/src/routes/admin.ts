@@ -5,8 +5,9 @@
  * through the backend's Minter wallet so that admins don't need to hold
  * ETH themselves — only a valid EIP-191 signature is required.
  *
- *   POST /add    – Grant ADMIN_ROLE to a new address.
- *   POST /remove – Revoke ADMIN_ROLE from an address.
+ *   GET    /       – List current admin addresses (from local event store).
+ *   POST   /add    – Grant ADMIN_ROLE to a new address.
+ *   POST   /remove – Revoke ADMIN_ROLE from an address.
  */
 import { Router, type RequestHandler } from 'express'
 import { z } from 'zod'
@@ -15,6 +16,7 @@ import { config } from '../config.js'
 import { AppError } from '../middleware/errorHandler.js'
 import { requireAdmin } from '../middleware/auth.js'
 import * as blockchain from '../services/blockchain.js'
+import * as eventStore from '../services/event-store.js'
 
 const router: Router = Router()
 
@@ -22,6 +24,11 @@ const roleSchema = z.object({
   address: z.string().refine(ethers.isAddress, 'Invalid Ethereum address'),
   adminSignature: z.string().min(1),
   adminMessage: z.string().min(1),
+})
+
+router.get('/', async (_req, res) => {
+  const admins = eventStore.getCurrentAdmins()
+  res.json({ success: true, data: { admins } })
 })
 
 router.post('/add', requireAdmin as unknown as RequestHandler, async (req, res, next) => {
@@ -41,6 +48,7 @@ router.post('/add', requireAdmin as unknown as RequestHandler, async (req, res, 
     }
 
     const receipt = await blockchain.addAdmin(parsed.data.address)
+    await eventStore.sync()
 
     res.status(201).json({
       success: true,
@@ -71,6 +79,7 @@ router.post('/remove', requireAdmin as unknown as RequestHandler, async (req, re
     }
 
     const receipt = await blockchain.removeAdmin(parsed.data.address)
+    await eventStore.sync()
 
     res.json({
       success: true,

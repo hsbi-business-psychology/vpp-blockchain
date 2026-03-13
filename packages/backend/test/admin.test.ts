@@ -3,6 +3,7 @@ import request from 'supertest'
 import { ethers } from 'ethers'
 import { createApp } from '../src/server.js'
 import * as blockchain from '../src/services/blockchain.js'
+import * as eventStore from '../src/services/event-store.js'
 
 const app = createApp()
 
@@ -11,6 +12,35 @@ const ADMIN_WALLET = new ethers.Wallet(
 )
 
 const TARGET_ADDRESS = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
+
+describe('GET /api/admin', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('should return the current admin list', async () => {
+    vi.mocked(eventStore.getCurrentAdmins).mockReturnValue([
+      '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+      TARGET_ADDRESS,
+    ])
+
+    const res = await request(app).get('/api/admin')
+
+    expect(res.status).toBe(200)
+    expect(res.body.success).toBe(true)
+    expect(res.body.data.admins).toHaveLength(2)
+    expect(res.body.data.admins).toContain('0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266')
+  })
+
+  it('should return empty array when no admins', async () => {
+    vi.mocked(eventStore.getCurrentAdmins).mockReturnValue([])
+
+    const res = await request(app).get('/api/admin')
+
+    expect(res.status).toBe(200)
+    expect(res.body.data.admins).toHaveLength(0)
+  })
+})
 
 describe('POST /api/admin/add', () => {
   beforeEach(() => {

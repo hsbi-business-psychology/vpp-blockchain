@@ -8,10 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { SURVEY_POINTS_ABI } from '@/lib/contract-abi'
-import { config } from '@/lib/config'
 import { useApi } from '@/hooks/use-api'
-import { queryFilterChunked } from '@/hooks/use-blockchain'
 
 interface RoleManagementProps {
   walletAddress: string
@@ -20,55 +17,23 @@ interface RoleManagementProps {
 
 export function RoleManagement({ walletAddress, sign }: RoleManagementProps) {
   const { t } = useTranslation()
-  const { addAdmin, removeAdmin } = useApi()
+  const { addAdmin, removeAdmin, getAdmins } = useApi()
   const [address, setAddress] = useState('')
   const [loading, setLoading] = useState(false)
   const [admins, setAdmins] = useState<string[]>([])
   const [loadingAdmins, setLoadingAdmins] = useState(true)
 
-  const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS || ''
-  const rpcUrl = import.meta.env.VITE_RPC_URL || ''
-
   const fetchAdmins = useCallback(async () => {
-    if (!contractAddress || !rpcUrl) return
     setLoadingAdmins(true)
     try {
-      const provider = new ethers.JsonRpcProvider(rpcUrl)
-      const contract = new ethers.Contract(contractAddress, SURVEY_POINTS_ABI, provider)
-      const adminRole = await contract.ADMIN_ROLE()
-
-      const grantedFilter = contract.filters.RoleGranted(adminRole)
-      const revokedFilter = contract.filters.RoleRevoked(adminRole)
-
-      const fromBlock = config.contractDeployBlock || 0
-      const [grantedEvents, revokedEvents] = await Promise.all([
-        queryFilterChunked(contract, grantedFilter, fromBlock),
-        queryFilterChunked(contract, revokedFilter, fromBlock),
-      ])
-
-      const adminSet = new Set<string>()
-      const allEvents = [
-        ...grantedEvents.map((e) => ({ type: 'grant' as const, ...e })),
-        ...revokedEvents.map((e) => ({ type: 'revoke' as const, ...e })),
-      ].sort((a, b) => a.blockNumber - b.blockNumber || a.index - b.index)
-
-      for (const event of allEvents) {
-        if (!('args' in event)) continue
-        const account = (event.args as unknown as [string, string, string])[1]
-        if (event.type === 'grant') {
-          adminSet.add(account)
-        } else {
-          adminSet.delete(account)
-        }
-      }
-
-      setAdmins(Array.from(adminSet))
+      const adminList = await getAdmins()
+      setAdmins(adminList)
     } catch (err) {
       console.error('Failed to fetch admins:', err)
     } finally {
       setLoadingAdmins(false)
     }
-  }, [contractAddress, rpcUrl])
+  }, [getAdmins])
 
   useEffect(() => {
     fetchAdmins()

@@ -1,12 +1,13 @@
 /**
  * @module survey-cache
  *
- * Simple in-memory cache for the survey list. Fetching all surveys requires
- * multiple RPC calls (one `queryFilter` + one `getSurveyInfo` per survey),
- * which is expensive on public RPCs. The cache keeps results for 30 seconds
- * and is invalidated explicitly whenever a survey is registered or deactivated.
+ * In-memory cache for the survey list with a 30-second TTL.
+ * Survey events are read from the local event store (instant),
+ * then live survey info (claimCount, active status) is fetched
+ * via individual view-function calls.
  */
 import * as blockchain from './blockchain.js'
+import * as eventStore from './event-store.js'
 import type { SurveyInfo } from '../types.js'
 
 const CACHE_TTL_MS = 30_000
@@ -19,7 +20,7 @@ export async function getSurveysWithCache(): Promise<SurveyInfo[]> {
     return cachedSurveys
   }
 
-  const events = await blockchain.getSurveyRegisteredEvents()
+  const events = eventStore.getSurveyRegisteredEvents()
 
   const surveys: SurveyInfo[] = await Promise.all(
     events.map(async (event) => {

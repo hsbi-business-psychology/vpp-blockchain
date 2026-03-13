@@ -16,6 +16,7 @@ import { config } from '../config.js'
 import { AppError } from '../middleware/errorHandler.js'
 import { requireAdmin } from '../middleware/auth.js'
 import * as blockchain from '../services/blockchain.js'
+import * as eventStore from '../services/event-store.js'
 import { getSurveysWithCache, invalidateCache } from '../services/survey-cache.js'
 import {
   generateSoSciTemplate,
@@ -58,6 +59,7 @@ router.post('/', requireAdmin as unknown as RequestHandler, async (req, res, nex
 
     const secretHash = ethers.keccak256(ethers.toUtf8Bytes(secret))
     const receipt = await blockchain.registerSurvey(surveyId, secretHash, points, maxClaims, title)
+    await eventStore.sync()
 
     const result: SurveyRegisterResult = {
       txHash: receipt.hash,

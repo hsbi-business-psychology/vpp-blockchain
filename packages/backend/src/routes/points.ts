@@ -1,8 +1,16 @@
+/**
+ * @route /api/points
+ *
+ * Public endpoint for querying a wallet's point balance and claim history.
+ * Events are read from the local event store (instant, no RPC event queries).
+ * Only `totalPoints` is fetched live from the contract for accuracy.
+ */
 import { Router } from 'express'
 import type {} from 'express-serve-static-core'
 import { ethers } from 'ethers'
 import { AppError } from '../middleware/errorHandler.js'
 import * as blockchain from '../services/blockchain.js'
+import * as eventStore from '../services/event-store.js'
 import type { PointsResult } from '../types.js'
 
 const router: Router = Router()
@@ -17,7 +25,7 @@ router.get('/:wallet', async (req, res, next) => {
 
     const [totalPoints, events] = await Promise.all([
       blockchain.getTotalPoints(wallet),
-      blockchain.getPointsAwardedEvents(wallet),
+      Promise.resolve(eventStore.getPointsAwardedByWallet(wallet)),
     ])
 
     const result: PointsResult = {
@@ -27,7 +35,7 @@ router.get('/:wallet', async (req, res, next) => {
         surveyId: event.surveyId,
         points: event.points,
         claimedAt: new Date(event.timestamp * 1000).toISOString(),
-        txHash: event.transactionHash,
+        txHash: event.txHash,
       })),
     }
 

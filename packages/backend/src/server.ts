@@ -31,6 +31,7 @@ import surveysRouter from './routes/surveys.js'
 import walletsRouter from './routes/wallets.js'
 import healthRouter from './routes/health.js'
 import statusRouter from './routes/status.js'
+import { startEventStore } from './services/event-store.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -91,9 +92,16 @@ export function createApp(): Express {
 
 // Start the server only when this file is the entry point (not during tests)
 if (process.env.NODE_ENV !== 'test') {
-  const app = createApp()
-  app.listen(config.port, () => {
-    console.log(`VPP Backend listening on port ${config.port}`)
-    console.log(`  Health: http://localhost:${config.port}/api/health`)
-  })
+  startEventStore()
+    .then(() => {
+      const app = createApp()
+      app.listen(config.port, () => {
+        console.log(`VPP Backend listening on port ${config.port}`)
+        console.log(`  Health: http://localhost:${config.port}/api/health`)
+      })
+    })
+    .catch((err) => {
+      console.error('Failed to start event store:', err)
+      process.exit(1)
+    })
 }

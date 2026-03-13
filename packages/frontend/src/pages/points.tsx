@@ -51,6 +51,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useWallet } from '@/hooks/use-wallet'
 import { useBlockchain } from '@/hooks/use-blockchain'
+import { useApi } from '@/hooks/use-api'
 import { getTxUrl } from '@/lib/config'
 import { isValidPrivateKey } from '@/lib/wallet'
 import { toast } from 'sonner'
@@ -70,12 +71,8 @@ export default function PointsPage() {
     remove,
     downloadKey,
   } = useWallet()
-  const {
-    getTotalPoints,
-    getClaimHistory,
-    isWalletSubmitted: checkSubmitted,
-    loading,
-  } = useBlockchain()
+  const { isWalletSubmitted: checkSubmitted, loading } = useBlockchain()
+  const { getPointsData } = useApi()
 
   const [totalPoints, setTotalPoints] = useState<number | null>(null)
   const [walletSubmitted, setWalletSubmitted] = useState(false)
@@ -111,18 +108,24 @@ export default function PointsPage() {
     if (!wallet?.address) return
     setDataError(false)
 
-    getTotalPoints(wallet.address)
-      .then(setTotalPoints)
+    getPointsData(wallet.address)
+      .then((data) => {
+        setTotalPoints(data.totalPoints)
+        setHistory(
+          data.surveys.map((s) => ({
+            surveyId: s.surveyId,
+            points: s.points,
+            txHash: s.txHash,
+            blockNumber: 0,
+          })),
+        )
+      })
       .catch(() => setDataError(true))
 
     checkSubmitted(wallet.address)
       .then(setWalletSubmitted)
       .catch(() => {})
-
-    getClaimHistory(wallet.address)
-      .then(setHistory)
-      .catch(() => setDataError(true))
-  }, [wallet?.address, getTotalPoints, getClaimHistory, checkSubmitted])
+  }, [wallet?.address, getPointsData, checkSubmitted])
 
   function handleCopy(text: string) {
     navigator.clipboard.writeText(text)
@@ -212,9 +215,16 @@ export default function PointsPage() {
     setSearchError('')
     setSearchLoading(true)
     try {
-      const [pts, hist] = await Promise.all([getTotalPoints(addr), getClaimHistory(addr)])
-      setSearchPoints(pts)
-      setSearchHistory(hist)
+      const data = await getPointsData(addr)
+      setSearchPoints(data.totalPoints)
+      setSearchHistory(
+        data.surveys.map((s) => ({
+          surveyId: s.surveyId,
+          points: s.points,
+          txHash: s.txHash,
+          blockNumber: 0,
+        })),
+      )
     } catch {
       setSearchError(t('common.error'))
     } finally {
