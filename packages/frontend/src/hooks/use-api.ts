@@ -18,59 +18,16 @@
  */
 import { useCallback } from 'react'
 import { config } from '@/lib/config'
-
-interface ClaimResult {
-  txHash: string
-  points: number
-  explorerUrl: string
-}
-
-interface SurveyInfo {
-  surveyId: number
-  title: string
-  points: number
-  maxClaims: number
-  claimCount: number
-  active: boolean
-  registeredAt: string
-}
-
-interface SurveyRegisterResult {
-  txHash: string
-  explorerUrl: string
-  templateDownloadUrl: string
-}
-
-interface PointsData {
-  wallet: string
-  totalPoints: number
-  surveys: Array<{
-    surveyId: number
-    points: number
-    claimedAt: string
-    txHash: string
-  }>
-}
+import type {
+  ClaimResult,
+  SurveyInfo,
+  SurveyRegisterResult,
+  PointsResult,
+  SystemStatus,
+} from '@vpp/shared'
 
 interface AdminListData {
   admins: string[]
-}
-
-interface SystemStatus {
-  minterAddress: string
-  balance: string
-  lowBalance: boolean
-  gasPrice: string
-  estimates: {
-    claimsRemaining: number
-    registrationsRemaining: number
-    costPerClaim: string
-    costPerRegistration: string
-  }
-  blockchain: {
-    network: string
-    blockNumber: number
-  }
 }
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
@@ -238,8 +195,8 @@ export function useApi() {
     return data.admins
   }, [])
 
-  const getPointsData = useCallback(async (address: string): Promise<PointsData> => {
-    return apiFetch<PointsData>(`/api/v1/points/${address}`)
+  const getPointsData = useCallback(async (address: string): Promise<PointsResult> => {
+    return apiFetch<PointsResult>(`/api/v1/points/${address}`)
   }, [])
 
   const addAdmin = useCallback(
