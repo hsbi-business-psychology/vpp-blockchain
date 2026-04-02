@@ -9,6 +9,7 @@ import { Router } from 'express'
 import type {} from 'express-serve-static-core'
 import { ethers } from 'ethers'
 import { AppError } from '../middleware/errorHandler.js'
+import { parsePagination, paginate } from '../lib/pagination.js'
 import * as blockchain from '../services/blockchain.js'
 import * as eventStore from '../services/event-store.js'
 import type { PointsResult } from '../types.js'
@@ -44,18 +45,23 @@ router.get('/:wallet', async (req, res, next) => {
 
     const totalPoints = await blockchain.getTotalPoints(wallet)
 
+    const allSurveys = claimEvents.map((event) => ({
+      surveyId: event.surveyId,
+      points: event.points,
+      claimedAt: new Date(event.timestamp * 1000).toISOString(),
+      txHash: event.txHash,
+    }))
+
+    const params = parsePagination(req.query as Record<string, unknown>)
+    const { items, pagination } = paginate(allSurveys, params)
+
     const result: PointsResult = {
       wallet: ethers.getAddress(wallet),
       totalPoints,
-      surveys: claimEvents.map((event) => ({
-        surveyId: event.surveyId,
-        points: event.points,
-        claimedAt: new Date(event.timestamp * 1000).toISOString(),
-        txHash: event.txHash,
-      })),
+      surveys: items,
     }
 
-    res.json({ success: true, data: result })
+    res.json({ success: true, data: result, ...(pagination && { pagination }) })
   } catch (err) {
     next(err)
   }

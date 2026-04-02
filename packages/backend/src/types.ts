@@ -35,6 +35,17 @@ export interface ApiError {
   message: string
 }
 
+export interface PaginatedApiSuccess<T = unknown> {
+  success: true
+  data: T
+  pagination?: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+}
+
 export type ApiResponse<T = unknown> = ApiSuccess<T> | ApiError
 
 export interface ClaimResult {

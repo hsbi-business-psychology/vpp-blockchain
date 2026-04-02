@@ -23,6 +23,7 @@ import {
   generateLimeSurveyTemplate,
   type TemplateFormat,
 } from '../services/template.js'
+import { parsePagination, paginate } from '../lib/pagination.js'
 import type { SurveyRegisterResult } from '../types.js'
 
 const router: Router = Router()
@@ -77,12 +78,14 @@ router.post('/', requireAdmin as unknown as RequestHandler, async (req, res, nex
   }
 })
 
-// GET /api/surveys — list all registered surveys (cached)
-router.get('/', async (_req, res, next) => {
+// GET /api/v1/surveys — list all registered surveys (cached, optional pagination)
+router.get('/', async (req, res, next) => {
   try {
-    const surveys = await getSurveysWithCache()
+    const allSurveys = await getSurveysWithCache()
+    const params = parsePagination(req.query as Record<string, unknown>)
+    const { items, pagination } = paginate(allSurveys, params)
 
-    res.json({ success: true, data: surveys })
+    res.json({ success: true, data: items, ...(pagination && { pagination }) })
   } catch (err) {
     next(err)
   }
