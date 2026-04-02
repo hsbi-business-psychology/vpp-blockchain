@@ -33,19 +33,10 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
-
-interface SurveyRow {
-  surveyId: number
-  title: string
-  points: number
-  maxClaims: number
-  claimCount: number
-  active: boolean
-  registeredAt: string
-}
+import type { SurveyInfo } from '@vpp/shared'
 
 interface SurveyTableProps {
-  surveys: SurveyRow[]
+  surveys: SurveyInfo[]
   onDownloadTemplate: (surveyId: number) => void
   onDeactivate: (surveyId: number) => void
   onSelect?: (surveyId: number) => void
@@ -101,7 +92,7 @@ export function SurveyTable({
     return <p className="py-8 text-center text-sm text-muted-foreground">{t('common.noResults')}</p>
   }
 
-  const getStatus = (s: SurveyRow) => (s.active ? 'active' : 'inactive')
+  const getStatus = (s: SurveyInfo) => (s.active ? 'active' : 'inactive')
 
   return (
     <div className="space-y-3">

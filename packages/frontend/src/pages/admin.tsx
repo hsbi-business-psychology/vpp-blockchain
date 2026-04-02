@@ -1,46 +1,29 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router'
 import { ethers } from 'ethers'
-import { ShieldCheck, ShieldX, Loader2, LogOut, AlertTriangle, Download, Info } from 'lucide-react'
+import { Loader2, LogOut } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { MetricsCards } from '@/components/admin/metrics-cards'
 import { SurveyTable } from '@/components/admin/survey-table'
 import { RegisterSurveyDialog } from '@/components/admin/register-survey-dialog'
 import { RoleManagement } from '@/components/admin/role-management'
 import { SubmissionManagement } from '@/components/admin/submission-management'
 import { SystemStatus } from '@/components/admin/system-status'
+import { AdminAuthGate } from '@/components/admin/admin-auth-gate'
+import { DeactivateSurveyDialog } from '@/components/admin/deactivate-survey-dialog'
+import { TemplateDownloadDialog } from '@/components/admin/template-download-dialog'
 import { useWallet } from '@/hooks/use-wallet'
 import { useApi } from '@/hooks/use-api'
 import { ApiRequestError } from '@vpp/shared'
+import type { SurveyInfo } from '@vpp/shared'
 import { SURVEY_POINTS_ABI } from '@/lib/contract-abi'
 import { storeSecret, getSecret } from '@/lib/survey-secrets'
 
-interface SurveyRow {
-  surveyId: number
-  title: string
-  points: number
-  maxClaims: number
-  claimCount: number
-  active: boolean
-  registeredAt: string
-}
-
 export default function AdminPage() {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const { wallet, hasWallet, sign } = useWallet()
   const { getSurveys, registerSurvey, downloadTemplate, deactivateSurvey } = useApi()
 
@@ -51,19 +34,20 @@ export default function AdminPage() {
     signature: string
     message: string
   } | null>(null)
-  const [surveys, setSurveys] = useState<SurveyRow[]>([])
+  const [surveys, setSurveys] = useState<SurveyInfo[]>([])
   const [loading, setLoading] = useState(false)
 
-  const [deactivateTarget, setDeactivateTarget] = useState<SurveyRow | null>(null)
+  const [deactivateTarget, setDeactivateTarget] = useState<SurveyInfo | null>(null)
   const [deactivateLoading, setDeactivateLoading] = useState(false)
 
-  const [templateTarget, setTemplateTarget] = useState<SurveyRow | null>(null)
+  const [templateTarget, setTemplateTarget] = useState<SurveyInfo | null>(null)
   const [templateSecret, setTemplateSecret] = useState('')
   const [templateLoading, setTemplateLoading] = useState(false)
 
   const rpcUrl = import.meta.env.VITE_RPC_URL || ''
   const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS || ''
 
+  // ── Admin check ────────────────────────────────────────────────────────
   useEffect(() => {
     if (!wallet || !rpcUrl || !contractAddress) {
       setAdminCheck('loading')
@@ -88,6 +72,7 @@ export default function AdminPage() {
     }
   }, [wallet, rpcUrl, contractAddress])
 
+  // ── Auth ───────────────────────────────────────────────────────────────
   const handleAuth = useCallback(async () => {
     if (!wallet) return
     setAuthLoading(true)
@@ -110,6 +95,7 @@ export default function AdminPage() {
     }
   }, [adminCheck, authenticated, authLoading, handleAuth])
 
+  // ── Surveys ────────────────────────────────────────────────────────────
   const fetchSurveys = useCallback(async () => {
     if (!authCredentials) return
     setLoading(true)
@@ -124,29 +110,10 @@ export default function AdminPage() {
   }, [authCredentials, getSurveys, t])
 
   useEffect(() => {
-    if (authenticated) {
-      fetchSurveys()
-    }
+    if (authenticated) fetchSurveys()
   }, [authenticated, fetchSurveys])
 
-  const triggerTemplateDownload = async (
-    surveyId: number,
-    secret: string,
-    format: 'sosci' | 'limesurvey',
-  ) => {
-    const timestamp = Math.floor(Date.now() / 1000)
-    const message = `Download template ${surveyId} by ${wallet!.address} at ${timestamp}`
-    const signature = await sign(message)
-    const blob = await downloadTemplate(surveyId, secret, format, signature, message)
-    const ext = format === 'limesurvey' ? 'lss' : 'xml'
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `vpp-survey-${surveyId}.${ext}`
-    a.click()
-    URL.revokeObjectURL(url)
-  }
-
+  // ── Handlers ───────────────────────────────────────────────────────────
   const handleRegister = async (data: {
     surveyId: number
     points: number
@@ -175,37 +142,6 @@ export default function AdminPage() {
     }
   }
 
-  const handleDownloadTemplate = (surveyId: number) => {
-    const survey = surveys.find((s) => s.surveyId === surveyId)
-    if (!survey) return
-    const stored = getSecret(surveyId)
-    setTemplateTarget(survey)
-    setTemplateSecret(stored || '')
-  }
-
-  const handleTemplateFormatDownload = async (format: 'sosci' | 'limesurvey') => {
-    if (!templateTarget || !templateSecret.trim()) return
-    setTemplateLoading(true)
-    try {
-      storeSecret(templateTarget.surveyId, templateSecret.trim())
-      await triggerTemplateDownload(templateTarget.surveyId, templateSecret.trim(), format)
-      toast.success(
-        format === 'sosci'
-          ? t('admin.surveys.templateDialog.sosci.title')
-          : t('admin.surveys.templateDialog.limesurvey.title'),
-      )
-    } catch {
-      toast.error(t('common.error'))
-    } finally {
-      setTemplateLoading(false)
-    }
-  }
-
-  const handleDeactivate = (surveyId: number) => {
-    const survey = surveys.find((s) => s.surveyId === surveyId)
-    if (survey) setDeactivateTarget(survey)
-  }
-
   const handleDeactivateConfirm = async () => {
     if (!deactivateTarget || !wallet) return
     setDeactivateLoading(true)
@@ -224,85 +160,72 @@ export default function AdminPage() {
     }
   }
 
+  const handleTemplateFormatDownload = async (format: 'sosci' | 'limesurvey') => {
+    if (!templateTarget || !templateSecret.trim()) return
+    setTemplateLoading(true)
+    try {
+      storeSecret(templateTarget.surveyId, templateSecret.trim())
+      const timestamp = Math.floor(Date.now() / 1000)
+      const message = `Download template ${templateTarget.surveyId} by ${
+        wallet!.address
+      } at ${timestamp}`
+      const signature = await sign(message)
+      const blob = await downloadTemplate(
+        templateTarget.surveyId,
+        templateSecret.trim(),
+        format,
+        signature,
+        message,
+      )
+      const ext = format === 'limesurvey' ? 'lss' : 'xml'
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `vpp-survey-${templateTarget.surveyId}.${ext}`
+      a.click()
+      URL.revokeObjectURL(url)
+      toast.success(
+        format === 'sosci'
+          ? t('admin.surveys.templateDialog.sosci.title')
+          : t('admin.surveys.templateDialog.limesurvey.title'),
+      )
+    } catch {
+      toast.error(t('common.error'))
+    } finally {
+      setTemplateLoading(false)
+    }
+  }
+
+  const handleDownloadTemplate = (surveyId: number) => {
+    const survey = surveys.find((s) => s.surveyId === surveyId)
+    if (!survey) return
+    setTemplateTarget(survey)
+    setTemplateSecret(getSecret(surveyId) || '')
+  }
+
+  const handleDeactivate = (surveyId: number) => {
+    const survey = surveys.find((s) => s.surveyId === surveyId)
+    if (survey) setDeactivateTarget(survey)
+  }
+
   const handleLogout = () => {
     setAuthenticated(false)
     setAuthCredentials(null)
     setSurveys([])
   }
 
-  if (!hasWallet) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold">{t('admin.title')}</h1>
-        <Card className="mx-auto max-w-lg">
-          <CardContent className="flex flex-col items-center gap-4 py-8">
-            <ShieldCheck className="size-10 text-muted-foreground" />
-            <p className="text-muted-foreground">{t('points.noWallet')}</p>
-            <Button onClick={() => navigate('/points')}>{t('wallet.create.title')}</Button>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
+  // ── Auth gate (early returns) ──────────────────────────────────────────
+  const gate = (
+    <AdminAuthGate
+      hasWallet={hasWallet}
+      adminCheck={adminCheck}
+      authenticated={authenticated}
+      walletAddress={wallet?.address}
+    />
+  )
+  if (gate) return gate
 
-  if (adminCheck === 'loading') {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold">{t('admin.title')}</h1>
-        <Card className="mx-auto max-w-lg">
-          <CardContent className="flex flex-col items-center gap-4 py-8">
-            <Loader2 className="size-8 animate-spin text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">{t('admin.roles.checking')}</p>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
-  if (adminCheck === 'denied') {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold">{t('admin.title')}</h1>
-        <Card className="mx-auto max-w-lg">
-          <CardContent className="flex flex-col items-center gap-5 py-8 text-center">
-            <div className="flex size-14 items-center justify-center rounded-full bg-destructive/10">
-              <ShieldX className="size-7 text-destructive" />
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-lg font-semibold">{t('admin.accessDenied.title')}</h2>
-              <p className="text-base text-muted-foreground">
-                {t('admin.accessDenied.description')}
-              </p>
-            </div>
-            <div className="rounded-lg bg-muted p-3 w-full">
-              <p className="text-xs text-muted-foreground">Wallet</p>
-              <p className="truncate font-mono text-sm">{wallet?.address}</p>
-            </div>
-            <p className="text-sm text-muted-foreground">{t('admin.accessDenied.hint')}</p>
-            <Button variant="outline" onClick={() => navigate('/')}>
-              {t('admin.accessDenied.back')}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
-  if (!authenticated) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold">{t('admin.title')}</h1>
-        <Card className="mx-auto max-w-lg">
-          <CardContent className="flex flex-col items-center gap-4 py-8">
-            <Loader2 className="size-8 animate-spin text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">{t('admin.auth.description')}</p>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
-  // Authenticated dashboard
+  // ── Authenticated dashboard ────────────────────────────────────────────
   const totalClaims = surveys.reduce((sum, s) => sum + s.claimCount, 0)
   const totalPointsAwarded = surveys.reduce((sum, s) => sum + s.claimCount * s.points, 0)
   const activeSurveys = surveys.filter((s) => s.active).length
@@ -357,15 +280,10 @@ export default function AdminPage() {
       </Card>
 
       <Separator />
-
       <SubmissionManagement />
-
       <Separator />
-
       {wallet && <RoleManagement walletAddress={wallet.address} sign={sign} />}
-
       <Separator />
-
       {authCredentials && (
         <SystemStatus
           adminSignature={authCredentials.signature}
@@ -373,149 +291,21 @@ export default function AdminPage() {
         />
       )}
 
-      {/* ─── Deactivate Confirmation Dialog ─── */}
-      <Dialog open={!!deactivateTarget} onOpenChange={() => setDeactivateTarget(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <div className="flex size-12 items-center justify-center rounded-lg bg-destructive/10 mb-2">
-              <AlertTriangle className="size-6 text-destructive" />
-            </div>
-            <DialogTitle>{t('admin.surveys.deactivateConfirm.title')}</DialogTitle>
-            <DialogDescription>
-              {t('admin.surveys.deactivateConfirm.description')}
-            </DialogDescription>
-          </DialogHeader>
-          {deactivateTarget && (
-            <div className="rounded-lg bg-muted p-3 space-y-1">
-              <p className="text-sm font-medium">
-                {deactivateTarget.title || `Survey #${deactivateTarget.surveyId}`}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                ID: {deactivateTarget.surveyId} · {deactivateTarget.claimCount} Claims
-              </p>
-            </div>
-          )}
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeactivateTarget(null)}
-              disabled={deactivateLoading}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeactivateConfirm}
-              disabled={deactivateLoading}
-            >
-              {deactivateLoading ? (
-                <Loader2 className="mr-1.5 size-4 animate-spin" />
-              ) : (
-                <AlertTriangle className="mr-1.5 size-4" />
-              )}
-              {t('admin.surveys.deactivateConfirm.button')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DeactivateSurveyDialog
+        survey={deactivateTarget}
+        loading={deactivateLoading}
+        onConfirm={handleDeactivateConfirm}
+        onClose={() => setDeactivateTarget(null)}
+      />
 
-      {/* ─── Template Download Dialog ─── */}
-      <Dialog open={!!templateTarget} onOpenChange={() => setTemplateTarget(null)}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <div className="mb-2 flex size-12 items-center justify-center rounded-lg bg-primary/10">
-              <Download className="size-6 text-primary" />
-            </div>
-            <DialogTitle>{t('admin.surveys.templateDialog.title')}</DialogTitle>
-            <DialogDescription>{t('admin.surveys.templateDialog.description')}</DialogDescription>
-          </DialogHeader>
-
-          {templateTarget && (
-            <div className="space-y-1 rounded-lg bg-muted p-3">
-              <p className="text-sm font-medium">
-                {templateTarget.title || `Survey #${templateTarget.surveyId}`}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                ID: {templateTarget.surveyId} · {templateTarget.points} {t('admin.register.points')}
-              </p>
-            </div>
-          )}
-
-          {!templateSecret.trim() && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                {t('admin.surveys.templateDialog.secretLabel')}
-              </label>
-              <Input
-                value={templateSecret}
-                onChange={(e) => setTemplateSecret(e.target.value)}
-                placeholder={t('admin.surveys.templateDialog.secretPlaceholder')}
-                type="password"
-                className="font-mono text-xs"
-              />
-              <p className="text-xs text-muted-foreground">
-                {t('admin.surveys.templateDialog.secretDescription')}
-              </p>
-              <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
-                <Info className="mt-0.5 size-3 shrink-0" />
-                {t('admin.surveys.templateDialog.secretHint')}
-              </p>
-            </div>
-          )}
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <button
-              onClick={() => handleTemplateFormatDownload('sosci')}
-              disabled={!templateSecret.trim() || templateLoading}
-              className="flex flex-col items-start gap-2 rounded-lg border border-border p-4 text-left transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
-            >
-              <div className="flex w-full items-center justify-between">
-                <span className="text-sm font-semibold">
-                  {t('admin.surveys.templateDialog.sosci.title')}
-                </span>
-                <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                  .xml
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {t('admin.surveys.templateDialog.sosci.description')}
-              </p>
-              <span className="mt-auto inline-flex items-center gap-1.5 text-xs font-medium text-primary">
-                <Download className="size-3" />
-                {t('admin.surveys.templateDialog.sosci.download')}
-              </span>
-            </button>
-
-            <button
-              onClick={() => handleTemplateFormatDownload('limesurvey')}
-              disabled={!templateSecret.trim() || templateLoading}
-              className="flex flex-col items-start gap-2 rounded-lg border border-border p-4 text-left transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
-            >
-              <div className="flex w-full items-center justify-between">
-                <span className="text-sm font-semibold">
-                  {t('admin.surveys.templateDialog.limesurvey.title')}
-                </span>
-                <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                  .lsq
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {t('admin.surveys.templateDialog.limesurvey.description')}
-              </p>
-              <span className="mt-auto inline-flex items-center gap-1.5 text-xs font-medium text-primary">
-                <Download className="size-3" />
-                {t('admin.surveys.templateDialog.limesurvey.download')}
-              </span>
-            </button>
-          </div>
-
-          {templateLoading && (
-            <div className="flex items-center justify-center py-2">
-              <Loader2 className="size-5 animate-spin text-muted-foreground" />
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <TemplateDownloadDialog
+        survey={templateTarget}
+        secret={templateSecret}
+        onSecretChange={setTemplateSecret}
+        loading={templateLoading}
+        onDownload={handleTemplateFormatDownload}
+        onClose={() => setTemplateTarget(null)}
+      />
     </div>
   )
 }
