@@ -9,7 +9,7 @@
  *   - claimPoints       → POST /api/claim
  *   - getSurveys        → GET  /api/surveys
  *   - registerSurvey    → POST /api/surveys
- *   - downloadTemplate  → GET  /api/surveys/:id/template
+ *   - downloadTemplate  → POST /api/surveys/:id/template
  *   - deactivateSurvey  → POST /api/surveys/:id/deactivate
  *   - addAdmin          → POST /api/admin/add
  *   - removeAdmin       → POST /api/admin/remove
@@ -142,11 +142,19 @@ export function useApi() {
       surveyId: number,
       secret: string,
       format: 'sosci' | 'limesurvey' = 'sosci',
+      adminSignature: string,
+      adminMessage: string,
     ): Promise<Blob> => {
-      const url = `${config.apiUrl}/api/v1/surveys/${surveyId}/template?secret=${encodeURIComponent(
-        secret,
-      )}&format=${format}`
-      const res = await fetch(url)
+      const url = `${config.apiUrl}/api/v1/surveys/${surveyId}/template`
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-signature': adminSignature,
+          'x-admin-message': adminMessage,
+        },
+        body: JSON.stringify({ secret, format }),
+      })
       if (!res.ok) throw new Error('Failed to download template')
       return res.blob()
     },

@@ -131,12 +131,21 @@ describe('GET /api/v1/surveys', () => {
   })
 })
 
-describe('GET /api/v1/surveys/:id/template', () => {
+describe('POST /api/v1/surveys/:id/template', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
   })
 
+  async function adminAuth() {
+    const timestamp = Math.floor(Date.now() / 1000)
+    const message = `Download template at ${timestamp}`
+    const signature = await ADMIN_WALLET.signMessage(message)
+    vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
+    return { signature, message }
+  }
+
   it('should return a SoSci template by default', async () => {
+    const { signature, message } = await adminAuth()
     vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
       secretHash: ethers.ZeroHash,
       points: 2,
@@ -147,7 +156,11 @@ describe('GET /api/v1/surveys/:id/template', () => {
       title: 'Test Survey',
     })
 
-    const res = await request(app).get('/api/v1/surveys/1/template?secret=vpp-test-secret')
+    const res = await request(app)
+      .post('/api/v1/surveys/1/template')
+      .set('x-admin-signature', signature)
+      .set('x-admin-message', message)
+      .send({ secret: 'vpp-test-secret' })
 
     expect(res.status).toBe(200)
     expect(res.headers['content-type']).toContain('application/xml')
@@ -158,6 +171,7 @@ describe('GET /api/v1/surveys/:id/template', () => {
   })
 
   it('should return a SoSci template with format=sosci', async () => {
+    const { signature, message } = await adminAuth()
     vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
       secretHash: ethers.ZeroHash,
       points: 3,
@@ -168,7 +182,11 @@ describe('GET /api/v1/surveys/:id/template', () => {
       title: 'Test',
     })
 
-    const res = await request(app).get('/api/v1/surveys/5/template?secret=my-secret&format=sosci')
+    const res = await request(app)
+      .post('/api/v1/surveys/5/template')
+      .set('x-admin-signature', signature)
+      .set('x-admin-message', message)
+      .send({ secret: 'my-secret', format: 'sosci' })
 
     expect(res.status).toBe(200)
     expect(res.headers['content-disposition']).toContain('vpp-survey-5.xml')
@@ -177,6 +195,7 @@ describe('GET /api/v1/surveys/:id/template', () => {
   })
 
   it('should return a LimeSurvey template with format=limesurvey', async () => {
+    const { signature, message } = await adminAuth()
     vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
       secretHash: ethers.ZeroHash,
       points: 1,
@@ -187,9 +206,11 @@ describe('GET /api/v1/surveys/:id/template', () => {
       title: 'LS Survey',
     })
 
-    const res = await request(app).get(
-      '/api/v1/surveys/7/template?secret=ls-secret&format=limesurvey',
-    )
+    const res = await request(app)
+      .post('/api/v1/surveys/7/template')
+      .set('x-admin-signature', signature)
+      .set('x-admin-message', message)
+      .send({ secret: 'ls-secret', format: 'limesurvey' })
 
     expect(res.status).toBe(200)
     expect(res.headers['content-type']).toContain('application/xml')
@@ -201,30 +222,40 @@ describe('GET /api/v1/surveys/:id/template', () => {
   })
 
   it('should reject an invalid format parameter', async () => {
-    vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
-      secretHash: ethers.ZeroHash,
-      points: 2,
-      maxClaims: 0n,
-      claimCount: 0n,
-      active: true,
-      registeredAt: 1710000000n,
-      title: 'Test',
-    })
+    const { signature, message } = await adminAuth()
 
-    const res = await request(app).get('/api/v1/surveys/1/template?secret=test&format=invalid')
+    const res = await request(app)
+      .post('/api/v1/surveys/1/template')
+      .set('x-admin-signature', signature)
+      .set('x-admin-message', message)
+      .send({ secret: 'test', format: 'invalid' })
 
     expect(res.status).toBe(400)
-    expect(res.body.error).toBe('INVALID_FORMAT')
+    expect(res.body.error).toBe('VALIDATION_ERROR')
   })
 
-  it('should reject without secret parameter', async () => {
-    const res = await request(app).get('/api/v1/surveys/1/template')
+  it('should reject without secret in body', async () => {
+    const { signature, message } = await adminAuth()
+
+    const res = await request(app)
+      .post('/api/v1/surveys/1/template')
+      .set('x-admin-signature', signature)
+      .set('x-admin-message', message)
+      .send({})
 
     expect(res.status).toBe(400)
-    expect(res.body.error).toBe('MISSING_SECRET')
+    expect(res.body.error).toBe('VALIDATION_ERROR')
+  })
+
+  it('should reject unauthenticated request', async () => {
+    const res = await request(app).post('/api/v1/surveys/1/template').send({ secret: 'test' })
+
+    expect(res.status).toBe(401)
+    expect(res.body.error).toBe('UNAUTHORIZED')
   })
 
   it('should return 404 for non-existent survey', async () => {
+    const { signature, message } = await adminAuth()
     vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
       secretHash: ethers.ZeroHash,
       points: 0,
@@ -235,7 +266,11 @@ describe('GET /api/v1/surveys/:id/template', () => {
       title: '',
     })
 
-    const res = await request(app).get('/api/v1/surveys/999/template?secret=test')
+    const res = await request(app)
+      .post('/api/v1/surveys/999/template')
+      .set('x-admin-signature', signature)
+      .set('x-admin-message', message)
+      .send({ secret: 'test' })
 
     expect(res.status).toBe(404)
     expect(res.body.error).toBe('SURVEY_NOT_FOUND')

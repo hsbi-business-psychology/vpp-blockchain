@@ -6,8 +6,8 @@
  *   POST   /              – Register a new survey on-chain.
  *   GET    /              – List all registered surveys (cached, 30 s TTL).
  *   POST   /:id/deactivate – Deactivate a survey (no more claims accepted).
- *   GET    /:id/template  – Download a SoSci or LimeSurvey template file
- *                           with the embedded claim button.
+ *   POST   /:id/template  – Download a SoSci or LimeSurvey template file
+ *                           (admin-only, secret in request body).
  */
 import { Router, type RequestHandler } from 'express'
 import { z } from 'zod'
@@ -19,11 +19,7 @@ import { requireAdmin } from '../middleware/auth.js'
 import * as blockchain from '../services/blockchain.js'
 import { getEventStore } from '../services/event-store.js'
 import { getSurveysWithCache, invalidateCache } from '../services/survey-cache.js'
-import {
-  generateSoSciTemplate,
-  generateLimeSurveyTemplate,
-  type TemplateFormat,
-} from '../services/template.js'
+import { generateSoSciTemplate, generateLimeSurveyTemplate } from '../services/template.js'
 import { parsePagination, paginate } from '../lib/pagination.js'
 import type { SurveyRegisterResult } from '../types.js'
 
@@ -66,9 +62,7 @@ router.post('/', requireAdmin as unknown as RequestHandler, async (req, res, nex
     const result: SurveyRegisterResult = {
       txHash: receipt.hash,
       explorerUrl: `${config.explorerBaseUrl}/tx/${receipt.hash}`,
-      templateDownloadUrl: `/api/v1/surveys/${surveyId}/template?secret=${encodeURIComponent(
-        secret,
-      )}`,
+      templateDownloadUrl: `/api/v1/surveys/${surveyId}/template`,
     }
 
     invalidateCache()
@@ -136,8 +130,13 @@ router.post(
   },
 )
 
-// GET /api/surveys/:id/template — download survey template (SoSci or LimeSurvey)
-router.get('/:id/template', async (req, res, next) => {
+// POST /api/surveys/:id/template — download survey template (admin only, secret in body)
+const templateSchema = z.object({
+  secret: z.string().min(1),
+  format: z.enum(['sosci', 'limesurvey']).default('sosci'),
+})
+
+router.post('/:id/template', requireAdmin as unknown as RequestHandler, async (req, res, next) => {
   try {
     const surveyId = parseInt(req.params.id as string, 10)
     if (isNaN(surveyId) || surveyId <= 0) {
@@ -148,23 +147,12 @@ router.get('/:id/template', async (req, res, next) => {
       )
     }
 
-    const secret = req.query.secret as string | undefined
-    if (!secret) {
-      throw new AppError(
-        400,
-        'MISSING_SECRET',
-        'The survey secret is required to generate the template. Enter the secret you set when registering the survey.',
-      )
+    const parsed = templateSchema.safeParse(req.body)
+    if (!parsed.success) {
+      throwValidationError(parsed.error)
     }
 
-    const format = ((req.query.format as string) || 'sosci') as TemplateFormat
-    if (format !== 'sosci' && format !== 'limesurvey') {
-      throw new AppError(
-        400,
-        'INVALID_FORMAT',
-        'Unsupported template format. Choose either "sosci" or "limesurvey".',
-      )
-    }
+    const { secret, format } = parsed.data
 
     const info = await blockchain.getSurveyInfo(surveyId)
     if (info.points === 0) {

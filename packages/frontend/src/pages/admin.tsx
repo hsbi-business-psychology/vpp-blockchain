@@ -133,7 +133,10 @@ export default function AdminPage() {
     secret: string,
     format: 'sosci' | 'limesurvey',
   ) => {
-    const blob = await downloadTemplate(surveyId, secret, format)
+    const timestamp = Math.floor(Date.now() / 1000)
+    const message = `Download template ${surveyId} by ${wallet!.address} at ${timestamp}`
+    const signature = await sign(message)
+    const blob = await downloadTemplate(surveyId, secret, format, signature, message)
     const ext = format === 'limesurvey' ? 'lss' : 'xml'
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
