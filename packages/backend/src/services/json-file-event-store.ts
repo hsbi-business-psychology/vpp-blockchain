@@ -25,8 +25,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const DATA_DIR = resolve(__dirname, '../../data')
 const STORE_PATH = resolve(DATA_DIR, 'events.json')
 
-const SYNC_INTERVAL_MS = 60_000
-
 export class JsonFileEventStore implements EventStore {
   private store: EventStoreData = {
     lastSyncedBlock: 0,
@@ -211,7 +209,7 @@ export class JsonFileEventStore implements EventStore {
   async start(): Promise<void> {
     this.load()
     await this.sync()
-    this.syncInterval = setInterval(() => void this.sync(), SYNC_INTERVAL_MS)
+    this.syncInterval = setInterval(() => void this.sync(), config.syncIntervalMs)
   }
 
   stop(): void {

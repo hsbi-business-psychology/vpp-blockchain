@@ -9,9 +9,8 @@
  */
 import * as blockchain from './blockchain.js'
 import { getEventStore } from './event-store.js'
+import { config } from '../config.js'
 import type { SurveyInfo } from '../types.js'
-
-const CACHE_TTL_MS = 30_000
 
 let cachedSurveys: SurveyInfo[] | null = null
 let cacheExpiry = 0
@@ -46,7 +45,7 @@ export async function getSurveysWithCache(): Promise<SurveyInfo[]> {
   )
 
   cachedSurveys = surveys
-  cacheExpiry = Date.now() + CACHE_TTL_MS
+  cacheExpiry = Date.now() + config.cacheTtlMs
 
   return surveys
 }

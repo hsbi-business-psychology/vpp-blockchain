@@ -226,22 +226,22 @@ export async function getNetwork(): Promise<string> {
 /**
  * Queries event logs in chunks to stay within RPC provider block-range limits.
  * Most free-tier RPCs (drpc, publicnode) cap at 10,000 blocks per request.
+ * Chunk size is configurable via CHUNK_SIZE env var (default: 9000).
  */
-const CHUNK_SIZE = 9_000
-
 async function queryFilterChunked(
   contract: ethers.Contract,
   filter: ethers.ContractEventName,
   fromBlock: number,
 ): Promise<(ethers.EventLog | ethers.Log)[]> {
+  const chunkSize = config.chunkSize
   const latestBlock = await contract.runner!.provider!.getBlockNumber()
-  if (latestBlock - fromBlock <= CHUNK_SIZE) {
+  if (latestBlock - fromBlock <= chunkSize) {
     return contract.queryFilter(filter, fromBlock, latestBlock)
   }
 
   const results: (ethers.EventLog | ethers.Log)[] = []
-  for (let start = fromBlock; start <= latestBlock; start += CHUNK_SIZE + 1) {
-    const end = Math.min(start + CHUNK_SIZE, latestBlock)
+  for (let start = fromBlock; start <= latestBlock; start += chunkSize + 1) {
+    const end = Math.min(start + chunkSize, latestBlock)
     const chunk = await contract.queryFilter(filter, start, end)
     results.push(...chunk)
   }

@@ -52,5 +52,14 @@ export const config = {
   logLevel: optional('LOG_LEVEL', 'info'),
 
   /** Maximum age (in ms) of a signed claim message before it is rejected. */
-  maxMessageAgeMs: 5 * 60 * 1000,
+  maxMessageAgeMs: parseInt(optional('MAX_MESSAGE_AGE_MS', '300000'), 10),
+
+  /** Interval (in ms) between event store sync cycles. */
+  syncIntervalMs: parseInt(optional('SYNC_INTERVAL_MS', '60000'), 10),
+
+  /** TTL (in ms) for the in-memory survey cache. */
+  cacheTtlMs: parseInt(optional('CACHE_TTL_MS', '30000'), 10),
+
+  /** Block range per RPC query chunk (free-tier RPCs typically cap at 10,000). */
+  chunkSize: parseInt(optional('CHUNK_SIZE', '9000'), 10),
 } as const
