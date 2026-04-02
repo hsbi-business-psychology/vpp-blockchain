@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dialog'
 import { useApi } from '@/hooks/use-api'
 import { useWallet } from '@/hooks/use-wallet'
+import { ApiRequestError } from '@vpp/shared'
 
 interface SearchResult {
   address: string
@@ -59,7 +60,7 @@ export function SubmissionManagement() {
       const data = await getWalletSubmissionStatus(addr)
       setResult(data)
     } catch (err) {
-      setSearchError(err instanceof Error ? err.message : t('common.error'))
+      setSearchError(err instanceof ApiRequestError ? err.message : t('common.error'))
     } finally {
       setSearchLoading(false)
     }
@@ -89,7 +90,7 @@ export function SubmissionManagement() {
     } catch (err) {
       const key =
         confirmAction === 'mark' ? 'admin.submissions.markError' : 'admin.submissions.unmarkError'
-      toast.error(err instanceof Error ? err.message : t(key))
+      toast.error(err instanceof ApiRequestError ? err.message : t(key))
     } finally {
       setActionLoading(false)
     }

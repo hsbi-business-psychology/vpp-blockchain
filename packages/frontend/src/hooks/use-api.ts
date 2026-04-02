@@ -25,6 +25,7 @@ import type {
   PointsResult,
   SystemStatus,
 } from '@vpp/shared'
+import { ApiRequestError } from '@vpp/shared'
 
 interface AdminListData {
   admins: string[]
@@ -40,7 +41,12 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const json = await res.json()
 
   if (!res.ok || !json.success) {
-    throw new Error(json.message || json.error || `API error: ${res.status}`)
+    throw new ApiRequestError(
+      json.error || 'UNKNOWN_ERROR',
+      json.message || `API error: ${res.status}`,
+      res.status,
+      json.details,
+    )
   }
 
   return json.data as T

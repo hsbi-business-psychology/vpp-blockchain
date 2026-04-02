@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { useWallet } from '@/hooks/use-wallet'
 import { useApi } from '@/hooks/use-api'
+import { ApiRequestError } from '@vpp/shared'
 import { getTxUrl } from '@/lib/config'
 import { cn } from '@/lib/utils'
 
@@ -69,17 +70,15 @@ export default function ClaimPage() {
       setResult({ txHash: res.txHash, points: res.points })
       setCurrentStep('done')
     } catch (err) {
-      const msg = err instanceof Error ? err.message : ''
-      if (msg.includes('already claimed') || msg.includes('ALREADY_CLAIMED')) {
-        setError(t('claim.error.alreadyClaimed'))
-      } else if (msg.includes('InvalidSecret') || msg.includes('INVALID_SECRET')) {
-        setError(t('claim.error.invalidSecret'))
-      } else if (msg.includes('not active') || msg.includes('SURVEY_INACTIVE')) {
-        setError(t('claim.error.surveyInactive'))
-      } else if (msg.includes('MAX_CLAIMS_REACHED') || msg.includes('MaxClaimsReached')) {
-        setError(t('claim.error.maxClaims'))
-      } else if (msg.includes('EXPIRED_MESSAGE') || msg.includes('expired')) {
-        setError(t('claim.error.expired'))
+      if (err instanceof ApiRequestError) {
+        const errorMap: Record<string, string> = {
+          ALREADY_CLAIMED: t('claim.error.alreadyClaimed'),
+          INVALID_SECRET: t('claim.error.invalidSecret'),
+          SURVEY_INACTIVE: t('claim.error.surveyInactive'),
+          MAX_CLAIMS_REACHED: t('claim.error.maxClaims'),
+          EXPIRED_MESSAGE: t('claim.error.expired'),
+        }
+        setError(errorMap[err.code] ?? t('claim.error.generic'))
       } else {
         setError(t('claim.error.generic'))
       }

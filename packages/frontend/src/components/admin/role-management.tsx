@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useApi } from '@/hooks/use-api'
+import { ApiRequestError } from '@vpp/shared'
 
 interface RoleManagementProps {
   walletAddress: string
@@ -58,7 +59,8 @@ export function RoleManagement({ walletAddress, sign }: RoleManagementProps) {
       setAddress('')
       await fetchAdmins()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('admin.roles.errorAdd'))
+      const msg = err instanceof ApiRequestError ? err.message : t('admin.roles.errorAdd')
+      toast.error(msg)
     } finally {
       setLoading(false)
     }
@@ -75,7 +77,8 @@ export function RoleManagement({ walletAddress, sign }: RoleManagementProps) {
       toast.success(t('admin.roles.successRemove'))
       await fetchAdmins()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('admin.roles.errorRemove'))
+      const msg = err instanceof ApiRequestError ? err.message : t('admin.roles.errorRemove')
+      toast.error(msg)
     } finally {
       setLoading(false)
     }

@@ -12,3 +12,5 @@ export type {
   SystemStatus,
   HealthResult,
 } from './api-types.js'
+
+export { ApiRequestError } from './api-error.js'

@@ -24,6 +24,7 @@ import { SubmissionManagement } from '@/components/admin/submission-management'
 import { SystemStatus } from '@/components/admin/system-status'
 import { useWallet } from '@/hooks/use-wallet'
 import { useApi } from '@/hooks/use-api'
+import { ApiRequestError } from '@vpp/shared'
 import { SURVEY_POINTS_ABI } from '@/lib/contract-abi'
 import { storeSecret, getSecret } from '@/lib/survey-secrets'
 
@@ -97,7 +98,7 @@ export default function AdminPage() {
       setAuthCredentials({ signature, message })
       setAuthenticated(true)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('common.error'))
+      toast.error(err instanceof ApiRequestError ? err.message : t('common.error'))
     } finally {
       setAuthLoading(false)
     }
@@ -116,7 +117,7 @@ export default function AdminPage() {
       const data = await getSurveys(authCredentials.signature, authCredentials.message)
       setSurveys(data)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('common.error'))
+      toast.error(err instanceof ApiRequestError ? err.message : t('common.error'))
     } finally {
       setLoading(false)
     }
@@ -169,7 +170,7 @@ export default function AdminPage() {
       toast.success(t('admin.register.success'))
       await fetchSurveys()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('admin.register.error'))
+      toast.error(err instanceof ApiRequestError ? err.message : t('admin.register.error'))
       throw err
     }
   }
@@ -217,7 +218,7 @@ export default function AdminPage() {
       setDeactivateTarget(null)
       await fetchSurveys()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('common.error'))
+      toast.error(err instanceof ApiRequestError ? err.message : t('common.error'))
     } finally {
       setDeactivateLoading(false)
     }
