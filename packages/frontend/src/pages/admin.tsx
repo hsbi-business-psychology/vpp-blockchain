@@ -91,7 +91,7 @@ export default function AdminPage() {
     if (!wallet) return
     setAuthLoading(true)
     try {
-      const timestamp = Date.now()
+      const timestamp = Math.floor(Date.now() / 1000)
       const message = `Admin login ${wallet.address} at ${timestamp}`
       const signature = await sign(message)
       setAuthCredentials({ signature, message })
@@ -152,7 +152,7 @@ export default function AdminPage() {
   }) => {
     if (!authCredentials) return
     try {
-      const timestamp = Date.now()
+      const timestamp = Math.floor(Date.now() / 1000)
       const message = `Register survey ${data.surveyId} by ${wallet!.address} at ${timestamp}`
       const signature = await sign(message)
 
@@ -206,7 +206,7 @@ export default function AdminPage() {
     if (!deactivateTarget || !wallet) return
     setDeactivateLoading(true)
     try {
-      const timestamp = Date.now()
+      const timestamp = Math.floor(Date.now() / 1000)
       const message = `Deactivate survey ${deactivateTarget.surveyId} by ${wallet.address} at ${timestamp}`
       const signature = await sign(message)
       await deactivateSurvey(deactivateTarget.surveyId, signature, message)

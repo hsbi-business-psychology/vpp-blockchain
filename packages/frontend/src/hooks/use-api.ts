@@ -219,8 +219,14 @@ export function useApi() {
     [],
   )
 
-  const getAdmins = useCallback(async (): Promise<string[]> => {
-    const data = await apiFetch<AdminListData>('/api/v1/admin')
+  const getAdmins = useCallback(async (signature: string, message: string): Promise<string[]> => {
+    const data = await apiFetch<AdminListData>('/api/v1/admin', {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-signature': signature,
+        'x-admin-message': message,
+      },
+    })
     return data.admins
   }, [])
 

@@ -18,13 +18,21 @@ describe('GET /api/v1/admin', () => {
     vi.restoreAllMocks()
   })
 
-  it('should return the current admin list', async () => {
+  it('should return the current admin list with valid auth', async () => {
+    const timestamp = Math.floor(Date.now() / 1000)
+    const message = `List admins at ${timestamp}`
+    const signature = await ADMIN_WALLET.signMessage(message)
+
+    vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
     vi.mocked(getEventStore()).getCurrentAdmins.mockReturnValue([
       '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
       TARGET_ADDRESS,
     ])
 
-    const res = await request(app).get('/api/v1/admin')
+    const res = await request(app)
+      .get('/api/v1/admin')
+      .set('x-admin-signature', signature)
+      .set('x-admin-message', message)
 
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(true)
@@ -33,12 +41,27 @@ describe('GET /api/v1/admin', () => {
   })
 
   it('should return empty array when no admins', async () => {
+    const timestamp = Math.floor(Date.now() / 1000)
+    const message = `List admins at ${timestamp}`
+    const signature = await ADMIN_WALLET.signMessage(message)
+
+    vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
     vi.mocked(getEventStore()).getCurrentAdmins.mockReturnValue([])
 
-    const res = await request(app).get('/api/v1/admin')
+    const res = await request(app)
+      .get('/api/v1/admin')
+      .set('x-admin-signature', signature)
+      .set('x-admin-message', message)
 
     expect(res.status).toBe(200)
     expect(res.body.data.admins).toHaveLength(0)
+  })
+
+  it('should reject unauthenticated request with 401', async () => {
+    const res = await request(app).get('/api/v1/admin')
+
+    expect(res.status).toBe(401)
+    expect(res.body.error).toBe('UNAUTHORIZED')
   })
 })
 

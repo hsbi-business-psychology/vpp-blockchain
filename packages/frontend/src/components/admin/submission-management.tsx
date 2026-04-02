@@ -69,7 +69,7 @@ export function SubmissionManagement() {
     if (!result || !wallet || !confirmAction) return
     setActionLoading(true)
     try {
-      const timestamp = Date.now()
+      const timestamp = Math.floor(Date.now() / 1000)
       const verb = confirmAction === 'mark' ? 'Mark' : 'Unmark'
       const message = `${verb} wallet ${result.address} by ${wallet.address} at ${timestamp}`
       const signature = await sign(message)

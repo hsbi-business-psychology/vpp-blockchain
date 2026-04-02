@@ -27,7 +27,7 @@ const roleSchema = z.object({
   adminMessage: z.string().min(1),
 })
 
-router.get('/', async (_req, res, next) => {
+router.get('/', requireAdmin as unknown as RequestHandler, async (_req, res, next) => {
   try {
     const store = getEventStore()
     let admins: string[]

@@ -26,14 +26,17 @@ export function RoleManagement({ walletAddress, sign }: RoleManagementProps) {
   const fetchAdmins = useCallback(async () => {
     setLoadingAdmins(true)
     try {
-      const adminList = await getAdmins()
+      const timestamp = Math.floor(Date.now() / 1000)
+      const message = `List admins by ${walletAddress} at ${timestamp}`
+      const signature = await sign(message)
+      const adminList = await getAdmins(signature, message)
       setAdmins(adminList)
     } catch (err) {
       console.error('Failed to fetch admins:', err)
     } finally {
       setLoadingAdmins(false)
     }
-  }, [getAdmins])
+  }, [getAdmins, walletAddress, sign])
 
   useEffect(() => {
     fetchAdmins()
@@ -46,7 +49,7 @@ export function RoleManagement({ walletAddress, sign }: RoleManagementProps) {
     }
     setLoading(true)
     try {
-      const timestamp = Date.now()
+      const timestamp = Math.floor(Date.now() / 1000)
       const message = `Add admin ${address} by ${walletAddress} at ${timestamp}`
       const signature = await sign(message)
 
@@ -64,7 +67,7 @@ export function RoleManagement({ walletAddress, sign }: RoleManagementProps) {
   const handleRemoveAdmin = async (addr: string) => {
     setLoading(true)
     try {
-      const timestamp = Date.now()
+      const timestamp = Math.floor(Date.now() / 1000)
       const message = `Remove admin ${addr} by ${walletAddress} at ${timestamp}`
       const signature = await sign(message)
 
