@@ -16,6 +16,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { config } from '../config.js'
+import { logger } from '../lib/logger.js'
 import { readOnlyContract, queryFilterChunked, provider } from './blockchain.js'
 import type { EventStore } from './event-store.interface.js'
 import type { EventStoreData, StoredSurveyEvent, StoredPointsEvent } from './event-store.types.js'
@@ -164,11 +165,12 @@ export class JsonFileEventStore implements EventStore {
 
       this.store.lastSyncedBlock = latestBlock
       this.save()
-      console.log(
-        `Event store synced to block ${latestBlock} (+${latestBlock - fromBlock + 1} blocks)`,
+      logger.info(
+        { block: latestBlock, newBlocks: latestBlock - fromBlock + 1 },
+        'Event store synced',
       )
     } catch (err) {
-      console.error('Event store sync failed:', err)
+      logger.error({ err }, 'Event store sync failed')
     } finally {
       this.syncing = false
     }

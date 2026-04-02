@@ -49,6 +49,8 @@ export const config = {
   rateLimitStore: optional('RATE_LIMIT_STORE', 'memory') as 'memory' | 'redis',
   redisUrl: process.env.REDIS_URL || undefined,
 
+  logLevel: optional('LOG_LEVEL', 'info'),
+
   /** Maximum age (in ms) of a signed claim message before it is rejected. */
   maxMessageAgeMs: 5 * 60 * 1000,
 } as const

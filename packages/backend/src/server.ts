@@ -22,7 +22,9 @@ import { resolve, dirname } from 'node:path'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { config } from './config.js'
+import { logger } from './lib/logger.js'
 import { apiLimiter } from './middleware/rateLimit.js'
+import { requestLogger } from './middleware/requestLogger.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { createApiRouter } from './routes/index.js'
 import { getEventStore } from './services/event-store.js'
@@ -64,6 +66,8 @@ export function createApp(): Express {
   app.use(cors({ origin: config.frontendUrl, methods: ['GET', 'POST'] }) as any)
   app.use(express.json())
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  app.use(requestLogger as any)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   app.use(apiLimiter as any)
 
   // Versioned API routes
@@ -93,27 +97,26 @@ export function createApp(): Express {
 if (process.env.NODE_ENV !== 'test') {
   const app = createApp()
   const server = app.listen(config.port, () => {
-    console.log(`VPP Backend listening on port ${config.port}`)
-    console.log(`  Health: http://localhost:${config.port}/api/v1/health`)
+    logger.info({ port: config.port }, 'VPP Backend listening')
   })
 
   const eventStore = getEventStore()
   eventStore.start().catch((err) => {
-    console.error('Event store initial sync failed (will retry periodically):', err)
+    logger.error({ err }, 'Event store initial sync failed (will retry periodically)')
   })
 
   async function shutdown(signal: string) {
-    console.log(`\n${signal} received — shutting down gracefully...`)
+    logger.info({ signal }, 'Shutting down gracefully...')
 
     server.close(() => {
-      console.log('HTTP server closed')
+      logger.info('HTTP server closed')
     })
 
     eventStore.stop()
-    console.log('Event store stopped')
+    logger.info('Event store stopped')
 
     setTimeout(() => {
-      console.error('Graceful shutdown timed out — forcing exit')
+      logger.error('Graceful shutdown timed out — forcing exit')
       process.exit(1)
     }, 10_000).unref()
   }

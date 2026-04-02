@@ -12,6 +12,7 @@
  * - The `errorHandler` middleware is registered last and catches everything.
  */
 import type { Request, Response, NextFunction } from 'express'
+import { logger } from '../lib/logger.js'
 
 export class AppError extends Error {
   constructor(
@@ -123,7 +124,7 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
     return
   }
 
-  console.error('[unhandled error]', err)
+  logger.error({ err }, 'Unhandled error')
 
   res.status(500).json({
     success: false,
