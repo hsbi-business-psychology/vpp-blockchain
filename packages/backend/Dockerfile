@@ -37,6 +37,11 @@ COPY packages/contracts/artifacts packages/contracts/artifacts/
 ENV NODE_ENV=production
 EXPOSE 3000
 STOPSIGNAL SIGTERM
+
+# Persist the event store JSON between container restarts.
+# Mount a host directory or named volume to /app/packages/backend/data.
+VOLUME ["/app/packages/backend/data"]
+
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
   CMD node -e "fetch('http://localhost:3000/api/v1/health/live').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
 
