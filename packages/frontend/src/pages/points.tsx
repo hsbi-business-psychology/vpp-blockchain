@@ -71,7 +71,8 @@ export default function PointsPage() {
     remove,
     downloadKey,
   } = useWallet()
-  const { isWalletSubmitted: checkSubmitted, loading } = useBlockchain()
+  const { isWalletSubmitted: checkSubmitted } = useBlockchain()
+  const [dataLoading, setDataLoading] = useState(true)
   const { getPointsData } = useApi()
 
   const [totalPoints, setTotalPoints] = useState<number | null>(null)
@@ -105,11 +106,15 @@ export default function PointsPage() {
   const [dataError, setDataError] = useState(false)
 
   useEffect(() => {
-    if (!wallet?.address) return
+    if (!wallet?.address) {
+      setDataLoading(false)
+      return
+    }
     setDataError(false)
+    setDataLoading(true)
 
-    getPointsData(wallet.address)
-      .then((data) => {
+    Promise.all([
+      getPointsData(wallet.address).then((data) => {
         setTotalPoints(data.totalPoints)
         setHistory(
           data.surveys.map((s) => ({
@@ -119,12 +124,13 @@ export default function PointsPage() {
             blockNumber: 0,
           })),
         )
-      })
+      }),
+      checkSubmitted(wallet.address)
+        .then(setWalletSubmitted)
+        .catch(() => {}),
+    ])
       .catch(() => setDataError(true))
-
-    checkSubmitted(wallet.address)
-      .then(setWalletSubmitted)
-      .catch(() => {})
+      .finally(() => setDataLoading(false))
   }, [wallet?.address, getPointsData, checkSubmitted])
 
   function handleCopy(text: string) {
@@ -555,7 +561,7 @@ export default function PointsPage() {
             </div>
             <div>
               <p className="text-4xl font-bold leading-none sm:text-5xl">
-                {loading && totalPoints === null ? (
+                {dataLoading && totalPoints === null ? (
                   <Loader2 className="size-8 animate-spin" />
                 ) : (
                   totalPoints ?? 0
@@ -591,7 +597,7 @@ export default function PointsPage() {
           )}
 
           {/* ─── How It Works (visible when no points yet or on first visit) ─── */}
-          {history.length === 0 && !loading && (
+          {history.length === 0 && !dataLoading && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">{t('points.howItWorks.title')}</CardTitle>
@@ -655,7 +661,7 @@ export default function PointsPage() {
               )}
             </CardHeader>
             <CardContent>
-              {loading && history.length === 0 ? (
+              {dataLoading && history.length === 0 ? (
                 <div className="space-y-2">
                   {[1, 2, 3].map((i) => (
                     <Skeleton key={i} className="h-10 w-full" />

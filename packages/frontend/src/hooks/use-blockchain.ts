@@ -5,10 +5,10 @@
  * Uses ethers.js `JsonRpcProvider` (no wallet needed) to call view functions
  * directly against the public RPC.
  *
- * Event-based queries (claim history, admin roles) are served by the backend
- * API via the local event store — no direct event queries from the frontend.
+ * Each method returns a plain Promise — callers manage their own
+ * loading / error state so multiple concurrent calls don't conflict.
  */
-import { useState, useCallback } from 'react'
+import { useCallback } from 'react'
 import { ethers } from 'ethers'
 import { config } from '@/lib/config'
 import { SURVEY_POINTS_ABI } from '@/lib/contract-abi'
@@ -22,23 +22,10 @@ function getContract() {
 }
 
 export function useBlockchain() {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
   const getTotalPoints = useCallback(async (address: string): Promise<number> => {
-    setLoading(true)
-    setError(null)
-    try {
-      const contract = getContract()
-      const points = await contract.totalPoints(address)
-      return Number(points)
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch points'
-      setError(message)
-      throw err
-    } finally {
-      setLoading(false)
-    }
+    const contract = getContract()
+    const points = await contract.totalPoints(address)
+    return Number(points)
   }, [])
 
   const getSurveyPoints = useCallback(
@@ -84,8 +71,6 @@ export function useBlockchain() {
   }, [])
 
   return {
-    loading,
-    error,
     getTotalPoints,
     getSurveyPoints,
     hasClaimed,
