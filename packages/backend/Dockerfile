@@ -37,5 +37,7 @@ COPY packages/contracts/artifacts packages/contracts/artifacts/
 ENV NODE_ENV=production
 EXPOSE 3000
 STOPSIGNAL SIGTERM
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD node -e "fetch('http://localhost:3000/api/v1/health/live').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
 
 CMD ["node", "packages/backend/dist/server.js"]

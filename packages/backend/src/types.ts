@@ -91,4 +91,8 @@ export interface HealthResult {
     network: string | null
     blockNumber: number | null
   }
+  eventStore?: {
+    ready: boolean
+    lastSyncedBlock: number
+  }
 }
