@@ -12,7 +12,7 @@ const ADMIN_WALLET = new ethers.Wallet(
   '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
 )
 
-describe('POST /api/surveys', () => {
+describe('POST /api/v1/surveys', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
   })
@@ -36,7 +36,7 @@ describe('POST /api/surveys', () => {
       hash: '0xtxhash456',
     } as unknown as ethers.TransactionReceipt)
 
-    const res = await request(app).post('/api/surveys').send({
+    const res = await request(app).post('/api/v1/surveys').send({
       surveyId: 42,
       secret: 'VPP-secret-42',
       points: 2,
@@ -48,7 +48,7 @@ describe('POST /api/surveys', () => {
     expect(res.status).toBe(201)
     expect(res.body.success).toBe(true)
     expect(res.body.data.txHash).toBe('0xtxhash456')
-    expect(res.body.data.templateDownloadUrl).toContain('/api/surveys/42/template')
+    expect(res.body.data.templateDownloadUrl).toContain('/api/v1/surveys/42/template')
   })
 
   it('should reject a request from a non-admin wallet', async () => {
@@ -59,7 +59,7 @@ describe('POST /api/surveys', () => {
 
     vi.mocked(blockchain.isAdmin).mockResolvedValue(false)
 
-    const res = await request(app).post('/api/surveys').send({
+    const res = await request(app).post('/api/v1/surveys').send({
       surveyId: 42,
       secret: 'VPP-secret-42',
       points: 2,
@@ -73,7 +73,7 @@ describe('POST /api/surveys', () => {
   })
 
   it('should reject a request without signature', async () => {
-    const res = await request(app).post('/api/surveys').send({
+    const res = await request(app).post('/api/v1/surveys').send({
       surveyId: 42,
       secret: 'VPP-secret-42',
       points: 2,
@@ -85,7 +85,7 @@ describe('POST /api/surveys', () => {
   })
 })
 
-describe('GET /api/surveys', () => {
+describe('GET /api/v1/surveys', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
     invalidateCache()
@@ -112,7 +112,7 @@ describe('GET /api/surveys', () => {
       title: 'Test Survey',
     })
 
-    const res = await request(app).get('/api/surveys')
+    const res = await request(app).get('/api/v1/surveys')
 
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(true)
@@ -124,14 +124,14 @@ describe('GET /api/surveys', () => {
   it('should return empty list when no surveys exist', async () => {
     vi.mocked(eventStore.getSurveyRegisteredEvents).mockReturnValue([])
 
-    const res = await request(app).get('/api/surveys')
+    const res = await request(app).get('/api/v1/surveys')
 
     expect(res.status).toBe(200)
     expect(res.body.data).toHaveLength(0)
   })
 })
 
-describe('GET /api/surveys/:id/template', () => {
+describe('GET /api/v1/surveys/:id/template', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
   })
@@ -147,7 +147,7 @@ describe('GET /api/surveys/:id/template', () => {
       title: 'Test Survey',
     })
 
-    const res = await request(app).get('/api/surveys/1/template?secret=vpp-test-secret')
+    const res = await request(app).get('/api/v1/surveys/1/template?secret=vpp-test-secret')
 
     expect(res.status).toBe(200)
     expect(res.headers['content-type']).toContain('application/xml')
@@ -168,7 +168,7 @@ describe('GET /api/surveys/:id/template', () => {
       title: 'Test',
     })
 
-    const res = await request(app).get('/api/surveys/5/template?secret=my-secret&format=sosci')
+    const res = await request(app).get('/api/v1/surveys/5/template?secret=my-secret&format=sosci')
 
     expect(res.status).toBe(200)
     expect(res.headers['content-disposition']).toContain('vpp-survey-5.xml')
@@ -187,7 +187,9 @@ describe('GET /api/surveys/:id/template', () => {
       title: 'LS Survey',
     })
 
-    const res = await request(app).get('/api/surveys/7/template?secret=ls-secret&format=limesurvey')
+    const res = await request(app).get(
+      '/api/v1/surveys/7/template?secret=ls-secret&format=limesurvey',
+    )
 
     expect(res.status).toBe(200)
     expect(res.headers['content-type']).toContain('application/xml')
@@ -209,14 +211,14 @@ describe('GET /api/surveys/:id/template', () => {
       title: 'Test',
     })
 
-    const res = await request(app).get('/api/surveys/1/template?secret=test&format=invalid')
+    const res = await request(app).get('/api/v1/surveys/1/template?secret=test&format=invalid')
 
     expect(res.status).toBe(400)
     expect(res.body.error).toBe('INVALID_FORMAT')
   })
 
   it('should reject without secret parameter', async () => {
-    const res = await request(app).get('/api/surveys/1/template')
+    const res = await request(app).get('/api/v1/surveys/1/template')
 
     expect(res.status).toBe(400)
     expect(res.body.error).toBe('MISSING_SECRET')
@@ -233,14 +235,14 @@ describe('GET /api/surveys/:id/template', () => {
       title: '',
     })
 
-    const res = await request(app).get('/api/surveys/999/template?secret=test')
+    const res = await request(app).get('/api/v1/surveys/999/template?secret=test')
 
     expect(res.status).toBe(404)
     expect(res.body.error).toBe('SURVEY_NOT_FOUND')
   })
 })
 
-describe('POST /api/surveys/:id/deactivate', () => {
+describe('POST /api/v1/surveys/:id/deactivate', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
   })
@@ -265,7 +267,7 @@ describe('POST /api/surveys/:id/deactivate', () => {
     } as unknown as ethers.TransactionReceipt)
 
     const res = await request(app)
-      .post('/api/surveys/1/deactivate')
+      .post('/api/v1/surveys/1/deactivate')
       .set('x-admin-signature', adminSignature)
       .set('x-admin-message', adminMessage)
 
@@ -291,7 +293,7 @@ describe('POST /api/surveys/:id/deactivate', () => {
     })
 
     const res = await request(app)
-      .post('/api/surveys/1/deactivate')
+      .post('/api/v1/surveys/1/deactivate')
       .set('x-admin-signature', adminSignature)
       .set('x-admin-message', adminMessage)
 
@@ -307,7 +309,7 @@ describe('POST /api/surveys/:id/deactivate', () => {
     vi.mocked(blockchain.isAdmin).mockResolvedValue(false)
 
     const res = await request(app)
-      .post('/api/surveys/1/deactivate')
+      .post('/api/v1/surveys/1/deactivate')
       .set('x-admin-signature', adminSignature)
       .set('x-admin-message', adminMessage)
 

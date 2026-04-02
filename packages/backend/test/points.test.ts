@@ -6,7 +6,7 @@ import * as eventStore from '../src/services/event-store.js'
 
 const app = createApp()
 
-describe('GET /api/points/:wallet', () => {
+describe('GET /api/v1/points/:wallet', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
   })
@@ -32,7 +32,7 @@ describe('GET /api/points/:wallet', () => {
       },
     ])
 
-    const res = await request(app).get('/api/points/0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266')
+    const res = await request(app).get('/api/v1/points/0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266')
 
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(true)
@@ -43,7 +43,7 @@ describe('GET /api/points/:wallet', () => {
   })
 
   it('should return 400 for an invalid address', async () => {
-    const res = await request(app).get('/api/points/not-an-address')
+    const res = await request(app).get('/api/v1/points/not-an-address')
 
     expect(res.status).toBe(400)
     expect(res.body.success).toBe(false)
@@ -54,7 +54,7 @@ describe('GET /api/points/:wallet', () => {
     vi.mocked(blockchain.getTotalPoints).mockResolvedValue(0)
     vi.mocked(eventStore.getPointsAwardedByWallet).mockReturnValue([])
 
-    const res = await request(app).get('/api/points/0x70997970C51812dc3A010C7d01b50e0d17dc79C8')
+    const res = await request(app).get('/api/v1/points/0x70997970C51812dc3A010C7d01b50e0d17dc79C8')
 
     expect(res.status).toBe(200)
     expect(res.body.data.totalPoints).toBe(0)

@@ -98,7 +98,7 @@ export function useApi() {
       signature: string
       message: string
     }): Promise<ClaimResult> => {
-      return apiFetch<ClaimResult>('/api/claim', {
+      return apiFetch<ClaimResult>('/api/v1/claim', {
         method: 'POST',
         body: JSON.stringify(params),
       })
@@ -108,7 +108,7 @@ export function useApi() {
 
   const getSurveys = useCallback(
     async (signature: string, message: string): Promise<SurveyInfo[]> => {
-      return apiFetch<SurveyInfo[]>('/api/surveys', {
+      return apiFetch<SurveyInfo[]>('/api/v1/surveys', {
         headers: {
           'Content-Type': 'application/json',
           'x-admin-signature': signature,
@@ -129,7 +129,7 @@ export function useApi() {
       adminSignature: string
       adminMessage: string
     }): Promise<SurveyRegisterResult> => {
-      return apiFetch<SurveyRegisterResult>('/api/surveys', {
+      return apiFetch<SurveyRegisterResult>('/api/v1/surveys', {
         method: 'POST',
         body: JSON.stringify(params),
       })
@@ -143,7 +143,7 @@ export function useApi() {
       secret: string,
       format: 'sosci' | 'limesurvey' = 'sosci',
     ): Promise<Blob> => {
-      const url = `${config.apiUrl}/api/surveys/${surveyId}/template?secret=${encodeURIComponent(
+      const url = `${config.apiUrl}/api/v1/surveys/${surveyId}/template?secret=${encodeURIComponent(
         secret,
       )}&format=${format}`
       const res = await fetch(url)
@@ -155,7 +155,7 @@ export function useApi() {
 
   const deactivateSurvey = useCallback(
     async (surveyId: number, signature: string, message: string): Promise<{ txHash: string }> => {
-      return apiFetch<{ txHash: string }>(`/api/surveys/${surveyId}/deactivate`, {
+      return apiFetch<{ txHash: string }>(`/api/v1/surveys/${surveyId}/deactivate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -172,7 +172,7 @@ export function useApi() {
       address: string,
     ): Promise<{ address: string; submitted: boolean; totalPoints: number }> => {
       return apiFetch<{ address: string; submitted: boolean; totalPoints: number }>(
-        `/api/wallets/${address}/submitted`,
+        `/api/v1/wallets/${address}/submitted`,
       )
     },
     [],
@@ -180,7 +180,7 @@ export function useApi() {
 
   const markWalletSubmitted = useCallback(
     async (address: string, signature: string, message: string): Promise<{ txHash: string }> => {
-      return apiFetch<{ txHash: string }>(`/api/wallets/${address}/mark-submitted`, {
+      return apiFetch<{ txHash: string }>(`/api/v1/wallets/${address}/mark-submitted`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -194,7 +194,7 @@ export function useApi() {
 
   const unmarkWalletSubmitted = useCallback(
     async (address: string, signature: string, message: string): Promise<{ txHash: string }> => {
-      return apiFetch<{ txHash: string }>(`/api/wallets/${address}/unmark-submitted`, {
+      return apiFetch<{ txHash: string }>(`/api/v1/wallets/${address}/unmark-submitted`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -208,7 +208,7 @@ export function useApi() {
 
   const getSystemStatus = useCallback(
     async (signature: string, message: string): Promise<SystemStatus> => {
-      return apiFetch<SystemStatus>('/api/status', {
+      return apiFetch<SystemStatus>('/api/v1/status', {
         headers: {
           'Content-Type': 'application/json',
           'x-admin-signature': signature,
@@ -220,12 +220,12 @@ export function useApi() {
   )
 
   const getAdmins = useCallback(async (): Promise<string[]> => {
-    const data = await apiFetch<AdminListData>('/api/admin')
+    const data = await apiFetch<AdminListData>('/api/v1/admin')
     return data.admins
   }, [])
 
   const getPointsData = useCallback(async (address: string): Promise<PointsData> => {
-    return apiFetch<PointsData>(`/api/points/${address}`)
+    return apiFetch<PointsData>(`/api/v1/points/${address}`)
   }, [])
 
   const addAdmin = useCallback(
@@ -234,7 +234,7 @@ export function useApi() {
       adminSignature: string,
       adminMessage: string,
     ): Promise<{ txHash: string; explorerUrl: string }> => {
-      return apiFetch<{ txHash: string; explorerUrl: string }>('/api/admin/add', {
+      return apiFetch<{ txHash: string; explorerUrl: string }>('/api/v1/admin/add', {
         method: 'POST',
         body: JSON.stringify({ address, adminSignature, adminMessage }),
       })
@@ -248,7 +248,7 @@ export function useApi() {
       adminSignature: string,
       adminMessage: string,
     ): Promise<{ txHash: string; explorerUrl: string }> => {
-      return apiFetch<{ txHash: string; explorerUrl: string }>('/api/admin/remove', {
+      return apiFetch<{ txHash: string; explorerUrl: string }>('/api/v1/admin/remove', {
         method: 'POST',
         body: JSON.stringify({ address, adminSignature, adminMessage }),
       })

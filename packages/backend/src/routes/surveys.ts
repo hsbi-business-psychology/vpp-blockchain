@@ -64,7 +64,9 @@ router.post('/', requireAdmin as unknown as RequestHandler, async (req, res, nex
     const result: SurveyRegisterResult = {
       txHash: receipt.hash,
       explorerUrl: `${config.explorerBaseUrl}/tx/${receipt.hash}`,
-      templateDownloadUrl: `/api/surveys/${surveyId}/template?secret=${encodeURIComponent(secret)}`,
+      templateDownloadUrl: `/api/v1/surveys/${surveyId}/template?secret=${encodeURIComponent(
+        secret,
+      )}`,
     }
 
     invalidateCache()

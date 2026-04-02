@@ -13,7 +13,7 @@ const ADMIN_WALLET = new ethers.Wallet(
 
 const TARGET_ADDRESS = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
 
-describe('GET /api/admin', () => {
+describe('GET /api/v1/admin', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
   })
@@ -24,7 +24,7 @@ describe('GET /api/admin', () => {
       TARGET_ADDRESS,
     ])
 
-    const res = await request(app).get('/api/admin')
+    const res = await request(app).get('/api/v1/admin')
 
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(true)
@@ -35,14 +35,14 @@ describe('GET /api/admin', () => {
   it('should return empty array when no admins', async () => {
     vi.mocked(eventStore.getCurrentAdmins).mockReturnValue([])
 
-    const res = await request(app).get('/api/admin')
+    const res = await request(app).get('/api/v1/admin')
 
     expect(res.status).toBe(200)
     expect(res.body.data.admins).toHaveLength(0)
   })
 })
 
-describe('POST /api/admin/add', () => {
+describe('POST /api/v1/admin/add', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
   })
@@ -58,7 +58,7 @@ describe('POST /api/admin/add', () => {
       hash: '0xaddadmintx',
     } as unknown as ethers.TransactionReceipt)
 
-    const res = await request(app).post('/api/admin/add').send({
+    const res = await request(app).post('/api/v1/admin/add').send({
       address: TARGET_ADDRESS,
       adminSignature: signature,
       adminMessage: message,
@@ -76,7 +76,7 @@ describe('POST /api/admin/add', () => {
 
     vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
 
-    const res = await request(app).post('/api/admin/add').send({
+    const res = await request(app).post('/api/v1/admin/add').send({
       address: TARGET_ADDRESS,
       adminSignature: signature,
       adminMessage: message,
@@ -93,7 +93,7 @@ describe('POST /api/admin/add', () => {
 
     vi.mocked(blockchain.isAdmin).mockResolvedValue(false)
 
-    const res = await request(app).post('/api/admin/add').send({
+    const res = await request(app).post('/api/v1/admin/add').send({
       address: TARGET_ADDRESS,
       adminSignature: signature,
       adminMessage: message,
@@ -104,7 +104,7 @@ describe('POST /api/admin/add', () => {
   })
 
   it('should reject without signature', async () => {
-    const res = await request(app).post('/api/admin/add').send({
+    const res = await request(app).post('/api/v1/admin/add').send({
       address: TARGET_ADDRESS,
     })
 
@@ -118,7 +118,7 @@ describe('POST /api/admin/add', () => {
 
     vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
 
-    const res = await request(app).post('/api/admin/add').send({
+    const res = await request(app).post('/api/v1/admin/add').send({
       address: 'not-a-valid-address',
       adminSignature: signature,
       adminMessage: message,
@@ -129,7 +129,7 @@ describe('POST /api/admin/add', () => {
   })
 })
 
-describe('POST /api/admin/remove', () => {
+describe('POST /api/v1/admin/remove', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
   })
@@ -147,7 +147,7 @@ describe('POST /api/admin/remove', () => {
       hash: '0xremoveadmintx',
     } as unknown as ethers.TransactionReceipt)
 
-    const res = await request(app).post('/api/admin/remove').send({
+    const res = await request(app).post('/api/v1/admin/remove').send({
       address: TARGET_ADDRESS,
       adminSignature: signature,
       adminMessage: message,
@@ -167,7 +167,7 @@ describe('POST /api/admin/remove', () => {
       async (addr: string) => addr.toLowerCase() === ADMIN_WALLET.address.toLowerCase(),
     )
 
-    const res = await request(app).post('/api/admin/remove').send({
+    const res = await request(app).post('/api/v1/admin/remove').send({
       address: TARGET_ADDRESS,
       adminSignature: signature,
       adminMessage: message,
@@ -184,7 +184,7 @@ describe('POST /api/admin/remove', () => {
 
     vi.mocked(blockchain.isAdmin).mockResolvedValue(false)
 
-    const res = await request(app).post('/api/admin/remove').send({
+    const res = await request(app).post('/api/v1/admin/remove').send({
       address: TARGET_ADDRESS,
       adminSignature: signature,
       adminMessage: message,

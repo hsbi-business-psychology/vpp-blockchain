@@ -14,7 +14,7 @@ function createSignedClaim(surveyId: number, secret: string) {
   return { message, timestamp }
 }
 
-describe('POST /api/claim', () => {
+describe('POST /api/v1/claim', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
   })
@@ -37,7 +37,7 @@ describe('POST /api/claim', () => {
       hash: '0xtxhash123',
     } as unknown as ethers.TransactionReceipt)
 
-    const res = await request(app).post('/api/claim').send({
+    const res = await request(app).post('/api/v1/claim').send({
       walletAddress: TEST_WALLET.address,
       surveyId: 1,
       secret: 'test-secret',
@@ -67,7 +67,7 @@ describe('POST /api/claim', () => {
       title: '',
     })
 
-    const res = await request(app).post('/api/claim').send({
+    const res = await request(app).post('/api/v1/claim').send({
       walletAddress: TEST_WALLET.address,
       surveyId: 1,
       secret: 'test-secret',
@@ -94,7 +94,7 @@ describe('POST /api/claim', () => {
     })
     vi.mocked(blockchain.hasClaimed).mockResolvedValue(true)
 
-    const res = await request(app).post('/api/claim').send({
+    const res = await request(app).post('/api/v1/claim').send({
       walletAddress: TEST_WALLET.address,
       surveyId: 1,
       secret: 'test-secret',
@@ -120,7 +120,7 @@ describe('POST /api/claim', () => {
       title: '',
     })
 
-    const res = await request(app).post('/api/claim').send({
+    const res = await request(app).post('/api/v1/claim').send({
       walletAddress: TEST_WALLET.address,
       surveyId: 999,
       secret: 'test-secret',
@@ -137,7 +137,7 @@ describe('POST /api/claim', () => {
     const message = `claim:1:test-secret:${oldTimestamp}`
     const signature = await TEST_WALLET.signMessage(message)
 
-    const res = await request(app).post('/api/claim').send({
+    const res = await request(app).post('/api/v1/claim').send({
       walletAddress: TEST_WALLET.address,
       surveyId: 1,
       secret: 'test-secret',
@@ -150,7 +150,9 @@ describe('POST /api/claim', () => {
   })
 
   it('should reject a request with missing fields', async () => {
-    const res = await request(app).post('/api/claim').send({ walletAddress: TEST_WALLET.address })
+    const res = await request(app)
+      .post('/api/v1/claim')
+      .send({ walletAddress: TEST_WALLET.address })
 
     expect(res.status).toBe(400)
     expect(res.body.error).toBe('VALIDATION_ERROR')
@@ -170,7 +172,7 @@ describe('POST /api/claim', () => {
       title: '',
     })
 
-    const res = await request(app).post('/api/claim').send({
+    const res = await request(app).post('/api/v1/claim').send({
       walletAddress: TEST_WALLET.address,
       surveyId: 1,
       secret: 'test-secret',

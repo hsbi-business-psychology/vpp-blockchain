@@ -5,7 +5,7 @@ import * as blockchain from '../src/services/blockchain.js'
 
 const app = createApp()
 
-describe('GET /api/health', () => {
+describe('GET /api/v1/health', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
   })
@@ -14,7 +14,7 @@ describe('GET /api/health', () => {
     vi.mocked(blockchain.getBlockNumber).mockResolvedValue(12345)
     vi.mocked(blockchain.getNetwork).mockResolvedValue('base-sepolia')
 
-    const res = await request(app).get('/api/health')
+    const res = await request(app).get('/api/v1/health')
 
     expect(res.status).toBe(200)
     expect(res.body.status).toBe('ok')
@@ -28,7 +28,7 @@ describe('GET /api/health', () => {
     vi.mocked(blockchain.getBlockNumber).mockRejectedValue(new Error('connection failed'))
     vi.mocked(blockchain.getNetwork).mockRejectedValue(new Error('connection failed'))
 
-    const res = await request(app).get('/api/health')
+    const res = await request(app).get('/api/v1/health')
 
     expect(res.status).toBe(503)
     expect(res.body.status).toBe('degraded')

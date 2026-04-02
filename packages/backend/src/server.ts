@@ -24,13 +24,7 @@ import { fileURLToPath } from 'node:url'
 import { config } from './config.js'
 import { apiLimiter } from './middleware/rateLimit.js'
 import { errorHandler } from './middleware/errorHandler.js'
-import adminRouter from './routes/admin.js'
-import claimRouter from './routes/claim.js'
-import pointsRouter from './routes/points.js'
-import surveysRouter from './routes/surveys.js'
-import walletsRouter from './routes/wallets.js'
-import healthRouter from './routes/health.js'
-import statusRouter from './routes/status.js'
+import { createApiRouter } from './routes/index.js'
 import { startEventStore } from './services/event-store.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -66,14 +60,13 @@ export function createApp(): Express {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   app.use(apiLimiter as any)
 
-  // Routes
-  app.use('/api/admin', adminRouter)
-  app.use('/api/claim', claimRouter)
-  app.use('/api/points', pointsRouter)
-  app.use('/api/surveys', surveysRouter)
-  app.use('/api/wallets', walletsRouter)
-  app.use('/api/health', healthRouter)
-  app.use('/api/status', statusRouter)
+  // Versioned API routes
+  app.use('/api/v1', createApiRouter())
+
+  // Backward-compatible redirect: /api/* -> /api/v1/*
+  app.use('/api', (req, res) => {
+    res.redirect(308, `/api/v1${req.url}`)
+  })
 
   // Error handling for API routes
   app.use(errorHandler)
@@ -95,7 +88,7 @@ if (process.env.NODE_ENV !== 'test') {
   const app = createApp()
   app.listen(config.port, () => {
     console.log(`VPP Backend listening on port ${config.port}`)
-    console.log(`  Health: http://localhost:${config.port}/api/health`)
+    console.log(`  Health: http://localhost:${config.port}/api/v1/health`)
   })
 
   startEventStore().catch((err) => {
