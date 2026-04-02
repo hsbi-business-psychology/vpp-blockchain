@@ -3,6 +3,9 @@ import { vi } from 'vitest'
 // Prevent server from starting during tests
 process.env.NODE_ENV = 'test'
 
+// Silence pino logging during tests
+process.env.LOG_LEVEL = 'silent'
+
 // Mock environment variables before config module loads
 process.env.PORT = '3000'
 process.env.RPC_URL = 'http://localhost:8545'
