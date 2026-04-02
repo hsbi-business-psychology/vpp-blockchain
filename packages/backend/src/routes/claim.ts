@@ -17,6 +17,7 @@ import { z } from 'zod'
 import { ethers } from 'ethers'
 import { config } from '../config.js'
 import { AppError } from '../middleware/errorHandler.js'
+import { throwValidationError } from '../lib/validation.js'
 import { claimLimiter } from '../middleware/rateLimit.js'
 import * as blockchain from '../services/blockchain.js'
 import { getEventStore } from '../services/event-store.js'
@@ -36,7 +37,7 @@ router.post('/', claimLimiter as RequestHandler, async (req, res, next) => {
   try {
     const parsed = claimSchema.safeParse(req.body)
     if (!parsed.success) {
-      throw new AppError(400, 'VALIDATION_ERROR', parsed.error.issues[0].message)
+      throwValidationError(parsed.error)
     }
 
     const { walletAddress, surveyId, secret, signature, message } = parsed.data

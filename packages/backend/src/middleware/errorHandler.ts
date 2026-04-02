@@ -24,6 +24,13 @@ export class AppError extends Error {
   }
 }
 
+export class ValidationError extends AppError {
+  constructor(public readonly details: Array<{ field: string; message: string }>) {
+    super(400, 'VALIDATION_ERROR', details.map((d) => d.message).join('; '))
+    this.name = 'ValidationError'
+  }
+}
+
 const REVERT_MAP: Record<string, { status: number; code: string; message: string }> = {
   AlreadyClaimed: {
     status: 409,
@@ -87,6 +94,16 @@ export function parseContractError(err: unknown): AppError | undefined {
  * errors thrown or passed via `next(err)` in route handlers are caught here.
  */
 export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction): void {
+  if (err instanceof ValidationError) {
+    res.status(400).json({
+      success: false,
+      error: 'VALIDATION_ERROR',
+      message: err.message,
+      details: err.details,
+    })
+    return
+  }
+
   if (err instanceof AppError) {
     res.status(err.statusCode).json({
       success: false,
