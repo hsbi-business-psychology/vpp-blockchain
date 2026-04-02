@@ -32,6 +32,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 export function createApp(): Express {
   const app = express()
 
+  // Reverse proxy support (Nginx, Plesk, Docker, load balancers)
+  if (config.trustProxy !== 'false') {
+    const numeric = parseInt(config.trustProxy, 10)
+    app.set('trust proxy', isNaN(numeric) ? config.trustProxy : numeric)
+  }
+
   // Security & parsing
   app.use(
     helmet({

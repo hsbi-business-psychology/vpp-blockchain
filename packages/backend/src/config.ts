@@ -44,6 +44,8 @@ export const config = {
     max: parseInt(optional('API_RATE_LIMIT_MAX', '100'), 10),
   },
 
+  trustProxy: optional('TRUST_PROXY', 'false'),
+
   rateLimitStore: optional('RATE_LIMIT_STORE', 'memory') as 'memory' | 'redis',
   redisUrl: process.env.REDIS_URL || undefined,
 
