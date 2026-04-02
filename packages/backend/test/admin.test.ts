@@ -3,7 +3,7 @@ import request from 'supertest'
 import { ethers } from 'ethers'
 import { createApp } from '../src/server.js'
 import * as blockchain from '../src/services/blockchain.js'
-import * as eventStore from '../src/services/event-store.js'
+import { getEventStore } from '../src/services/event-store.js'
 
 const app = createApp()
 
@@ -19,7 +19,7 @@ describe('GET /api/v1/admin', () => {
   })
 
   it('should return the current admin list', async () => {
-    vi.mocked(eventStore.getCurrentAdmins).mockReturnValue([
+    vi.mocked(getEventStore()).getCurrentAdmins.mockReturnValue([
       '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
       TARGET_ADDRESS,
     ])
@@ -33,7 +33,7 @@ describe('GET /api/v1/admin', () => {
   })
 
   it('should return empty array when no admins', async () => {
-    vi.mocked(eventStore.getCurrentAdmins).mockReturnValue([])
+    vi.mocked(getEventStore()).getCurrentAdmins.mockReturnValue([])
 
     const res = await request(app).get('/api/v1/admin')
 

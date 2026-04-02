@@ -16,7 +16,7 @@ import { config } from '../config.js'
 import { AppError } from '../middleware/errorHandler.js'
 import { requireAdmin } from '../middleware/auth.js'
 import * as blockchain from '../services/blockchain.js'
-import * as eventStore from '../services/event-store.js'
+import { getEventStore } from '../services/event-store.js'
 
 const router: Router = Router()
 
@@ -28,9 +28,10 @@ const roleSchema = z.object({
 
 router.get('/', async (_req, res, next) => {
   try {
+    const store = getEventStore()
     let admins: string[]
-    if (eventStore.isReady()) {
-      admins = eventStore.getCurrentAdmins()
+    if (store.isReady()) {
+      admins = store.getCurrentAdmins()
     } else {
       admins = await blockchain.getAdminAddresses()
     }
@@ -57,7 +58,7 @@ router.post('/add', requireAdmin as unknown as RequestHandler, async (req, res, 
     }
 
     const receipt = await blockchain.addAdmin(parsed.data.address)
-    await eventStore.sync()
+    await getEventStore().sync()
 
     res.status(201).json({
       success: true,
@@ -88,7 +89,7 @@ router.post('/remove', requireAdmin as unknown as RequestHandler, async (req, re
     }
 
     const receipt = await blockchain.removeAdmin(parsed.data.address)
-    await eventStore.sync()
+    await getEventStore().sync()
 
     res.json({
       success: true,

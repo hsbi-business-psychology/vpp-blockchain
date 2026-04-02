@@ -19,7 +19,7 @@ import { config } from '../config.js'
 import { AppError } from '../middleware/errorHandler.js'
 import { claimLimiter } from '../middleware/rateLimit.js'
 import * as blockchain from '../services/blockchain.js'
-import * as eventStore from '../services/event-store.js'
+import { getEventStore } from '../services/event-store.js'
 import type { ClaimResult } from '../types.js'
 
 const router: Router = Router()
@@ -113,7 +113,7 @@ router.post('/', claimLimiter as RequestHandler, async (req, res, next) => {
 
     // Submit transaction
     const receipt = await blockchain.awardPoints(walletAddress, surveyId, secret)
-    await eventStore.sync()
+    await getEventStore().sync()
 
     const result: ClaimResult = {
       txHash: receipt.hash,

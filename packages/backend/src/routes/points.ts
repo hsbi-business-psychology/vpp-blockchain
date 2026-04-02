@@ -11,7 +11,7 @@ import { ethers } from 'ethers'
 import { AppError } from '../middleware/errorHandler.js'
 import { parsePagination, paginate } from '../lib/pagination.js'
 import * as blockchain from '../services/blockchain.js'
-import * as eventStore from '../services/event-store.js'
+import { getEventStore } from '../services/event-store.js'
 import type { PointsResult } from '../types.js'
 
 const router: Router = Router()
@@ -31,8 +31,9 @@ router.get('/:wallet', async (req, res, next) => {
       txHash: string
     }>
 
-    if (eventStore.isReady()) {
-      claimEvents = eventStore.getPointsAwardedByWallet(wallet)
+    const store = getEventStore()
+    if (store.isReady()) {
+      claimEvents = store.getPointsAwardedByWallet(wallet)
     } else {
       const rpcEvents = await blockchain.getPointsAwardedEvents(wallet)
       claimEvents = rpcEvents.map((e) => ({

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import request from 'supertest'
 import { createApp } from '../src/server.js'
 import * as blockchain from '../src/services/blockchain.js'
-import * as eventStore from '../src/services/event-store.js'
+import { getEventStore } from '../src/services/event-store.js'
 
 const app = createApp()
 
@@ -13,7 +13,7 @@ describe('GET /api/v1/points/:wallet', () => {
 
   it('should return points for a valid wallet', async () => {
     vi.mocked(blockchain.getTotalPoints).mockResolvedValue(5)
-    vi.mocked(eventStore.getPointsAwardedByWallet).mockReturnValue([
+    vi.mocked(getEventStore()).getPointsAwardedByWallet.mockReturnValue([
       {
         wallet: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
         surveyId: 1,
@@ -52,7 +52,7 @@ describe('GET /api/v1/points/:wallet', () => {
 
   it('should return 0 points for a wallet with no claims', async () => {
     vi.mocked(blockchain.getTotalPoints).mockResolvedValue(0)
-    vi.mocked(eventStore.getPointsAwardedByWallet).mockReturnValue([])
+    vi.mocked(getEventStore()).getPointsAwardedByWallet.mockReturnValue([])
 
     const res = await request(app).get('/api/v1/points/0x70997970C51812dc3A010C7d01b50e0d17dc79C8')
 

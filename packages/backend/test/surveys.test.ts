@@ -3,7 +3,7 @@ import request from 'supertest'
 import { ethers } from 'ethers'
 import { createApp } from '../src/server.js'
 import * as blockchain from '../src/services/blockchain.js'
-import * as eventStore from '../src/services/event-store.js'
+import { getEventStore } from '../src/services/event-store.js'
 import { invalidateCache } from '../src/services/survey-cache.js'
 
 const app = createApp()
@@ -92,7 +92,7 @@ describe('GET /api/v1/surveys', () => {
   })
 
   it('should list all registered surveys', async () => {
-    vi.mocked(eventStore.getSurveyRegisteredEvents).mockReturnValue([
+    vi.mocked(getEventStore()).getSurveyRegisteredEvents.mockReturnValue([
       {
         surveyId: 1,
         points: 2,
@@ -122,7 +122,7 @@ describe('GET /api/v1/surveys', () => {
   })
 
   it('should return empty list when no surveys exist', async () => {
-    vi.mocked(eventStore.getSurveyRegisteredEvents).mockReturnValue([])
+    vi.mocked(getEventStore()).getSurveyRegisteredEvents.mockReturnValue([])
 
     const res = await request(app).get('/api/v1/surveys')
 

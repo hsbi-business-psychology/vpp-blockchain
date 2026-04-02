@@ -8,7 +8,7 @@
  * via individual view-function calls.
  */
 import * as blockchain from './blockchain.js'
-import * as eventStore from './event-store.js'
+import { getEventStore } from './event-store.js'
 import type { SurveyInfo } from '../types.js'
 
 const CACHE_TTL_MS = 30_000
@@ -23,8 +23,9 @@ export async function getSurveysWithCache(): Promise<SurveyInfo[]> {
 
   let surveyEvents: Array<{ surveyId: number }>
 
-  if (eventStore.isReady()) {
-    surveyEvents = eventStore.getSurveyRegisteredEvents()
+  const store = getEventStore()
+  if (store.isReady()) {
+    surveyEvents = store.getSurveyRegisteredEvents()
   } else {
     surveyEvents = await blockchain.getSurveyRegisteredEvents()
   }

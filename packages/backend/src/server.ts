@@ -25,7 +25,7 @@ import { config } from './config.js'
 import { apiLimiter } from './middleware/rateLimit.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { createApiRouter } from './routes/index.js'
-import { startEventStore } from './services/event-store.js'
+import { getEventStore } from './services/event-store.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -91,7 +91,9 @@ if (process.env.NODE_ENV !== 'test') {
     console.log(`  Health: http://localhost:${config.port}/api/v1/health`)
   })
 
-  startEventStore().catch((err) => {
-    console.error('Event store initial sync failed (will retry periodically):', err)
-  })
+  getEventStore()
+    .start()
+    .catch((err) => {
+      console.error('Event store initial sync failed (will retry periodically):', err)
+    })
 }

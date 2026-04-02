@@ -44,14 +44,18 @@ vi.mock('../src/services/blockchain.js', () => ({
   queryFilterChunked: vi.fn(),
 }))
 
-// Mock the event store globally (isReady returns true so routes use the event store path)
-vi.mock('../src/services/event-store.js', () => ({
+// Mock event store with factory pattern (getEventStore returns the mock instance)
+const mockEventStore = {
   sync: vi.fn(() => Promise.resolve()),
   getSurveyRegisteredEvents: vi.fn(() => []),
   getPointsAwardedByWallet: vi.fn(() => []),
   getCurrentAdmins: vi.fn(() => []),
   getLastSyncedBlock: vi.fn(() => 1),
   isReady: vi.fn(() => true),
-  startEventStore: vi.fn(() => Promise.resolve()),
-  stopEventStore: vi.fn(),
+  start: vi.fn(() => Promise.resolve()),
+  stop: vi.fn(),
+}
+
+vi.mock('../src/services/event-store.js', () => ({
+  getEventStore: vi.fn(() => mockEventStore),
 }))
