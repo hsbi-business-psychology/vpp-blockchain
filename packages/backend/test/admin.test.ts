@@ -48,7 +48,8 @@ describe('POST /api/v1/admin/add', () => {
   })
 
   it('should add an admin with valid signature', async () => {
-    const message = `Add admin ${TARGET_ADDRESS} at ${Date.now()}`
+    const timestamp = Math.floor(Date.now() / 1000)
+    const message = `Add admin ${TARGET_ADDRESS} at ${timestamp}`
     const signature = await ADMIN_WALLET.signMessage(message)
 
     vi.mocked(blockchain.isAdmin).mockImplementation(
@@ -71,7 +72,8 @@ describe('POST /api/v1/admin/add', () => {
   })
 
   it('should reject if target is already an admin', async () => {
-    const message = `Add admin ${TARGET_ADDRESS} at ${Date.now()}`
+    const timestamp = Math.floor(Date.now() / 1000)
+    const message = `Add admin ${TARGET_ADDRESS} at ${timestamp}`
     const signature = await ADMIN_WALLET.signMessage(message)
 
     vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
@@ -88,7 +90,8 @@ describe('POST /api/v1/admin/add', () => {
 
   it('should reject from a non-admin wallet', async () => {
     const nonAdmin = ethers.Wallet.createRandom()
-    const message = `Add admin ${TARGET_ADDRESS} at ${Date.now()}`
+    const timestamp = Math.floor(Date.now() / 1000)
+    const message = `Add admin ${TARGET_ADDRESS} at ${timestamp}`
     const signature = await nonAdmin.signMessage(message)
 
     vi.mocked(blockchain.isAdmin).mockResolvedValue(false)
@@ -112,8 +115,26 @@ describe('POST /api/v1/admin/add', () => {
     expect(res.body.error).toBe('UNAUTHORIZED')
   })
 
+  it('should reject an expired admin signature', async () => {
+    const oldTimestamp = Math.floor(Date.now() / 1000) - 600
+    const message = `Add admin ${TARGET_ADDRESS} at ${oldTimestamp}`
+    const signature = await ADMIN_WALLET.signMessage(message)
+
+    vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
+
+    const res = await request(app).post('/api/v1/admin/add').send({
+      address: TARGET_ADDRESS,
+      adminSignature: signature,
+      adminMessage: message,
+    })
+
+    expect(res.status).toBe(400)
+    expect(res.body.error).toBe('EXPIRED_MESSAGE')
+  })
+
   it('should reject with invalid address', async () => {
-    const message = `Add admin invalid at ${Date.now()}`
+    const timestamp = Math.floor(Date.now() / 1000)
+    const message = `Add admin invalid at ${timestamp}`
     const signature = await ADMIN_WALLET.signMessage(message)
 
     vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
@@ -135,7 +156,8 @@ describe('POST /api/v1/admin/remove', () => {
   })
 
   it('should remove an admin with valid signature', async () => {
-    const message = `Remove admin ${TARGET_ADDRESS} at ${Date.now()}`
+    const timestamp = Math.floor(Date.now() / 1000)
+    const message = `Remove admin ${TARGET_ADDRESS} at ${timestamp}`
     const signature = await ADMIN_WALLET.signMessage(message)
 
     vi.mocked(blockchain.isAdmin).mockImplementation(async (addr: string) => {
@@ -160,7 +182,8 @@ describe('POST /api/v1/admin/remove', () => {
   })
 
   it('should reject if target is not an admin', async () => {
-    const message = `Remove admin ${TARGET_ADDRESS} at ${Date.now()}`
+    const timestamp = Math.floor(Date.now() / 1000)
+    const message = `Remove admin ${TARGET_ADDRESS} at ${timestamp}`
     const signature = await ADMIN_WALLET.signMessage(message)
 
     vi.mocked(blockchain.isAdmin).mockImplementation(
@@ -179,7 +202,8 @@ describe('POST /api/v1/admin/remove', () => {
 
   it('should reject from a non-admin wallet', async () => {
     const nonAdmin = ethers.Wallet.createRandom()
-    const message = `Remove admin ${TARGET_ADDRESS} at ${Date.now()}`
+    const timestamp = Math.floor(Date.now() / 1000)
+    const message = `Remove admin ${TARGET_ADDRESS} at ${timestamp}`
     const signature = await nonAdmin.signMessage(message)
 
     vi.mocked(blockchain.isAdmin).mockResolvedValue(false)

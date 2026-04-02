@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express'
 import { ethers } from 'ethers'
+import { config } from '../config.js'
 import { isAdmin as checkAdmin } from '../services/blockchain.js'
 
 /**
@@ -26,6 +27,29 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
 
   try {
     const recoveredAddress = ethers.verifyMessage(adminMessage, adminSignature)
+
+    // Validate message timestamp to prevent replay attacks
+    const parts = adminMessage.split(/[\s:]+/)
+    const timestamp = parseInt(parts[parts.length - 1], 10)
+    if (!isNaN(timestamp) && timestamp < 1e12) {
+      const ageMs = Date.now() - timestamp * 1000
+      if (ageMs > config.maxMessageAgeMs) {
+        res.status(400).json({
+          success: false,
+          error: 'EXPIRED_MESSAGE',
+          message: 'Your admin signature has expired (older than 5 minutes). Please sign again.',
+        })
+        return
+      }
+      if (ageMs < -60_000) {
+        res.status(400).json({
+          success: false,
+          error: 'INVALID_TIMESTAMP',
+          message: 'Your device clock appears to be incorrect. Please check your system time.',
+        })
+        return
+      }
+    }
 
     const hasRole = await checkAdmin(recoveredAddress)
     if (!hasRole) {
