@@ -86,14 +86,32 @@ export function createApp(): Express {
 // Start the server only when this file is the entry point (not during tests)
 if (process.env.NODE_ENV !== 'test') {
   const app = createApp()
-  app.listen(config.port, () => {
+  const server = app.listen(config.port, () => {
     console.log(`VPP Backend listening on port ${config.port}`)
     console.log(`  Health: http://localhost:${config.port}/api/v1/health`)
   })
 
-  getEventStore()
-    .start()
-    .catch((err) => {
-      console.error('Event store initial sync failed (will retry periodically):', err)
+  const eventStore = getEventStore()
+  eventStore.start().catch((err) => {
+    console.error('Event store initial sync failed (will retry periodically):', err)
+  })
+
+  async function shutdown(signal: string) {
+    console.log(`\n${signal} received — shutting down gracefully...`)
+
+    server.close(() => {
+      console.log('HTTP server closed')
     })
+
+    eventStore.stop()
+    console.log('Event store stopped')
+
+    setTimeout(() => {
+      console.error('Graceful shutdown timed out — forcing exit')
+      process.exit(1)
+    }, 10_000).unref()
+  }
+
+  process.on('SIGTERM', () => void shutdown('SIGTERM'))
+  process.on('SIGINT', () => void shutdown('SIGINT'))
 }

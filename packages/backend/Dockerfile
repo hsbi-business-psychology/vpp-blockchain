@@ -36,5 +36,6 @@ COPY packages/contracts/artifacts packages/contracts/artifacts/
 
 ENV NODE_ENV=production
 EXPOSE 3000
+STOPSIGNAL SIGTERM
 
 CMD ["node", "packages/backend/dist/server.js"]
