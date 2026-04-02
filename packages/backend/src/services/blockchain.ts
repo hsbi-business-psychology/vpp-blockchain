@@ -288,4 +288,23 @@ export async function getAdminAddresses(): Promise<string[]> {
   return Array.from(adminSet)
 }
 
+/**
+ * Validates that the connected RPC returns the expected chain ID.
+ * Throws if EXPECTED_CHAIN_ID is set and does not match.
+ */
+export async function validateChainId(): Promise<void> {
+  if (!config.expectedChainId) return
+
+  const network = await provider.getNetwork()
+  const actual = network.chainId.toString()
+  const expected = config.expectedChainId
+
+  if (actual !== expected) {
+    throw new Error(
+      `Chain ID mismatch: RPC returned ${actual}, expected ${expected}. ` +
+        'Check RPC_URL and EXPECTED_CHAIN_ID.',
+    )
+  }
+}
+
 export { provider, contract, readOnlyContract, queryFilterChunked }

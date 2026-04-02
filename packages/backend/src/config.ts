@@ -62,4 +62,11 @@ export const config = {
 
   /** Block range per RPC query chunk (free-tier RPCs typically cap at 10,000). */
   chunkSize: parseInt(optional('CHUNK_SIZE', '9000'), 10),
+
+  /**
+   * Expected chain ID for the connected RPC.
+   * Set to validate at startup (e.g. '84532' for Base Sepolia, '8453' for Base Mainnet).
+   * Leave unset to skip validation.
+   */
+  expectedChainId: process.env.EXPECTED_CHAIN_ID || undefined,
 } as const

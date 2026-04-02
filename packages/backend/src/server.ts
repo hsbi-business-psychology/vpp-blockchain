@@ -28,6 +28,7 @@ import { requestLogger } from './middleware/requestLogger.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { createApiRouter } from './routes/index.js'
 import { getEventStore } from './services/event-store.js'
+import { validateChainId } from './services/blockchain.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -99,6 +100,15 @@ if (process.env.NODE_ENV !== 'test') {
   const server = app.listen(config.port, () => {
     logger.info({ port: config.port }, 'VPP Backend listening')
   })
+
+  validateChainId()
+    .then(() => {
+      logger.info('Chain ID validation passed')
+    })
+    .catch((err) => {
+      logger.fatal({ err }, 'Chain ID validation failed — shutting down')
+      process.exit(1)
+    })
 
   const eventStore = getEventStore()
   eventStore.start().catch((err) => {

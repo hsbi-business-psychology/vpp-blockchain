@@ -45,6 +45,7 @@ vi.mock('../src/services/blockchain.js', () => ({
   contract: {},
   readOnlyContract: {},
   queryFilterChunked: vi.fn(),
+  validateChainId: vi.fn(() => Promise.resolve()),
 }))
 
 // Mock event store with factory pattern (getEventStore returns the mock instance)
