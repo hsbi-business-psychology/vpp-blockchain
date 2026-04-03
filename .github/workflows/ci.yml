@@ -103,8 +103,8 @@ jobs:
       - name: Type check & build
         run: pnpm --filter @vpp/frontend run build
 
-      - name: Run tests
-        run: pnpm --filter @vpp/frontend run test
+      - name: Run tests with coverage
+        run: pnpm --filter @vpp/frontend run test:coverage
 
   lighthouse:
     name: Lighthouse CI
