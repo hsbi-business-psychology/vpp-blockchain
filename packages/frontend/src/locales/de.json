@@ -187,6 +187,11 @@
       "submit": "Absenden",
       "done": "Fertig"
     },
+    "stepper": {
+      "label": "Claim-Fortschritt",
+      "completed": "Abgeschlossen",
+      "currentStep": "Schritt {{step}} von {{total}}: {{name}}"
+    },
     "noWallet": "Du brauchst ein Wallet, um Punkte einzulösen.",
     "createFirst": "Zuerst Wallet erstellen",
     "signing": "Nachricht wird signiert...",

@@ -187,6 +187,11 @@
       "submit": "Submit",
       "done": "Done"
     },
+    "stepper": {
+      "label": "Claim progress",
+      "completed": "Completed",
+      "currentStep": "Step {{step}} of {{total}}: {{name}}"
+    },
     "noWallet": "You need a wallet to claim points.",
     "createFirst": "Create Wallet First",
     "signing": "Signing message...",

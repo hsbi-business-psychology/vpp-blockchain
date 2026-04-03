@@ -93,14 +93,22 @@ export default function ClaimPage() {
       <h1 className="text-2xl font-bold">{t('claim.title')}</h1>
 
       {/* Stepper */}
-      <div className="flex items-center justify-between">
+      <div
+        className="flex items-center justify-between"
+        role="group"
+        aria-label={t('claim.stepper.label')}
+      >
         {steps.map((step, i) => {
           const stepIndex = steps.indexOf(currentStep)
           const isDone = i < stepIndex || currentStep === 'done'
           const isCurrent = step === currentStep
 
           return (
-            <div key={step} className="flex flex-1 items-center">
+            <div
+              key={step}
+              className="flex flex-1 items-center"
+              aria-current={isCurrent ? 'step' : undefined}
+            >
               <div className="flex flex-col items-center gap-1">
                 <div
                   className={cn(
@@ -112,13 +120,23 @@ export default function ClaimPage() {
                 >
                   {isDone ? <CheckCircle2 className="size-4" /> : i + 1}
                 </div>
-                <span className="text-xs text-muted-foreground">{t(`claim.steps.${step}`)}</span>
+                <span className="text-xs text-muted-foreground">
+                  {t(`claim.steps.${step}`)}
+                  {isDone && <span className="sr-only"> – {t('claim.stepper.completed')}</span>}
+                </span>
               </div>
               {i < steps.length - 1 && (
                 <div className={cn('mx-2 h-px flex-1', isDone ? 'bg-success' : 'bg-border')} />
               )}
             </div>
           )
+        })}
+      </div>
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {t('claim.stepper.currentStep', {
+          step: steps.indexOf(currentStep) + 1,
+          total: steps.length,
+          name: t(`claim.steps.${currentStep}`),
         })}
       </div>
 
