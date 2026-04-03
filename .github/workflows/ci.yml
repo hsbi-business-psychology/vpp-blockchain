@@ -105,3 +105,29 @@ jobs:
 
       - name: Run tests
         run: pnpm --filter @vpp/frontend run test
+
+  lighthouse:
+    name: Lighthouse CI
+    runs-on: ubuntu-latest
+    needs: [frontend]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        run: pnpm --filter @vpp/frontend run build
+        env:
+          VITE_CONTRACT_ADDRESS: '0x0000000000000000000000000000000000000000'
+          VITE_RPC_URL: 'https://sepolia.base.org'
+          VITE_EXPLORER_URL: 'https://sepolia.basescan.org'
+
+      - name: Run Lighthouse CI
+        run: npx @lhci/cli autorun
