@@ -5,6 +5,9 @@
  * Uses ethers.js `JsonRpcProvider` (no wallet needed) to call view functions
  * directly against the public RPC.
  *
+ * Provider and Contract instances are cached as module-level singletons
+ * to avoid creating new TCP connections on every call.
+ *
  * Each method returns a plain Promise — callers manage their own
  * loading / error state so multiple concurrent calls don't conflict.
  */
@@ -13,12 +16,18 @@ import { ethers } from 'ethers'
 import { config } from '@/lib/config'
 import { SURVEY_POINTS_ABI } from '@/lib/contract-abi'
 
+let cachedProvider: ethers.JsonRpcProvider | null = null
+let cachedContract: ethers.Contract | null = null
+
 function getContract() {
   if (!config.contractAddress) {
     throw new Error('Contract address not configured')
   }
-  const provider = new ethers.JsonRpcProvider(config.rpcUrl)
-  return new ethers.Contract(config.contractAddress, SURVEY_POINTS_ABI, provider)
+  if (!cachedContract) {
+    cachedProvider = new ethers.JsonRpcProvider(config.rpcUrl)
+    cachedContract = new ethers.Contract(config.contractAddress, SURVEY_POINTS_ABI, cachedProvider)
+  }
+  return cachedContract
 }
 
 export function useBlockchain() {
@@ -70,11 +79,17 @@ export function useBlockchain() {
     return contract.isWalletSubmitted(address)
   }, [])
 
+  const isAdmin = useCallback(async (address: string): Promise<boolean> => {
+    const contract = getContract()
+    return contract.isAdmin(address)
+  }, [])
+
   return {
     getTotalPoints,
     getSurveyPoints,
     hasClaimed,
     getSurveyInfo,
     isWalletSubmitted,
+    isAdmin,
   }
 }

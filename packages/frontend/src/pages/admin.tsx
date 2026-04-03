@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ethers } from 'ethers'
 import { Loader2, LogOut } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -17,15 +16,16 @@ import { DeactivateSurveyDialog } from '@/components/admin/deactivate-survey-dia
 import { TemplateDownloadDialog } from '@/components/admin/template-download-dialog'
 import { useWallet } from '@/hooks/use-wallet'
 import { useApi } from '@/hooks/use-api'
+import { useBlockchain } from '@/hooks/use-blockchain'
 import { ApiRequestError } from '@vpp/shared'
 import type { SurveyInfo } from '@vpp/shared'
-import { SURVEY_POINTS_ABI } from '@/lib/contract-abi'
 import { storeSecret, getSecret } from '@/lib/survey-secrets'
 
 export default function AdminPage() {
   const { t } = useTranslation()
   const { wallet, hasWallet, sign } = useWallet()
   const { getSurveys, registerSurvey, downloadTemplate, deactivateSurvey } = useApi()
+  const { isAdmin: checkIsAdmin } = useBlockchain()
 
   const [adminCheck, setAdminCheck] = useState<'loading' | 'admin' | 'denied'>('loading')
   const [authenticated, setAuthenticated] = useState(false)
@@ -44,12 +44,9 @@ export default function AdminPage() {
   const [templateSecret, setTemplateSecret] = useState('')
   const [templateLoading, setTemplateLoading] = useState(false)
 
-  const rpcUrl = import.meta.env.VITE_RPC_URL || ''
-  const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS || ''
-
   // ── Admin check ────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!wallet || !rpcUrl || !contractAddress) {
+    if (!wallet) {
       setAdminCheck('loading')
       return
     }
@@ -58,9 +55,7 @@ export default function AdminPage() {
     const check = async () => {
       setAdminCheck('loading')
       try {
-        const provider = new ethers.JsonRpcProvider(rpcUrl)
-        const contract = new ethers.Contract(contractAddress, SURVEY_POINTS_ABI, provider)
-        const result = await contract.isAdmin(wallet.address)
+        const result = await checkIsAdmin(wallet.address)
         if (!cancelled) setAdminCheck(result ? 'admin' : 'denied')
       } catch {
         if (!cancelled) setAdminCheck('denied')
@@ -70,7 +65,7 @@ export default function AdminPage() {
     return () => {
       cancelled = true
     }
-  }, [wallet, rpcUrl, contractAddress])
+  }, [wallet, checkIsAdmin])
 
   // ── Auth ───────────────────────────────────────────────────────────────
   const handleAuth = useCallback(async () => {
