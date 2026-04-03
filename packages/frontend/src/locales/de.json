@@ -153,7 +153,8 @@
       "showKey": "Private Key anzeigen",
       "hideKey": "Private Key verbergen",
       "downloadKey": "Key-Datei herunterladen",
-      "warning": "Teile deinen Private Key niemals mit anderen. Bewahre ihn sicher auf!"
+      "warning": "Teile deinen Private Key niemals mit anderen. Bewahre ihn sicher auf!",
+      "privateKeyTip": "Informationen zum Private Key"
     },
     "reveal": {
       "title": "Private Key anzeigen",
@@ -380,7 +381,8 @@
         "description": "Die Abgabe-Markierung wird von diesem Wallet entfernt. Es kann dann erneut zur Zulassung vorgelegt werden.",
         "button": "Markierung aufheben"
       },
-      "infoTip": "Wenn Studierende genügend Punkte gesammelt haben, zeigen sie ihren Public Key dem Prüfer. Dieser prüft den Punktestand und markiert das Wallet als abgegeben, damit es nicht erneut verwendet werden kann."
+      "infoTip": "Wenn Studierende genügend Punkte gesammelt haben, zeigen sie ihren Public Key dem Prüfer. Dieser prüft den Punktestand und markiert das Wallet als abgegeben, damit es nicht erneut verwendet werden kann.",
+      "infoLabel": "Informationen zur Abgabeverwaltung"
     },
     "roles": {
       "title": "Admin-Rollenverwaltung",
@@ -396,6 +398,7 @@
       "errorAdd": "Admin konnte nicht hinzugef\u00fcgt werden. Pr\u00fcfe, ob die Adresse g\u00fcltig ist und ob das Backend-Wallet ausreichend Guthaben hat.",
       "errorRemove": "Admin konnte nicht entfernt werden. M\u00f6glicherweise hat diese Adresse bereits keine Admin-Rolle.",
       "infoTip": "Die ADMIN_ROLE wird direkt im Smart Contract gespeichert. Jeder Admin kann anderen Wallets die Admin-Rolle geben oder entziehen. Diese Änderungen sind auf der Blockchain sichtbar und unveränderlich protokolliert.",
+      "infoLabel": "Informationen zur Admin-Verwaltung",
       "you": "(Du)",
       "checking": "Prüfe Rolle..."
     },
@@ -415,7 +418,8 @@
       "statusOk": "Ausreichend",
       "statusLow": "Niedrig",
       "loadError": "System-Status konnte nicht geladen werden. Pr\u00fcfe, ob das Backend erreichbar ist.",
-      "infoTip": "Das Backend-Wallet bezahlt alle Transaktionskosten (Gas-Fees) auf der Blockchain. Wenn das Guthaben aufgebraucht ist, können keine neuen Claims oder Umfragen mehr verarbeitet werden. Lade rechtzeitig ETH auf die angezeigte Adresse nach."
+      "infoTip": "Das Backend-Wallet bezahlt alle Transaktionskosten (Gas-Fees) auf der Blockchain. Wenn das Guthaben aufgebraucht ist, können keine neuen Claims oder Umfragen mehr verarbeitet werden. Lade rechtzeitig ETH auf die angezeigte Adresse nach.",
+      "infoLabel": "Informationen zum Systemstatus"
     }
   },
   "infoTips": {

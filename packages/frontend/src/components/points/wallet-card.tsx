@@ -152,7 +152,7 @@ export function WalletCard({
                   <label className="text-xs font-medium text-muted-foreground">
                     {t('wallet.info.privateKey')}
                   </label>
-                  <InfoTip text={t('infoTips.privateKey')} />
+                  <InfoTip text={t('infoTips.privateKey')} label={t('wallet.info.privateKeyTip')} />
                 </div>
                 {keyRevealed ? (
                   <div className="space-y-2">
@@ -226,13 +226,13 @@ export function WalletCard({
   )
 }
 
-function InfoTip({ text }: { text: string }) {
+function InfoTip({ text, label }: { text: string; label?: string }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <button
           className="inline-flex size-5 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
-          aria-label="Info"
+          aria-label={label ?? text}
         >
           <Info className="size-3.5" aria-hidden="true" />
         </button>

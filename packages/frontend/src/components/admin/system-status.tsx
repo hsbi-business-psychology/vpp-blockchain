@@ -98,7 +98,7 @@ export function SystemStatus({ adminSignature, adminMessage }: SystemStatusProps
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="cursor-help" aria-label="Info">
+                    <span className="cursor-help" aria-label={t('admin.systemStatus.infoLabel')}>
                       <Info className="size-3.5 text-muted-foreground" aria-hidden="true" />
                     </span>
                   </TooltipTrigger>

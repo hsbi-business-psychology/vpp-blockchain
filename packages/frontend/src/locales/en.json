@@ -153,7 +153,8 @@
       "showKey": "Show Private Key",
       "hideKey": "Hide Private Key",
       "downloadKey": "Download Key File",
-      "warning": "Never share your private key with anyone. Store it securely!"
+      "warning": "Never share your private key with anyone. Store it securely!",
+      "privateKeyTip": "Information about the private key"
     },
     "reveal": {
       "title": "Reveal Private Key",
@@ -380,7 +381,8 @@
         "description": "The submission mark will be removed from this wallet. It can then be presented for admission again.",
         "button": "Remove mark"
       },
-      "infoTip": "When students have collected enough points, they show their public key to the examiner. The examiner checks the balance and marks the wallet as \"submitted\" so it cannot be reused."
+      "infoTip": "When students have collected enough points, they show their public key to the examiner. The examiner checks the balance and marks the wallet as \"submitted\" so it cannot be reused.",
+      "infoLabel": "Information about submission management"
     },
     "roles": {
       "title": "Admin Role Management",
@@ -396,6 +398,7 @@
       "errorAdd": "Failed to add admin. Check if the address is valid and the backend wallet has sufficient balance.",
       "errorRemove": "Failed to remove admin. This address may no longer have admin permissions.",
       "infoTip": "The ADMIN_ROLE is stored directly in the smart contract. Any admin can grant or revoke the admin role for other wallets. These changes are visible on the blockchain and immutably recorded.",
+      "infoLabel": "Information about admin management",
       "you": "(You)",
       "checking": "Checking role..."
     },
@@ -415,7 +418,8 @@
       "statusOk": "Sufficient",
       "statusLow": "Low",
       "loadError": "Failed to load system status. Check if the backend is reachable.",
-      "infoTip": "The backend wallet pays all transaction costs (gas fees) on the blockchain. When the balance runs out, no new claims or surveys can be processed. Top up ETH to the displayed address in time."
+      "infoTip": "The backend wallet pays all transaction costs (gas fees) on the blockchain. When the balance runs out, no new claims or surveys can be processed. Top up ETH to the displayed address in time.",
+      "infoLabel": "Information about system status"
     }
   },
   "infoTips": {

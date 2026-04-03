@@ -92,7 +92,10 @@ export function RoleManagement({ walletAddress, sign }: RoleManagementProps) {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <button className="text-muted-foreground hover:text-foreground" aria-label="Info">
+                <button
+                  className="text-muted-foreground hover:text-foreground"
+                  aria-label={t('admin.roles.infoLabel')}
+                >
                   <Info className="size-4" aria-hidden="true" />
                 </button>
               </TooltipTrigger>

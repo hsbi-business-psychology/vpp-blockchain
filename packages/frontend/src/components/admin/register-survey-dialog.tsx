@@ -207,14 +207,14 @@ export function RegisterSurveyDialog({ onRegister, nextSurveyId }: RegisterSurve
   )
 }
 
-function InfoTip({ text }: { text: string }) {
+function InfoTip({ text, label }: { text: string; label?: string }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <button
           type="button"
           className="inline-flex size-5 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
-          aria-label="Info"
+          aria-label={label ?? text}
         >
           <Info className="size-3.5" aria-hidden="true" />
         </button>
