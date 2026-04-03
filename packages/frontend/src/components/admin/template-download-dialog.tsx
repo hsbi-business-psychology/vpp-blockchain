@@ -73,9 +73,10 @@ export function TemplateDownloadDialog({
 
         <div className="grid gap-3 sm:grid-cols-2">
           <button
+            type="button"
             onClick={() => onDownload('sosci')}
             disabled={!secret.trim() || loading}
-            className="flex flex-col items-start gap-2 rounded-lg border border-border p-4 text-left transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
+            className="flex flex-col items-start gap-2 rounded-lg border border-border p-4 text-left transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
           >
             <div className="flex w-full items-center justify-between">
               <span className="text-sm font-semibold">
@@ -95,9 +96,10 @@ export function TemplateDownloadDialog({
           </button>
 
           <button
+            type="button"
             onClick={() => onDownload('limesurvey')}
             disabled={!secret.trim() || loading}
-            className="flex flex-col items-start gap-2 rounded-lg border border-border p-4 text-left transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
+            className="flex flex-col items-start gap-2 rounded-lg border border-border p-4 text-left transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
           >
             <div className="flex w-full items-center justify-between">
               <span className="text-sm font-semibold">
