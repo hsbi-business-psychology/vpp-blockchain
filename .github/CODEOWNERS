@@ -1,0 +1,7 @@
+# Default owners for the entire repo
+* @hsbi-business-psychology
+
+# Package-specific ownership
+packages/contracts/ @hsbi-business-psychology
+packages/backend/   @hsbi-business-psychology
+packages/frontend/  @hsbi-business-psychology
