@@ -101,7 +101,7 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 ```
 feat(contracts): add survey deactivation function
 fix(backend): handle expired signatures gracefully
-docs(sdk): add wallet recovery guide
+docs(frontend): add wallet recovery guide
 test(contracts): add edge case tests for max claims
 ```
 

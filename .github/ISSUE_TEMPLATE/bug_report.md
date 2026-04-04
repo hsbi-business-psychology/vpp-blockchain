@@ -26,7 +26,7 @@ What actually happened.
 
 ## Environment
 
-- **Package**: (e.g., `@vpp/contracts`, `@vpp/sdk`, `@vpp/backend`)
+- **Package**: (e.g., `@vpp/contracts`, `@vpp/backend`, `@vpp/frontend`)
 - **Version**: (e.g., 1.0.0)
 - **Node.js version**: (e.g., 20.11.0)
 - **OS**: (e.g., macOS 15, Ubuntu 24.04)

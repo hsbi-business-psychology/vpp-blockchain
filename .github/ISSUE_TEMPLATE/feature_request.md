@@ -23,7 +23,6 @@ Describe any alternative solutions or features you've considered.
 ## Affected Package(s)
 
 - [ ] `packages/contracts`
-- [ ] `packages/sdk`
 - [ ] `packages/backend`
 - [ ] `packages/frontend`
 - [ ] Other: \_\_\_
