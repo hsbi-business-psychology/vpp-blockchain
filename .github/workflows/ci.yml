@@ -61,6 +61,15 @@ jobs:
       - name: Check coverage
         run: pnpm --filter @vpp/contracts run coverage
 
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: contracts
+          directory: packages/contracts/coverage
+          fail_ci_if_error: false
+
   backend:
     name: Backend Tests
     runs-on: ubuntu-latest
@@ -82,8 +91,17 @@ jobs:
       - name: Build backend
         run: pnpm --filter @vpp/backend run build
 
-      - name: Run tests
-        run: pnpm --filter @vpp/backend run test
+      - name: Run tests with coverage
+        run: pnpm --filter @vpp/backend run test:coverage
+
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: backend
+          directory: packages/backend/coverage
+          fail_ci_if_error: false
 
   frontend:
     name: Frontend Build & Tests
@@ -105,6 +123,15 @@ jobs:
 
       - name: Run tests with coverage
         run: pnpm --filter @vpp/frontend run test:coverage
+
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: frontend
+          directory: packages/frontend/coverage
+          fail_ci_if_error: false
 
   lighthouse:
     name: Lighthouse CI
