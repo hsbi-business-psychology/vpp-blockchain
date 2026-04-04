@@ -28,7 +28,12 @@ This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.
    ```bash
    pnpm install
    ```
-4. **Create a branch** for your changes:
+4. **Verify your setup** — run all tests to confirm everything works:
+   ```bash
+   pnpm test
+   ```
+   A successful run shows all test suites passing across `contracts`, `backend`, and `frontend`. If any test fails, check that you have the correct Node.js version (see `.nvmrc`) and that `pnpm install` completed without errors.
+5. **Create a branch** for your changes:
    ```bash
    git checkout -b feat/your-feature-name
    ```
@@ -68,7 +73,7 @@ pnpm format
 
 ## Commit Messages
 
-We follow [Conventional Commits](https://www.conventionalcommits.org/):
+We follow [Conventional Commits](https://www.conventionalcommits.org/). Commit messages are validated automatically via [commitlint](https://commitlint.js.org/) on every commit:
 
 ```
 <type>(<scope>): <description>
