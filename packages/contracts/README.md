@@ -73,28 +73,36 @@ cp .env.example .env
 
 ### Write Functions (require roles)
 
-| Function                                            | Role          | Description               |
-| --------------------------------------------------- | ------------- | ------------------------- |
-| `registerSurvey(id, secretHash, points, maxClaims)` | `ADMIN_ROLE`  | Register a new survey     |
-| `awardPoints(student, surveyId, secret)`            | `MINTER_ROLE` | Award points to a student |
-| `deactivateSurvey(surveyId)`                        | `ADMIN_ROLE`  | Deactivate a survey       |
+| Function                                                   | Role          | Description                       |
+| ---------------------------------------------------------- | ------------- | --------------------------------- |
+| `registerSurvey(id, secretHash, points, maxClaims, title)` | `ADMIN_ROLE`  | Register a new survey             |
+| `awardPoints(student, surveyId, secret)`                   | `MINTER_ROLE` | Award points to a student         |
+| `deactivateSurvey(surveyId)`                               | `ADMIN_ROLE`  | Deactivate a survey               |
+| `addAdmin(account)`                                        | `ADMIN_ROLE`  | Grant ADMIN_ROLE to an address    |
+| `removeAdmin(account)`                                     | `ADMIN_ROLE`  | Revoke ADMIN_ROLE from an address |
+| `markWalletSubmitted(wallet)`                              | `ADMIN_ROLE`  | Mark wallet as submitted          |
+| `unmarkWalletSubmitted(wallet)`                            | `ADMIN_ROLE`  | Remove submission mark            |
 
 ### Read Functions (public)
 
-| Function                         | Description                            |
-| -------------------------------- | -------------------------------------- |
-| `totalPoints(wallet)`            | Get total points for a wallet          |
-| `surveyPoints(wallet, surveyId)` | Get points for a specific survey       |
-| `getSurveyInfo(surveyId)`        | Get survey details                     |
-| `claimed(wallet, surveyId)`      | Check if a wallet has claimed a survey |
+| Function                         | Description                              |
+| -------------------------------- | ---------------------------------------- |
+| `totalPoints(wallet)`            | Get total points for a wallet            |
+| `surveyPoints(wallet, surveyId)` | Get points for a specific survey         |
+| `getSurveyInfo(surveyId)`        | Get survey details (incl. title)         |
+| `claimed(wallet, surveyId)`      | Check if a wallet has claimed a survey   |
+| `isAdmin(account)`               | Check if an address holds ADMIN_ROLE     |
+| `isWalletSubmitted(wallet)`      | Check if a wallet is marked as submitted |
 
 ### Events
 
-| Event                                           | Description                          |
-| ----------------------------------------------- | ------------------------------------ |
-| `SurveyRegistered(surveyId, points, maxClaims)` | Emitted when a survey is registered  |
-| `PointsAwarded(wallet, surveyId, points)`       | Emitted when points are awarded      |
-| `SurveyDeactivated(surveyId)`                   | Emitted when a survey is deactivated |
+| Event                                                  | Description                          |
+| ------------------------------------------------------ | ------------------------------------ |
+| `SurveyRegistered(surveyId, points, maxClaims, title)` | Emitted when a survey is registered  |
+| `PointsAwarded(wallet, surveyId, points)`              | Emitted when points are awarded      |
+| `SurveyDeactivated(surveyId)`                          | Emitted when a survey is deactivated |
+| `WalletSubmitted(wallet, markedBy)`                    | Emitted when a wallet is marked      |
+| `WalletUnsubmitted(wallet, unmarkedBy)`                | Emitted when a mark is removed       |
 
 ## Gas Costs (Base L2)
 

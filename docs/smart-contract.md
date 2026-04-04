@@ -36,23 +36,25 @@ struct Survey {
     uint256 claimCount;    // Current number of claims
     bool    active;        // Can be deactivated by admin
     uint256 registeredAt;  // Block timestamp of registration
+    string  title;         // Human-readable survey title
 }
 ```
 
 ### State Mappings
 
-| Mapping         | Type                        | Purpose                             |
-| --------------- | --------------------------- | ----------------------------------- |
-| `_surveys`      | `uint256 → Survey`          | Survey configuration by ID          |
-| `_surveyPoints` | `address → uint256 → uint8` | Points per wallet per survey        |
-| `_totalPoints`  | `address → uint256`         | Total accumulated points per wallet |
-| `_claimed`      | `address → uint256 → bool`  | Claim status per wallet per survey  |
+| Mapping            | Type                        | Purpose                             |
+| ------------------ | --------------------------- | ----------------------------------- |
+| `_surveys`         | `uint256 → Survey`          | Survey configuration by ID          |
+| `_surveyPoints`    | `address → uint256 → uint8` | Points per wallet per survey        |
+| `_totalPoints`     | `address → uint256`         | Total accumulated points per wallet |
+| `_claimed`         | `address → uint256 → bool`  | Claim status per wallet per survey  |
+| `_walletSubmitted` | `address → bool`            | Wallet submission status            |
 
 ## Functions
 
 ### Write Functions
 
-#### `registerSurvey(surveyId, secretHash, points, maxClaims)`
+#### `registerSurvey(surveyId, secretHash, points, maxClaims, title)`
 
 Register a new survey. Requires `ADMIN_ROLE`.
 
@@ -62,8 +64,9 @@ Register a new survey. Requires `ADMIN_ROLE`.
 | `secretHash` | `bytes32` | `keccak256(abi.encodePacked(secret))`  |
 | `points`     | `uint8`   | Points to award (1–255)                |
 | `maxClaims`  | `uint256` | Max claims allowed (0 = unlimited)     |
+| `title`      | `string`  | Human-readable survey title            |
 
-Emits `SurveyRegistered(surveyId, points, maxClaims)`.
+Emits `SurveyRegistered(surveyId, points, maxClaims, title)`.
 
 #### `awardPoints(student, surveyId, secret)`
 
@@ -104,23 +107,46 @@ Revoke `ADMIN_ROLE` from an address. Requires `ADMIN_ROLE`. Reverts on zero addr
 
 Emits `RoleRevoked(ADMIN_ROLE, account, sender)` (from OpenZeppelin AccessControl).
 
+#### `markWalletSubmitted(wallet)`
+
+Mark a wallet as submitted for thesis admission. Requires `ADMIN_ROLE`. Reverts if the wallet is already marked or is the zero address.
+
+| Parameter | Type      | Description    |
+| --------- | --------- | -------------- |
+| `wallet`  | `address` | Wallet address |
+
+Emits `WalletSubmitted(wallet, msg.sender)`.
+
+#### `unmarkWalletSubmitted(wallet)`
+
+Remove the submission mark from a wallet. Requires `ADMIN_ROLE`. Reverts if the wallet is not marked or is the zero address.
+
+| Parameter | Type      | Description    |
+| --------- | --------- | -------------- |
+| `wallet`  | `address` | Wallet address |
+
+Emits `WalletUnsubmitted(wallet, msg.sender)`.
+
 ### Read Functions
 
-| Function                         | Returns                                             | Description                           |
-| -------------------------------- | --------------------------------------------------- | ------------------------------------- |
-| `totalPoints(wallet)`            | `uint256`                                           | Total points for a wallet             |
-| `surveyPoints(wallet, surveyId)` | `uint8`                                             | Points earned for a specific survey   |
-| `claimed(wallet, surveyId)`      | `bool`                                              | Whether a wallet has claimed a survey |
-| `getSurveyInfo(surveyId)`        | `(bytes32, uint8, uint256, uint256, bool, uint256)` | Full survey details                   |
-| `isAdmin(account)`               | `bool`                                              | Whether an address holds `ADMIN_ROLE` |
+| Function                         | Returns                                                     | Description                             |
+| -------------------------------- | ----------------------------------------------------------- | --------------------------------------- |
+| `totalPoints(wallet)`            | `uint256`                                                   | Total points for a wallet               |
+| `surveyPoints(wallet, surveyId)` | `uint8`                                                     | Points earned for a specific survey     |
+| `claimed(wallet, surveyId)`      | `bool`                                                      | Whether a wallet has claimed a survey   |
+| `getSurveyInfo(surveyId)`        | `(bytes32, uint8, uint256, uint256, bool, uint256, string)` | Full survey details (incl. title)       |
+| `isAdmin(account)`               | `bool`                                                      | Whether an address holds `ADMIN_ROLE`   |
+| `isWalletSubmitted(wallet)`      | `bool`                                                      | Whether a wallet is marked as submitted |
 
 ## Events
 
 | Event               | Parameters                                                | When                              |
 | ------------------- | --------------------------------------------------------- | --------------------------------- |
-| `SurveyRegistered`  | `surveyId (indexed)`, `points`, `maxClaims`               | New survey created                |
+| `SurveyRegistered`  | `surveyId (indexed)`, `points`, `maxClaims`, `title`      | New survey created                |
 | `PointsAwarded`     | `wallet (indexed)`, `surveyId (indexed)`, `points`        | Points awarded                    |
 | `SurveyDeactivated` | `surveyId (indexed)`                                      | Survey deactivated                |
+| `WalletSubmitted`   | `wallet (indexed)`, `markedBy (indexed)`                  | Wallet marked as submitted        |
+| `WalletUnsubmitted` | `wallet (indexed)`, `unmarkedBy (indexed)`                | Wallet submission mark removed    |
 | `RoleGranted`       | `role (indexed)`, `account (indexed)`, `sender (indexed)` | Role assigned (from OpenZeppelin) |
 | `RoleRevoked`       | `role (indexed)`, `account (indexed)`, `sender (indexed)` | Role revoked (from OpenZeppelin)  |
 
@@ -137,6 +163,8 @@ Emits `RoleRevoked(ADMIN_ROLE, account, sender)` (from OpenZeppelin AccessContro
 | `InvalidPoints()`                  | Points value is zero                    |
 | `InvalidSurveyId()`                | Survey ID is zero                       |
 | `ZeroAddress()`                    | Address parameter is the zero address   |
+| `WalletAlreadySubmitted(wallet)`   | Wallet is already marked as submitted   |
+| `WalletNotSubmitted(wallet)`       | Wallet is not marked as submitted       |
 
 ## Deployment
 
