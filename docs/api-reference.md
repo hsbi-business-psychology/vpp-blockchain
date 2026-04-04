@@ -1,11 +1,13 @@
 # API Reference
 
-The VPP backend exposes a REST API on the configured port (default: `3000`). All endpoints are prefixed with `/api`.
+The VPP backend exposes a REST API on the configured port (default: `3000`). All endpoints are prefixed with `/api/v1`. Legacy calls to `/api/*` are redirected with HTTP 308.
+
+> A machine-readable [OpenAPI 3.0 specification](openapi.yaml) is available for use with Swagger UI, Postman, or code generators.
 
 ## Base URL
 
 ```
-http://localhost:3000/api
+http://localhost:3000/api/v1
 ```
 
 ## Authentication
@@ -36,7 +38,7 @@ Rate limit headers are included in every response:
 
 ## Endpoints
 
-### POST /api/claim
+### POST /api/v1/claim
 
 Claim survey participation points for a wallet.
 
@@ -87,7 +89,7 @@ Claim survey participation points for a wallet.
 
 ---
 
-### GET /api/points/:wallet
+### GET /api/v1/points/:wallet
 
 Get the total points and claim history for a wallet address.
 
@@ -131,7 +133,7 @@ Get the total points and claim history for a wallet address.
 
 ---
 
-### POST /api/surveys
+### POST /api/v1/surveys
 
 Register a new survey on-chain. **Admin authentication required.**
 
@@ -143,6 +145,7 @@ Register a new survey on-chain. **Admin authentication required.**
   "secret": "VPP-x8k2m9",
   "points": 2,
   "maxClaims": 100,
+  "title": "Cognitive Load Study",
   "adminSignature": "0x...",
   "adminMessage": "register:42:1710000000"
 }
@@ -154,6 +157,7 @@ Register a new survey on-chain. **Admin authentication required.**
 | `secret`         | `string` | Secret that participants need to claim |
 | `points`         | `number` | Points awarded per claim (1–255)       |
 | `maxClaims`      | `number` | Maximum claims allowed (0 = unlimited) |
+| `title`          | `string` | Human-readable survey title (optional) |
 | `adminSignature` | `string` | EIP-191 signature from an admin wallet |
 | `adminMessage`   | `string` | Signed message for verification        |
 
@@ -165,7 +169,7 @@ Register a new survey on-chain. **Admin authentication required.**
   "data": {
     "txHash": "0x...",
     "explorerUrl": "https://sepolia.basescan.org/tx/0x...",
-    "templateDownloadUrl": "/api/surveys/42/template?secret=VPP-x8k2m9"
+    "templateDownloadUrl": "/api/v1/surveys/42/template"
   }
 }
 ```
@@ -181,7 +185,7 @@ Register a new survey on-chain. **Admin authentication required.**
 
 ---
 
-### GET /api/surveys
+### GET /api/v1/surveys
 
 List all registered surveys with their current status.
 
@@ -207,9 +211,9 @@ List all registered surveys with their current status.
 
 ---
 
-### GET /api/surveys/:id/template
+### POST /api/v1/surveys/:id/template
 
-Download a SoSci Survey XML template for a specific survey.
+Download a SoSci Survey or LimeSurvey XML template for a specific survey. **Admin authentication required.**
 
 **Path Parameters:**
 
@@ -217,11 +221,12 @@ Download a SoSci Survey XML template for a specific survey.
 | --------- | -------- | ----------- |
 | `id`      | `number` | Survey ID   |
 
-**Query Parameters:**
+**Request Body:**
 
-| Parameter | Type     | Description              |
-| --------- | -------- | ------------------------ |
-| `secret`  | `string` | Survey secret (required) |
+| Field    | Type     | Description                       |
+| -------- | -------- | --------------------------------- |
+| `secret` | `string` | Survey secret (required)          |
+| `format` | `string` | `sosci` (default) or `limesurvey` |
 
 **Success Response (200):**
 
@@ -229,15 +234,15 @@ Returns an XML file with `Content-Type: application/xml` and `Content-Dispositio
 
 **Error Responses:**
 
-| Status | Error Code          | When                              |
-| ------ | ------------------- | --------------------------------- |
-| 400    | `INVALID_SURVEY_ID` | ID is not a positive integer      |
-| 400    | `MISSING_SECRET`    | Secret query parameter is missing |
-| 404    | `SURVEY_NOT_FOUND`  | Survey does not exist             |
+| Status | Error Code          | When                            |
+| ------ | ------------------- | ------------------------------- |
+| 400    | `INVALID_SURVEY_ID` | ID is not a positive integer    |
+| 400    | `VALIDATION_ERROR`  | Missing or invalid request body |
+| 404    | `SURVEY_NOT_FOUND`  | Survey does not exist           |
 
 ---
 
-### GET /api/health
+### GET /api/v1/health
 
 Health check endpoint. Returns the server status and blockchain connectivity.
 
@@ -271,7 +276,7 @@ Health check endpoint. Returns the server status and blockchain connectivity.
 
 ---
 
-## `GET /api/wallets/:address/submitted`
+### GET /api/v1/wallets/:address/submitted
 
 Check whether a wallet has been marked as "submitted" for thesis admission.
 
@@ -296,7 +301,7 @@ Check whether a wallet has been marked as "submitted" for thesis admission.
 
 ---
 
-## `POST /api/wallets/:address/mark-submitted`
+### POST /api/v1/wallets/:address/mark-submitted
 
 Mark a wallet as submitted for thesis admission.
 
@@ -317,7 +322,7 @@ Mark a wallet as submitted for thesis admission.
 
 ---
 
-## `POST /api/wallets/:address/unmark-submitted`
+### POST /api/v1/wallets/:address/unmark-submitted
 
 Remove the submission mark from a wallet (e.g. to correct a mistake).
 

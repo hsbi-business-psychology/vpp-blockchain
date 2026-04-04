@@ -1,0 +1,805 @@
+openapi: 3.0.3
+info:
+  title: VPP Blockchain API
+  description: |
+    REST API for the VPP (Verifiable Participant Points) system.
+    All endpoints are prefixed with `/api/v1`. Legacy calls to `/api/*`
+    are redirected with HTTP 308.
+  version: 1.0.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  contact:
+    name: HSBI BInEx
+    url: https://github.com/hsbi-business-psychology/vpp-blockchain
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development
+  - url: https://vpstunden.hsbi.de/api/v1
+    description: Production
+
+tags:
+  - name: Claim
+    description: Claim survey participation points
+  - name: Points
+    description: Query wallet point balances
+  - name: Surveys
+    description: Survey registration and management
+  - name: Admin
+    description: Admin role management
+  - name: Wallets
+    description: Wallet submission status
+  - name: Health
+    description: Health and readiness checks
+  - name: Status
+    description: System status (admin only)
+
+paths:
+  /claim:
+    post:
+      tags: [Claim]
+      summary: Claim survey points
+      description: Award survey participation points to a wallet after verifying an EIP-191 signature.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [walletAddress, surveyId, secret, signature, message]
+              properties:
+                walletAddress:
+                  type: string
+                  description: Ethereum address of the claimant
+                  example: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
+                surveyId:
+                  type: integer
+                  minimum: 1
+                  description: Positive integer identifying the survey
+                secret:
+                  type: string
+                  minLength: 1
+                  description: Survey secret received via redirect URL
+                signature:
+                  type: string
+                  minLength: 1
+                  description: EIP-191 signature over the message
+                message:
+                  type: string
+                  minLength: 1
+                  description: 'Format: Claim:{surveyId}:{walletAddress}:{unixTimestamp}'
+      responses:
+        '200':
+          description: Points awarded successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ClaimResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /points/{wallet}:
+    get:
+      tags: [Points]
+      summary: Get points for a wallet
+      description: Returns the total points and claim history for a wallet address.
+      parameters:
+        - name: wallet
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Ethereum address
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Points retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PointsResult'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /surveys:
+    post:
+      tags: [Surveys]
+      summary: Register a new survey
+      description: Register a new survey on-chain. Requires admin authentication.
+      security:
+        - adminSignature: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [surveyId, secret, points, adminSignature, adminMessage]
+              properties:
+                surveyId:
+                  type: integer
+                  minimum: 1
+                  description: Unique positive integer for the survey
+                secret:
+                  type: string
+                  minLength: 1
+                  description: Secret that participants need to claim
+                points:
+                  type: integer
+                  minimum: 1
+                  maximum: 255
+                  description: Points awarded per claim
+                maxClaims:
+                  type: integer
+                  minimum: 0
+                  default: 0
+                  description: Maximum claims allowed (0 = unlimited)
+                title:
+                  type: string
+                  default: ''
+                  description: Human-readable survey title
+                adminSignature:
+                  type: string
+                  minLength: 1
+                adminMessage:
+                  type: string
+                  minLength: 1
+      responses:
+        '201':
+          description: Survey registered successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SurveyRegisterResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    get:
+      tags: [Surveys]
+      summary: List all surveys
+      description: Returns all registered surveys with their current status. Supports pagination.
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Surveys retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/SurveyInfo'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+
+  /surveys/{id}/deactivate:
+    post:
+      tags: [Surveys]
+      summary: Deactivate a survey
+      description: Deactivate a survey to prevent further claims. Requires admin authentication.
+      security:
+        - adminSignature: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Survey ID
+      responses:
+        '200':
+          description: Survey deactivated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/TransactionResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /surveys/{id}/template:
+    post:
+      tags: [Surveys]
+      summary: Download survey template
+      description: |
+        Generate and download a SoSci Survey or LimeSurvey template XML file.
+        Requires admin authentication. The secret is passed in the request body.
+      security:
+        - adminSignature: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Survey ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [secret]
+              properties:
+                secret:
+                  type: string
+                  minLength: 1
+                  description: Survey secret
+                format:
+                  type: string
+                  enum: [sosci, limesurvey]
+                  default: sosci
+                  description: Template format
+      responses:
+        '200':
+          description: Template XML file
+          content:
+            application/xml:
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /admin:
+    get:
+      tags: [Admin]
+      summary: List admin addresses
+      description: Returns all addresses with ADMIN_ROLE. Requires admin authentication.
+      security:
+        - adminSignature: []
+      responses:
+        '200':
+          description: Admin list retrieved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          admins:
+                            type: array
+                            items:
+                              type: string
+
+  /admin/add:
+    post:
+      tags: [Admin]
+      summary: Grant admin role
+      description: Grant ADMIN_ROLE to an address. Requires admin authentication.
+      security:
+        - adminSignature: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+      responses:
+        '201':
+          description: Admin role granted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/TransactionResult'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /admin/remove:
+    post:
+      tags: [Admin]
+      summary: Revoke admin role
+      description: Revoke ADMIN_ROLE from an address. Requires admin authentication.
+      security:
+        - adminSignature: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+      responses:
+        '200':
+          description: Admin role revoked
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/TransactionResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /wallets/{address}/submitted:
+    get:
+      tags: [Wallets]
+      summary: Check wallet submission status
+      description: Check whether a wallet has been marked as submitted for thesis admission.
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Wallet address
+      responses:
+        '200':
+          description: Submission status retrieved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          address:
+                            type: string
+                          submitted:
+                            type: boolean
+                          totalPoints:
+                            type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /wallets/{address}/mark-submitted:
+    post:
+      tags: [Wallets]
+      summary: Mark wallet as submitted
+      description: Mark a wallet as submitted for thesis admission. Requires admin authentication.
+      security:
+        - adminSignature: []
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Wallet address
+      responses:
+        '200':
+          description: Wallet marked as submitted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/WalletTransactionResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /wallets/{address}/unmark-submitted:
+    post:
+      tags: [Wallets]
+      summary: Remove submission mark
+      description: Remove the submission mark from a wallet. Requires admin authentication.
+      security:
+        - adminSignature: []
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Wallet address
+      responses:
+        '200':
+          description: Submission mark removed
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/WalletTransactionResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /health:
+    get:
+      tags: [Health]
+      summary: Full health check
+      description: Returns server status, blockchain connectivity, and event store readiness.
+      responses:
+        '200':
+          description: System healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResult'
+        '503':
+          description: System degraded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResult'
+
+  /health/live:
+    get:
+      tags: [Health]
+      summary: Liveness probe
+      description: Simple liveness check returning uptime.
+      responses:
+        '200':
+          description: Server is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  uptime:
+                    type: integer
+                    description: Uptime in seconds
+
+  /health/ready:
+    get:
+      tags: [Health]
+      summary: Readiness probe
+      description: Checks blockchain connectivity and event store readiness.
+      responses:
+        '200':
+          description: System ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResult'
+        '503':
+          description: System not ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResult'
+
+  /status:
+    get:
+      tags: [Status]
+      summary: System status
+      description: Returns minter wallet balance, gas estimates, and blockchain info. Requires admin authentication.
+      security:
+        - adminSignature: []
+      responses:
+        '200':
+          description: Status retrieved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SystemStatus'
+
+components:
+  securitySchemes:
+    adminSignature:
+      type: apiKey
+      in: header
+      name: X-Admin-Signature
+      description: |
+        EIP-191 wallet signature for admin authentication.
+        Must be accompanied by `X-Admin-Message` header.
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+      description: Page number (1-based)
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+      description: Items per page
+
+  schemas:
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          description: Machine-readable error code
+        message:
+          type: string
+          description: Human-readable error description
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+
+    ClaimResult:
+      type: object
+      properties:
+        txHash:
+          type: string
+        points:
+          type: integer
+        explorerUrl:
+          type: string
+
+    PointsResult:
+      type: object
+      properties:
+        wallet:
+          type: string
+        totalPoints:
+          type: integer
+        surveys:
+          type: array
+          items:
+            type: object
+            properties:
+              surveyId:
+                type: integer
+              points:
+                type: integer
+              claimedAt:
+                type: string
+                format: date-time
+              txHash:
+                type: string
+
+    SurveyInfo:
+      type: object
+      properties:
+        surveyId:
+          type: integer
+        points:
+          type: integer
+        maxClaims:
+          type: integer
+        claimCount:
+          type: integer
+        active:
+          type: boolean
+        title:
+          type: string
+        registeredAt:
+          type: string
+          format: date-time
+
+    SurveyRegisterResult:
+      type: object
+      properties:
+        txHash:
+          type: string
+        explorerUrl:
+          type: string
+        templateDownloadUrl:
+          type: string
+
+    TransactionResult:
+      type: object
+      properties:
+        txHash:
+          type: string
+        explorerUrl:
+          type: string
+
+    WalletTransactionResult:
+      type: object
+      properties:
+        address:
+          type: string
+        txHash:
+          type: string
+        explorerUrl:
+          type: string
+
+    RoleRequest:
+      type: object
+      required: [address, adminSignature, adminMessage]
+      properties:
+        address:
+          type: string
+          description: Ethereum address
+        adminSignature:
+          type: string
+          minLength: 1
+        adminMessage:
+          type: string
+          minLength: 1
+
+    HealthResult:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded]
+        uptime:
+          type: integer
+        blockchain:
+          type: object
+          properties:
+            connected:
+              type: boolean
+            network:
+              type: string
+              nullable: true
+            blockNumber:
+              type: integer
+              nullable: true
+        eventStore:
+          type: object
+          properties:
+            ready:
+              type: boolean
+            lastSyncedBlock:
+              type: integer
+              nullable: true
+
+    SystemStatus:
+      type: object
+      properties:
+        minterAddress:
+          type: string
+        balance:
+          type: string
+          description: Balance in ETH
+        lowBalance:
+          type: boolean
+        gasPrice:
+          type: string
+          description: Gas price in Gwei
+        estimates:
+          type: object
+          properties:
+            claimsRemaining:
+              type: integer
+            registrationsRemaining:
+              type: integer
+            costPerClaim:
+              type: string
+            costPerRegistration:
+              type: string
+        blockchain:
+          type: object
+          properties:
+            network:
+              type: string
+            blockNumber:
+              type: integer
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Missing authentication
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Resource conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
