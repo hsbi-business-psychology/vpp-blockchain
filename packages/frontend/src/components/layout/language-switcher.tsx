@@ -7,19 +7,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-
-const languages = [
-  { code: 'en', label: 'English' },
-  { code: 'de', label: 'Deutsch' },
-] as const
+import { SUPPORTED_LOCALES, changeLocale } from '@/lib/i18n'
 
 export function LanguageSwitcher() {
   const { i18n } = useTranslation()
-
-  const changeLanguage = (code: string) => {
-    i18n.changeLanguage(code)
-    localStorage.setItem('vpp-lang', code)
-  }
 
   return (
     <DropdownMenu>
@@ -30,10 +21,10 @@ export function LanguageSwitcher() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {languages.map(({ code, label }) => (
+        {SUPPORTED_LOCALES.map(({ code, label }) => (
           <DropdownMenuItem
             key={code}
-            onClick={() => changeLanguage(code)}
+            onClick={() => changeLocale(code)}
             className={i18n.language === code ? 'bg-accent' : ''}
           >
             {label}

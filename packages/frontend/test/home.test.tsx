@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { BrowserRouter } from 'react-router'
-import '@/lib/i18n'
+import { initI18n } from '@/lib/i18n'
 import HomePage from '@/pages/home'
 
 function renderWithRouter(ui: React.ReactElement) {
@@ -9,6 +9,10 @@ function renderWithRouter(ui: React.ReactElement) {
 }
 
 describe('HomePage', () => {
+  beforeAll(async () => {
+    await initI18n()
+  })
+
   it('renders the hero title', () => {
     renderWithRouter(<HomePage />)
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()

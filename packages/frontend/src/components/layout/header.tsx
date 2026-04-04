@@ -4,16 +4,12 @@ import { useTheme } from 'next-themes'
 import { Menu, X, Home, Coins, BookOpen, ShieldCheck, Sun, Moon, Globe } from 'lucide-react'
 import { ThemeToggle } from './theme-toggle'
 import { LanguageSwitcher } from './language-switcher'
+import { SUPPORTED_LOCALES, changeLocale } from '@/lib/i18n'
 
 interface HeaderProps {
   currentPath: string
   onNavigate: (href: string) => void
 }
-
-const LANGUAGES = [
-  { code: 'de', label: 'DE' },
-  { code: 'en', label: 'EN' },
-] as const
 
 export function Header({ currentPath, onNavigate }: HeaderProps) {
   const { t, i18n } = useTranslation()
@@ -42,11 +38,6 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
       document.documentElement.classList.remove('menu-open')
     }
   }, [menuOpen])
-
-  function changeLanguage(code: string) {
-    i18n.changeLanguage(code)
-    localStorage.setItem('vpp-lang', code)
-  }
 
   return (
     <>
@@ -193,19 +184,19 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
                   role="radiogroup"
                   aria-label={t('nav.language')}
                 >
-                  {LANGUAGES.map(({ code, label }) => (
+                  {SUPPORTED_LOCALES.map(({ code, shortLabel }) => (
                     <button
                       key={code}
                       role="radio"
                       aria-checked={i18n.language === code}
-                      onClick={() => changeLanguage(code)}
+                      onClick={() => changeLocale(code)}
                       className={`px-4 py-1.5 text-sm font-semibold transition-colors ${
                         i18n.language === code
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-background text-foreground hover:bg-accent'
                       }`}
                     >
-                      {label}
+                      {shortLabel}
                     </button>
                   ))}
                 </div>
