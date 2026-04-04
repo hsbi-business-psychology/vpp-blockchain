@@ -3,6 +3,7 @@
 **Verifiable Participant Points** — A blockchain-based system for awarding tamper-proof, pseudonymous survey participation points.
 
 [![CI](https://github.com/hsbi-business-psychology/vpp-blockchain/actions/workflows/ci.yml/badge.svg)](https://github.com/hsbi-business-psychology/vpp-blockchain/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/hsbi-business-psychology/vpp-blockchain/graph/badge.svg)](https://codecov.io/gh/hsbi-business-psychology/vpp-blockchain)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-green)](https://nodejs.org/)
 [![Solidity](https://img.shields.io/badge/Solidity-%5E0.8.24-363636)](https://soliditylang.org/)
