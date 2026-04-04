@@ -1,4 +1,9 @@
 {
+  "meta": {
+    "title": "VPP Blockchain – Versuchspersonenpunkte digital & fälschungssicher",
+    "description": "Sammle Versuchspersonenpunkte (VPP) fälschungssicher auf der Blockchain. Kein Papierkram – Punkte werden direkt in deiner Wallet gespeichert. Ein Projekt der HSBI.",
+    "keywords": "VPP, Versuchspersonenpunkte, Blockchain, HSBI, Hochschule Bielefeld, Studierende, Umfrage, Wallet, Smart Contract"
+  },
   "pageTitle": {
     "home": "VPP Blockchain – Versuchspersonenpunkte digital & fälschungssicher",
     "points": "Meine Punkte – VPP Blockchain",

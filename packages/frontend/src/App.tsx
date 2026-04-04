@@ -1,9 +1,11 @@
 import { useEffect, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { HelmetProvider } from 'react-helmet-async'
 import '@/lib/i18n'
 import { ThemeProvider } from '@/components/layout/theme-provider'
 import { AppLayout } from '@/components/layout/app-layout'
+import { MetaTags } from '@/components/seo/meta-tags'
 import { Toaster } from '@/components/ui/sonner'
 import HomePage from '@/pages/home'
 
@@ -16,26 +18,11 @@ const AccessibilityPage = lazy(() => import('@/pages/barrierefreiheit'))
 const DocsPage = lazy(() => import('@/pages/docs'))
 const NotFoundPage = lazy(() => import('@/pages/not-found'))
 
-const PAGE_TITLE_KEYS: Record<string, string> = {
-  '/': 'pageTitle.home',
-  '/points': 'pageTitle.points',
-  '/claim': 'pageTitle.claim',
-  '/admin': 'pageTitle.admin',
-  '/docs': 'pageTitle.docs',
-  '/impressum': 'pageTitle.impressum',
-  '/datenschutz': 'pageTitle.datenschutz',
-  '/barrierefreiheit': 'pageTitle.barrierefreiheit',
-}
-
 function ScrollToTop() {
   const { pathname } = useLocation()
-  const { t } = useTranslation()
   useEffect(() => {
     window.scrollTo(0, 0)
-    const base = '/' + pathname.split('/').filter(Boolean).slice(0, 1).join('/')
-    const key = PAGE_TITLE_KEYS[base] || PAGE_TITLE_KEYS[pathname]
-    document.title = key ? t(key) : 'VPP Blockchain'
-  }, [pathname, t])
+  }, [pathname])
   return null
 }
 
@@ -47,6 +34,7 @@ function AppRoutes() {
   return (
     <AppLayout currentPath={location.pathname} onNavigate={(href) => navigate(href)}>
       <ScrollToTop />
+      <MetaTags />
       <Suspense
         fallback={
           <div
@@ -77,11 +65,13 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-      <Toaster />
-    </ThemeProvider>
+    <HelmetProvider>
+      <ThemeProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+        <Toaster />
+      </ThemeProvider>
+    </HelmetProvider>
   )
 }
