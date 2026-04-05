@@ -12,7 +12,6 @@ process.env.RPC_URL = 'http://localhost:8545'
 process.env.CONTRACT_ADDRESS = '0x1234567890abcdef1234567890abcdef12345678'
 process.env.MINTER_PRIVATE_KEY =
   '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
-process.env.ADMIN_WALLETS = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
 process.env.EXPLORER_BASE_URL = 'https://sepolia.basescan.org'
 process.env.FRONTEND_URL = 'http://localhost:5173'
 
