@@ -5,6 +5,7 @@ interface ImportMetaEnv {
   readonly VITE_API_URL: string
   readonly VITE_RPC_URL: string
   readonly VITE_CONTRACT_ADDRESS: string
+  readonly VITE_CONTRACT_DEPLOY_BLOCK: string
   readonly VITE_EXPLORER_URL: string
   readonly VITE_DEFAULT_LOCALE: string
 }
