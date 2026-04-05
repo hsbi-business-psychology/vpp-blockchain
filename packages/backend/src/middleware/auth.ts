@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction } from 'express'
+import type { Request, Response, NextFunction, RequestHandler } from 'express'
 import { ethers } from 'ethers'
 import { config } from '../config.js'
 import { isAdmin as checkAdmin } from '../services/blockchain.js'
@@ -8,7 +8,7 @@ import { isAdmin as checkAdmin } from '../services/blockchain.js'
  * wallet. The request body must contain `adminSignature` and `adminMessage`.
  * The recovered signer must hold ADMIN_ROLE on the smart contract.
  */
-export async function requireAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
+async function requireAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
   const adminSignature =
     (req.body as Record<string, string | undefined>).adminSignature ||
     (req.headers['x-admin-signature'] as string | undefined)
@@ -70,4 +70,9 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
       message: 'The signature is invalid or corrupted. Please sign in again with your wallet.',
     })
   }
+}
+
+/** Type-safe wrapper that satisfies Express RequestHandler and forwards rejections to next(). */
+export const requireAdminHandler: RequestHandler = (req, res, next) => {
+  requireAdmin(req, res, next).catch(next)
 }

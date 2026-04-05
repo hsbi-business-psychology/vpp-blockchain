@@ -9,13 +9,13 @@
  *   POST   /add    – Grant ADMIN_ROLE to a new address.
  *   POST   /remove – Revoke ADMIN_ROLE from an address.
  */
-import { Router, type RequestHandler } from 'express'
+import { Router } from 'express'
 import { z } from 'zod'
 import { ethers } from 'ethers'
 import { config } from '../config.js'
 import { AppError } from '../middleware/errorHandler.js'
 import { throwValidationError } from '../lib/validation.js'
-import { requireAdmin } from '../middleware/auth.js'
+import { requireAdminHandler } from '../middleware/auth.js'
 import * as blockchain from '../services/blockchain.js'
 import { getEventStore } from '../services/event-store.js'
 
@@ -27,7 +27,7 @@ const roleSchema = z.object({
   adminMessage: z.string().min(1),
 })
 
-router.get('/', requireAdmin as unknown as RequestHandler, async (_req, res, next) => {
+router.get('/', requireAdminHandler, async (_req, res, next) => {
   try {
     const store = getEventStore()
     let admins: string[]
@@ -42,7 +42,7 @@ router.get('/', requireAdmin as unknown as RequestHandler, async (_req, res, nex
   }
 })
 
-router.post('/add', requireAdmin as unknown as RequestHandler, async (req, res, next) => {
+router.post('/add', requireAdminHandler, async (req, res, next) => {
   try {
     const parsed = roleSchema.safeParse(req.body)
     if (!parsed.success) {
@@ -73,7 +73,7 @@ router.post('/add', requireAdmin as unknown as RequestHandler, async (req, res, 
   }
 })
 
-router.post('/remove', requireAdmin as unknown as RequestHandler, async (req, res, next) => {
+router.post('/remove', requireAdminHandler, async (req, res, next) => {
   try {
     const parsed = roleSchema.safeParse(req.body)
     if (!parsed.success) {

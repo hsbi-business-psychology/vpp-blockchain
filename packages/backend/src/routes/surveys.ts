@@ -9,13 +9,13 @@
  *   POST   /:id/template  – Download a SoSci or LimeSurvey template file
  *                           (admin-only, secret in request body).
  */
-import { Router, type RequestHandler } from 'express'
+import { Router } from 'express'
 import { z } from 'zod'
 import { ethers } from 'ethers'
 import { config } from '../config.js'
 import { AppError } from '../middleware/errorHandler.js'
 import { throwValidationError } from '../lib/validation.js'
-import { requireAdmin } from '../middleware/auth.js'
+import { requireAdminHandler } from '../middleware/auth.js'
 import * as blockchain from '../services/blockchain.js'
 import { getEventStore } from '../services/event-store.js'
 import { getSurveysWithCache, invalidateCache } from '../services/survey-cache.js'
@@ -36,7 +36,7 @@ const registerSchema = z.object({
 })
 
 // POST /api/surveys — register a new survey (admin only)
-router.post('/', requireAdmin as unknown as RequestHandler, async (req, res, next) => {
+router.post('/', requireAdminHandler, async (req, res, next) => {
   try {
     const parsed = registerSchema.safeParse(req.body)
     if (!parsed.success) {
@@ -87,48 +87,44 @@ router.get('/', async (req, res, next) => {
 })
 
 // POST /api/surveys/:id/deactivate — deactivate a survey (admin only)
-router.post(
-  '/:id/deactivate',
-  requireAdmin as unknown as RequestHandler,
-  async (req, res, next) => {
-    try {
-      const surveyId = parseInt(req.params.id as string, 10)
-      if (isNaN(surveyId) || surveyId <= 0) {
-        throw new AppError(
-          400,
-          'INVALID_SURVEY_ID',
-          'The survey ID must be a positive integer (e.g. 1, 2, 3).',
-        )
-      }
-
-      const info = await blockchain.getSurveyInfo(surveyId)
-      if (info.points === 0) {
-        throw new AppError(
-          404,
-          'SURVEY_NOT_FOUND',
-          'No survey found with this ID. It may not have been registered yet.',
-        )
-      }
-      if (!info.active) {
-        throw new AppError(409, 'ALREADY_INACTIVE', 'This survey is already deactivated.')
-      }
-
-      const receipt = await blockchain.deactivateSurvey(surveyId)
-
-      invalidateCache()
-
-      res.json({
-        success: true,
-        data: {
-          txHash: receipt.hash,
-          explorerUrl: `${config.explorerBaseUrl}/tx/${receipt.hash}`,
-        },
-      })
-    } catch (err) {
-      next(err)
+router.post('/:id/deactivate', requireAdminHandler, async (req, res, next) => {
+  try {
+    const surveyId = parseInt(req.params.id as string, 10)
+    if (isNaN(surveyId) || surveyId <= 0) {
+      throw new AppError(
+        400,
+        'INVALID_SURVEY_ID',
+        'The survey ID must be a positive integer (e.g. 1, 2, 3).',
+      )
     }
-  },
-)
+
+    const info = await blockchain.getSurveyInfo(surveyId)
+    if (info.points === 0) {
+      throw new AppError(
+        404,
+        'SURVEY_NOT_FOUND',
+        'No survey found with this ID. It may not have been registered yet.',
+      )
+    }
+    if (!info.active) {
+      throw new AppError(409, 'ALREADY_INACTIVE', 'This survey is already deactivated.')
+    }
+
+    const receipt = await blockchain.deactivateSurvey(surveyId)
+
+    invalidateCache()
+
+    res.json({
+      success: true,
+      data: {
+        txHash: receipt.hash,
+        explorerUrl: `${config.explorerBaseUrl}/tx/${receipt.hash}`,
+      },
+    })
+  } catch (err) {
+    next(err)
+  }
+})
 
 // POST /api/surveys/:id/template — download survey template (admin only, secret in body)
 const templateSchema = z.object({
@@ -136,7 +132,7 @@ const templateSchema = z.object({
   format: z.enum(['sosci', 'limesurvey']).default('sosci'),
 })
 
-router.post('/:id/template', requireAdmin as unknown as RequestHandler, async (req, res, next) => {
+router.post('/:id/template', requireAdminHandler, async (req, res, next) => {
   try {
     const surveyId = parseInt(req.params.id as string, 10)
     if (isNaN(surveyId) || surveyId <= 0) {

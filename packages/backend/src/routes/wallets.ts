@@ -1,8 +1,8 @@
-import { Router, type RequestHandler } from 'express'
+import { Router } from 'express'
 import { ethers } from 'ethers'
 import { config } from '../config.js'
 import { AppError } from '../middleware/errorHandler.js'
-import { requireAdmin } from '../middleware/auth.js'
+import { requireAdminHandler } from '../middleware/auth.js'
 import * as blockchain from '../services/blockchain.js'
 
 const router: Router = Router()
@@ -35,69 +35,61 @@ router.get('/:address/submitted', async (req, res, next) => {
 })
 
 // POST /api/wallets/:address/mark-submitted — mark wallet as submitted (admin only)
-router.post(
-  '/:address/mark-submitted',
-  requireAdmin as unknown as RequestHandler,
-  async (req, res, next) => {
-    try {
-      const address = validateAddress(req.params.address as string)
+router.post('/:address/mark-submitted', requireAdminHandler, async (req, res, next) => {
+  try {
+    const address = validateAddress(req.params.address as string)
 
-      const alreadySubmitted = await blockchain.isWalletSubmitted(address)
-      if (alreadySubmitted) {
-        throw new AppError(
-          409,
-          'ALREADY_SUBMITTED',
-          'This wallet is already marked as submitted. It has already been used for thesis admission.',
-        )
-      }
-
-      const receipt = await blockchain.markWalletSubmitted(address)
-
-      res.json({
-        success: true,
-        data: {
-          address,
-          txHash: receipt.hash,
-          explorerUrl: `${config.explorerBaseUrl}/tx/${receipt.hash}`,
-        },
-      })
-    } catch (err) {
-      next(err)
+    const alreadySubmitted = await blockchain.isWalletSubmitted(address)
+    if (alreadySubmitted) {
+      throw new AppError(
+        409,
+        'ALREADY_SUBMITTED',
+        'This wallet is already marked as submitted. It has already been used for thesis admission.',
+      )
     }
-  },
-)
+
+    const receipt = await blockchain.markWalletSubmitted(address)
+
+    res.json({
+      success: true,
+      data: {
+        address,
+        txHash: receipt.hash,
+        explorerUrl: `${config.explorerBaseUrl}/tx/${receipt.hash}`,
+      },
+    })
+  } catch (err) {
+    next(err)
+  }
+})
 
 // POST /api/wallets/:address/unmark-submitted — remove submission mark (admin only)
-router.post(
-  '/:address/unmark-submitted',
-  requireAdmin as unknown as RequestHandler,
-  async (req, res, next) => {
-    try {
-      const address = validateAddress(req.params.address as string)
+router.post('/:address/unmark-submitted', requireAdminHandler, async (req, res, next) => {
+  try {
+    const address = validateAddress(req.params.address as string)
 
-      const isSubmitted = await blockchain.isWalletSubmitted(address)
-      if (!isSubmitted) {
-        throw new AppError(
-          409,
-          'NOT_SUBMITTED',
-          'This wallet is not marked as submitted, so there is nothing to undo.',
-        )
-      }
-
-      const receipt = await blockchain.unmarkWalletSubmitted(address)
-
-      res.json({
-        success: true,
-        data: {
-          address,
-          txHash: receipt.hash,
-          explorerUrl: `${config.explorerBaseUrl}/tx/${receipt.hash}`,
-        },
-      })
-    } catch (err) {
-      next(err)
+    const isSubmitted = await blockchain.isWalletSubmitted(address)
+    if (!isSubmitted) {
+      throw new AppError(
+        409,
+        'NOT_SUBMITTED',
+        'This wallet is not marked as submitted, so there is nothing to undo.',
+      )
     }
-  },
-)
+
+    const receipt = await blockchain.unmarkWalletSubmitted(address)
+
+    res.json({
+      success: true,
+      data: {
+        address,
+        txHash: receipt.hash,
+        explorerUrl: `${config.explorerBaseUrl}/tx/${receipt.hash}`,
+      },
+    })
+  } catch (err) {
+    next(err)
+  }
+})
 
 export default router

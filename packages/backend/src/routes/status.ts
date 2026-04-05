@@ -1,6 +1,6 @@
-import { Router, type RequestHandler } from 'express'
+import { Router } from 'express'
 import { ethers } from 'ethers'
-import { requireAdmin } from '../middleware/auth.js'
+import { requireAdminHandler } from '../middleware/auth.js'
 import * as blockchain from '../services/blockchain.js'
 
 const router: Router = Router()
@@ -9,7 +9,7 @@ const AVG_GAS_PER_CLAIM = 55_000n
 const AVG_GAS_PER_REGISTER = 80_000n
 
 // GET /api/status — system status with wallet balance (admin only)
-router.get('/', requireAdmin as unknown as RequestHandler, async (_req, res, next) => {
+router.get('/', requireAdminHandler, async (_req, res, next) => {
   try {
     const [balance, blockNumber, network] = await Promise.all([
       blockchain.getMinterBalance(),
