@@ -53,15 +53,18 @@ vpp-blockchain/
 │   │   ├── test/            # Backend test suite
 │   │   └── Dockerfile       # Production container
 │   │
-│   └── frontend/            # React + Vite SPA
-│       ├── src/
-│       │   ├── pages/       # Route-level components
-│       │   ├── components/  # UI + layout components
-│       │   ├── hooks/       # React hooks (wallet, API, blockchain)
-│       │   ├── lib/         # Utilities, config, i18n
-│       │   ├── locales/     # DE/EN translation files
-│       │   └── styles/      # Global CSS + theme
-│       └── test/            # Frontend test suite
+│   ├── frontend/            # React + Vite SPA
+│   │   ├── src/
+│   │   │   ├── pages/       # Route-level components
+│   │   │   ├── components/  # UI + layout components
+│   │   │   ├── hooks/       # React hooks (wallet, API, blockchain)
+│   │   │   ├── lib/         # Utilities, config, i18n
+│   │   │   ├── locales/     # DE/EN translation files
+│   │   │   └── styles/      # Global CSS + theme
+│   │   └── test/            # Frontend test suite
+│   │
+│   └── shared/              # Shared TypeScript types (@vpp/shared)
+│       └── src/             # Type definitions used by backend & frontend
 │
 ├── docs/                    # Project documentation
 ├── .github/                 # CI workflows + issue/PR templates

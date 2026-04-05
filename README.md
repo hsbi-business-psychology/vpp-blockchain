@@ -53,11 +53,12 @@ VPP lets students earn points for completing surveys. Points are recorded on a p
 
 ## Monorepo Structure
 
-| Package                                    | Description                                      |
-| ------------------------------------------ | ------------------------------------------------ |
-| [`packages/contracts`](packages/contracts) | Solidity smart contract with Hardhat tooling     |
-| [`packages/backend`](packages/backend)     | Node.js/Express API server (transaction relayer) |
-| [`packages/frontend`](packages/frontend)   | React + Vite + shadcn/ui reference frontend      |
+| Package                                    | Description                                        |
+| ------------------------------------------ | -------------------------------------------------- |
+| [`packages/contracts`](packages/contracts) | Solidity smart contract with Hardhat tooling       |
+| [`packages/backend`](packages/backend)     | Node.js/Express API server (transaction relayer)   |
+| [`packages/frontend`](packages/frontend)   | React + Vite + shadcn/ui reference frontend        |
+| [`packages/shared`](packages/shared)       | Shared TypeScript types used by backend & frontend |
 
 ## Tech Stack
 
