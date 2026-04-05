@@ -7,6 +7,7 @@ dist/
 build/
 out/
 deploy/
+*.tsbuildinfo
 
 # Hardhat / Solidity
 packages/contracts/artifacts/
