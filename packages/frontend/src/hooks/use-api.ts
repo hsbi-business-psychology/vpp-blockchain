@@ -118,7 +118,15 @@ export function useApi() {
         },
         body: JSON.stringify({ secret, format }),
       })
-      if (!res.ok) throw new Error('Failed to download template')
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}))
+        throw new ApiRequestError(
+          json.error || 'DOWNLOAD_FAILED',
+          json.message || `Failed to download template (HTTP ${res.status})`,
+          res.status,
+          json.details,
+        )
+      }
       return res.blob()
     },
     [],
