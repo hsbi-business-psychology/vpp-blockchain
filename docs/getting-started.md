@@ -50,7 +50,7 @@ pnpm --filter @vpp/contracts run compile
 REPORT_GAS=true pnpm --filter @vpp/contracts test
 
 # Start a local Hardhat node
-pnpm --filter @vpp/contracts hardhat node
+pnpm --filter @vpp/contracts run node
 
 # Deploy to the local node
 pnpm --filter @vpp/contracts run deploy:local

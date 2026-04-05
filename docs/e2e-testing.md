@@ -130,24 +130,24 @@ Test the following on both iOS Safari and Android Chrome:
 
 ```bash
 # Health check
-time curl -s http://localhost:3000/api/health
+time curl -s http://localhost:3000/api/v1/health
 
 # Points query
-time curl -s http://localhost:3000/api/points/0x1234...
+time curl -s http://localhost:3000/api/v1/points/0x1234...
 
 # Survey list
-time curl -s http://localhost:3000/api/surveys
+time curl -s http://localhost:3000/api/v1/surveys
 ```
 
 ## Automated Test Summary
 
 The project includes automated unit and integration tests:
 
-| Package     | Framework                      | Tests                                          |
-| ----------- | ------------------------------ | ---------------------------------------------- |
-| `contracts` | Hardhat + Chai                 | 42 tests (roles, claims, edge cases, events)   |
-| `backend`   | Vitest + Supertest             | 17 tests (all API endpoints, auth, validation) |
-| `frontend`  | Vitest + React Testing Library | 20 tests (hooks, pages, config)                |
+| Package     | Framework                      | Scope                               |
+| ----------- | ------------------------------ | ----------------------------------- |
+| `contracts` | Hardhat + Chai                 | Roles, claims, edge cases, events   |
+| `backend`   | Vitest + Supertest             | All API endpoints, auth, validation |
+| `frontend`  | Vitest + React Testing Library | Hooks, pages, config                |
 
 Run all tests:
 

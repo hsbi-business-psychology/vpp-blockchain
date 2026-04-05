@@ -6,15 +6,15 @@
  * sets JSON headers, and throws on non-success responses.
  *
  * Exposed methods map 1:1 to backend routes:
- *   - claimPoints       → POST /api/claim
- *   - getSurveys        → GET  /api/surveys
- *   - registerSurvey    → POST /api/surveys
- *   - downloadTemplate  → POST /api/surveys/:id/template
- *   - deactivateSurvey  → POST /api/surveys/:id/deactivate
- *   - addAdmin          → POST /api/admin/add
- *   - removeAdmin       → POST /api/admin/remove
- *   - getSystemStatus   → GET  /api/status
- *   - wallet submission → GET/POST /api/wallets/:address/*
+ *   - claimPoints       → POST /api/v1/claim
+ *   - getSurveys        → GET  /api/v1/surveys
+ *   - registerSurvey    → POST /api/v1/surveys
+ *   - downloadTemplate  → POST /api/v1/surveys/:id/template
+ *   - deactivateSurvey  → POST /api/v1/surveys/:id/deactivate
+ *   - addAdmin          → POST /api/v1/admin/add
+ *   - removeAdmin       → POST /api/v1/admin/remove
+ *   - getSystemStatus   → GET  /api/v1/status
+ *   - wallet submission → GET/POST /api/v1/wallets/:address/*
  */
 import { useCallback } from 'react'
 import { config } from '@/lib/config'
