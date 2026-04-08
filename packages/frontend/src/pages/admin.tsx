@@ -92,17 +92,16 @@ export default function AdminPage() {
 
   // ── Surveys ────────────────────────────────────────────────────────────
   const fetchSurveys = useCallback(async () => {
-    if (!authCredentials) return
     setLoading(true)
     try {
-      const data = await getSurveys(authCredentials.signature, authCredentials.message)
+      const data = await getSurveys()
       setSurveys(data)
     } catch (err) {
       toast.error(err instanceof ApiRequestError ? err.message : t('common.error'))
     } finally {
       setLoading(false)
     }
-  }, [authCredentials, getSurveys, t])
+  }, [getSurveys, t])
 
   useEffect(() => {
     if (authenticated) fetchSurveys()

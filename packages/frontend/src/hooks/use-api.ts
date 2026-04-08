@@ -69,18 +69,9 @@ export function useApi() {
     [],
   )
 
-  const getSurveys = useCallback(
-    async (signature: string, message: string): Promise<SurveyInfo[]> => {
-      return apiFetch<SurveyInfo[]>('/api/v1/surveys', {
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-signature': signature,
-          'x-admin-message': message,
-        },
-      })
-    },
-    [],
-  )
+  const getSurveys = useCallback(async (): Promise<SurveyInfo[]> => {
+    return apiFetch<SurveyInfo[]>('/api/v1/surveys')
+  }, [])
 
   const registerSurvey = useCallback(
     async (params: {

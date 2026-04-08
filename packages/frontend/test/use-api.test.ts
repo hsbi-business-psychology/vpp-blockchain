@@ -112,17 +112,17 @@ describe('useApi', () => {
   })
 
   describe('getSurveys', () => {
-    it('sends admin auth headers', async () => {
+    it('fetches surveys without auth headers (public endpoint)', async () => {
       const surveys = [{ id: 1, title: 'Test', points: 10 }]
       vi.stubGlobal('fetch', mockFetchSuccess(surveys))
 
       const { result } = renderHook(() => useApi())
-      const res = await result.current.getSurveys('sig', 'msg')
+      const res = await result.current.getSurveys()
 
       expect(res).toEqual(surveys)
-      const [, opts] = vi.mocked(fetch).mock.calls[0]
-      expect((opts?.headers as Record<string, string>)['x-admin-signature']).toBe('sig')
-      expect((opts?.headers as Record<string, string>)['x-admin-message']).toBe('msg')
+      const [url, opts] = vi.mocked(fetch).mock.calls[0]
+      expect(url).toContain('/api/v1/surveys')
+      expect((opts?.headers as Record<string, string>)['x-admin-signature']).toBeUndefined()
     })
   })
 
