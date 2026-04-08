@@ -3,15 +3,10 @@ import { config } from '../config.js'
 
 const isTest = process.env.NODE_ENV === 'test'
 
-function createStore(): Store | undefined {
+async function createStore(): Promise<Store | undefined> {
   if (config.rateLimitStore === 'redis' && config.redisUrl) {
-    // Dynamic import at module level is not possible with conditional logic,
-    // so we lazily require the Redis store. The packages are optional
-    // dependencies that only need to be installed when RATE_LIMIT_STORE=redis.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { RedisStore } = require('rate-limit-redis') as typeof import('rate-limit-redis')
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { default: Redis } = require('ioredis') as typeof import('ioredis')
+    const { RedisStore } = await import('rate-limit-redis')
+    const { default: Redis } = await import('ioredis')
 
     const client = new Redis(config.redisUrl)
     return new RedisStore({
@@ -21,7 +16,7 @@ function createStore(): Store | undefined {
   return undefined
 }
 
-const store = createStore()
+const store = await createStore()
 
 /** Strict limiter for the claim endpoint (default: 5 req/min per IP). */
 export const claimLimiter = rateLimit({
