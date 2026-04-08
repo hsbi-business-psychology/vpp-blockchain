@@ -50,9 +50,6 @@ jobs:
       - name: Compile contracts
         run: pnpm --filter @vpp/contracts run compile
 
-      - name: Run tests
-        run: pnpm --filter @vpp/contracts run test
-
       - name: Run tests with gas report
         run: pnpm --filter @vpp/contracts run test
         env:
