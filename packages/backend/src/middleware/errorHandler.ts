@@ -72,6 +72,27 @@ const REVERT_MAP: Record<string, { status: number; code: string; message: string
     code: 'INVALID_POINTS',
     message: 'Points must be between 1 and 255.',
   },
+  SurveyNotFound: {
+    status: 404,
+    code: 'SURVEY_NOT_FOUND',
+    message: 'No survey found with this ID. It may not have been registered yet.',
+  },
+  ZeroAddress: {
+    status: 400,
+    code: 'ZERO_ADDRESS',
+    message: 'The zero address is not allowed.',
+  },
+  WalletAlreadySubmitted: {
+    status: 409,
+    code: 'ALREADY_SUBMITTED',
+    message:
+      'This wallet is already marked as submitted. It has already been used for thesis admission.',
+  },
+  WalletNotSubmitted: {
+    status: 404,
+    code: 'NOT_SUBMITTED',
+    message: 'This wallet is not marked as submitted, so there is nothing to undo.',
+  },
 }
 
 /**

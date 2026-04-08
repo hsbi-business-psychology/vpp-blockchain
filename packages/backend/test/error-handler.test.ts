@@ -100,6 +100,10 @@ describe('parseContractError', () => {
     { name: 'SurveyAlreadyExists', code: 'SURVEY_EXISTS', status: 409 },
     { name: 'InvalidSurveyId', code: 'INVALID_SURVEY_ID', status: 400 },
     { name: 'InvalidPoints', code: 'INVALID_POINTS', status: 400 },
+    { name: 'SurveyNotFound', code: 'SURVEY_NOT_FOUND', status: 404 },
+    { name: 'ZeroAddress', code: 'ZERO_ADDRESS', status: 400 },
+    { name: 'WalletAlreadySubmitted', code: 'ALREADY_SUBMITTED', status: 409 },
+    { name: 'WalletNotSubmitted', code: 'NOT_SUBMITTED', status: 404 },
   ]
 
   it.each(KNOWN_REVERTS)('should map $name to $code ($status)', ({ name, code, status }) => {
