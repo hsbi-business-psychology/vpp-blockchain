@@ -111,6 +111,7 @@ router.post('/:id/deactivate', requireAdminHandler, async (req, res, next) => {
     }
 
     const receipt = await blockchain.deactivateSurvey(surveyId)
+    await getEventStore().sync()
 
     invalidateCache()
 
