@@ -33,7 +33,8 @@ const abi = loadContractABI()
 
 const provider = new ethers.JsonRpcProvider(config.rpcUrl)
 const wallet = new ethers.Wallet(config.minterPrivateKey, provider)
-const contract = new ethers.Contract(config.contractAddress, abi, wallet)
+const managedSigner = new ethers.NonceManager(wallet)
+const contract = new ethers.Contract(config.contractAddress, abi, managedSigner)
 const readOnlyContract = new ethers.Contract(config.contractAddress, abi, provider)
 
 export async function awardPoints(
