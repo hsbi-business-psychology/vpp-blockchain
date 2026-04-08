@@ -157,7 +157,14 @@ describe('useApi', () => {
     })
 
     it('throws on non-ok response', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500 }))
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: false,
+          status: 500,
+          json: () => Promise.resolve({}),
+        }),
+      )
 
       const { result } = renderHook(() => useApi())
 
