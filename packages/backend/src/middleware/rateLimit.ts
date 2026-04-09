@@ -6,11 +6,11 @@ const isTest = process.env.NODE_ENV === 'test'
 async function createStore(): Promise<Store | undefined> {
   if (config.rateLimitStore === 'redis' && config.redisUrl) {
     const { RedisStore } = await import('rate-limit-redis')
-    const { default: Redis } = await import('ioredis')
-
-    const client = new Redis(config.redisUrl)
+    const ioredis = await import('ioredis')
+    // @ts-expect-error -- ioredis ESM default export lacks construct signature in types
+    const client = new ioredis.default(config.redisUrl!)
     return new RedisStore({
-      sendCommand: (...args: string[]) => client.call(...args) as Promise<unknown>,
+      sendCommand: (...args: string[]) => client.call(args[0], ...args.slice(1)) as Promise<string>,
     })
   }
   return undefined

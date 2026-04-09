@@ -42,34 +42,30 @@ export function createApp(): Express {
   }
 
   // Security & parsing
-  app.use(
-    helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          scriptSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          imgSrc: ["'self'", 'data:', 'blob:'],
-          fontSrc: ["'self'"],
-          connectSrc: [
-            "'self'",
-            'https://base.drpc.org',
-            'https://1rpc.io',
-            'https://*.base.org',
-            'https://*.basescan.org',
-          ],
-        },
+  const helmetMiddleware = helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:', 'blob:'],
+        fontSrc: ["'self'"],
+        connectSrc: [
+          "'self'",
+          'https://base.drpc.org',
+          'https://1rpc.io',
+          'https://*.base.org',
+          'https://*.basescan.org',
+        ],
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    }) as any,
-  )
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  app.use(cors({ origin: config.frontendUrl, methods: ['GET', 'POST'] }) as any)
+    },
+  })
+  // @ts-expect-error -- helmet v8 returns a type incompatible with Express 4 RequestHandler
+  app.use(helmetMiddleware)
+  app.use(cors({ origin: config.frontendUrl, methods: ['GET', 'POST'] }))
   app.use(express.json())
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  app.use(requestLogger as any)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  app.use(apiLimiter as any)
+  app.use(requestLogger)
+  app.use(apiLimiter)
 
   // Versioned API routes
   app.use('/api/v1', createApiRouter())
