@@ -91,6 +91,9 @@ jobs:
       - name: Run tests with coverage
         run: pnpm --filter @vpp/backend run test:coverage
 
+      - name: Run integration tests
+        run: pnpm --filter @vpp/backend run test:integration
+
       - name: Upload coverage to Codecov
         if: always()
         uses: codecov/codecov-action@v5
