@@ -1,6 +1,7 @@
 import js from '@eslint/js'
 import tsPlugin from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
+import reactHooks from 'eslint-plugin-react-hooks'
 
 export default [
   {
@@ -37,6 +38,16 @@ export default [
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/consistent-type-imports': ['error', { disallowTypeAnnotations: false }],
+    },
+  },
+  {
+    files: ['**/*.tsx'],
+    plugins: {
+      'react-hooks': reactHooks,
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      'react-hooks/set-state-in-effect': 'warn',
     },
   },
   {
