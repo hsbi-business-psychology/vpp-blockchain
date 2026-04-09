@@ -65,7 +65,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: contracts
           directory: packages/contracts/coverage
-          fail_ci_if_error: false
+          fail_ci_if_error: true
 
   backend:
     name: Backend Tests
@@ -101,7 +101,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: backend
           directory: packages/backend/coverage
-          fail_ci_if_error: false
+          fail_ci_if_error: true
 
   frontend:
     name: Frontend Build & Tests
@@ -131,7 +131,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: frontend
           directory: packages/frontend/coverage
-          fail_ci_if_error: false
+          fail_ci_if_error: true
 
   lighthouse:
     name: Lighthouse CI
