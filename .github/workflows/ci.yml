@@ -111,9 +111,9 @@ jobs:
             sleep 1
           done
 
-      - name: Deploy + seed contract on local node
+      - name: Deploy + seed V2 proxy on local node
         working-directory: packages/contracts
-        run: pnpm exec hardhat run scripts/deploy-local.ts --network localhost
+        run: pnpm exec hardhat run scripts/deploy-v2-local.ts --network localhost
 
       - name: Run integration tests
         run: pnpm --filter @vpp/backend run test:integration
