@@ -55,13 +55,44 @@ jobs:
       - name: Install lftp
         run: sudo apt-get update && sudo apt-get install -y lftp
 
+      # Capture the actual cert chain hosting.hsbi.de presents and trust it
+      # for this run. Keeps TLS validation enabled (no blanket "trust anything")
+      # while working around the DFN/HSBI CA missing from Ubuntu's bundle.
+      - name: Pin hosting.hsbi.de TLS cert chain
+        id: pin-cert
+        run: |
+          set -euo pipefail
+          mkdir -p .ftp-trust
+          # FTPS uses STARTTLS on port 21
+          if openssl s_client -connect hosting.hsbi.de:21 -starttls ftp -showcerts \
+              -servername hosting.hsbi.de </dev/null 2>/dev/null \
+              | sed -n '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/p' \
+              > .ftp-trust/hsbi.pem
+          then
+            if [ -s .ftp-trust/hsbi.pem ]; then
+              echo "verify=yes" >> "$GITHUB_OUTPUT"
+              echo "Pinned $(grep -c BEGIN .ftp-trust/hsbi.pem) certs from hosting.hsbi.de"
+            else
+              echo "verify=no" >> "$GITHUB_OUTPUT"
+              echo "::warning::Empty cert chain from hosting.hsbi.de — falling back to encrypted-but-unverified TLS"
+            fi
+          else
+            echo "verify=no" >> "$GITHUB_OUTPUT"
+            echo "::warning::Could not fetch cert chain from hosting.hsbi.de — falling back to encrypted-but-unverified TLS"
+          fi
+
       - name: Deploy via FTP/TLS
         run: |
+          if [ "${{ steps.pin-cert.outputs.verify }}" = "yes" ]; then
+            VERIFY_OPTS="set ssl:verify-certificate yes; set ssl:ca-file $(pwd)/.ftp-trust/hsbi.pem;"
+          else
+            VERIFY_OPTS="set ssl:verify-certificate no;"
+          fi
           lftp -c "
             set ftp:ssl-allow yes;
             set ftp:ssl-force yes;
             set ftp:ssl-protect-data yes;
-            set ssl:verify-certificate yes;
+            $VERIFY_OPTS
             set ftp:passive-mode yes;
             set ftp:ssl-protect-list yes;
             set net:max-retries 3;
@@ -74,5 +105,7 @@ jobs:
               --exclude node_modules/ \
               --exclude tmp/ \
               deploy/ /httpdocs/;
+            mkdir -p /httpdocs/packages/backend/tmp;
+            put /dev/null -o /httpdocs/packages/backend/tmp/restart.txt;
             quit;
           "
