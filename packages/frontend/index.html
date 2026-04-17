@@ -113,12 +113,8 @@
       >Zum Inhalt springen</a
     >
     <div id="root"></div>
-    <script>
-      ;(function () {
-        var l = localStorage.getItem('vpp-lang')
-        if (l) document.documentElement.lang = l
-      })()
-    </script>
+    <!-- No inline scripts: the strict CSP (script-src 'self') in production
+         would block them. Locale init happens at the top of main.tsx. -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
