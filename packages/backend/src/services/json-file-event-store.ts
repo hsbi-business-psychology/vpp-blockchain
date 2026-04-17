@@ -36,6 +36,7 @@ export class JsonFileEventStore implements EventStore {
   private syncing = false
   private syncStartedAt = 0
   private lastSuccessfulSyncAt = 0
+  private lastSyncError: string | null = null
   private adminRoleHash: string | null = null
   private syncInterval: ReturnType<typeof setInterval> | null = null
 
@@ -122,7 +123,9 @@ export class JsonFileEventStore implements EventStore {
         ),
       ])
       this.lastSuccessfulSyncAt = Date.now()
+      this.lastSyncError = null
     } catch (err) {
+      this.lastSyncError = err instanceof Error ? err.message : String(err)
       logger.error({ err }, 'Event store sync failed (watchdog)')
     } finally {
       this.syncing = false
@@ -229,6 +232,32 @@ export class JsonFileEventStore implements EventStore {
    * Plesk/Passenger has paused the background interval between requests. */
   isStale(staleMs: number): boolean {
     return Date.now() - this.lastSuccessfulSyncAt > staleMs
+  }
+
+  /** Snapshot of internal sync state for /diag observability. Exposed so
+   * operators can tell from the outside whether the background sync is
+   * keeping up, hung, or erroring. */
+  getSyncDebug(): {
+    syncing: boolean
+    lastSyncedBlock: number
+    lastSuccessfulSyncAt: number
+    lastSyncAgeSeconds: number | null
+    lastSyncError: string | null
+    syncStartedAt: number
+    currentSyncAgeSeconds: number | null
+  } {
+    const now = Date.now()
+    return {
+      syncing: this.syncing,
+      lastSyncedBlock: this.store.lastSyncedBlock,
+      lastSuccessfulSyncAt: this.lastSuccessfulSyncAt,
+      lastSyncAgeSeconds: this.lastSuccessfulSyncAt
+        ? Math.floor((now - this.lastSuccessfulSyncAt) / 1000)
+        : null,
+      lastSyncError: this.lastSyncError,
+      syncStartedAt: this.syncStartedAt,
+      currentSyncAgeSeconds: this.syncing ? Math.floor((now - this.syncStartedAt) / 1000) : null,
+    }
   }
 
   getSurveyRegisteredEvents(): StoredSurveyEvent[] {

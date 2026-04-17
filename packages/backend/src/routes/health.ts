@@ -28,6 +28,14 @@ async function checkReady(): Promise<HealthResult> {
   }
 
   const eventStore = getEventStore()
+  // Plesk/Passenger pauses Node workers between requests, which means the
+  // 60s background sync interval can drift or skip entirely. Use any /ready
+  // probe (typically Uptime monitoring) as an opportunity to refresh the
+  // cache. Fire-and-forget so we don't slow down the health probe.
+  if (eventStore.isStale(60_000)) {
+    void eventStore.sync()
+  }
+
   const eventStoreReady = eventStore.isReady()
   const lastSyncedBlock = eventStore.getLastSyncedBlock()
 
@@ -131,6 +139,17 @@ router.get('/diag', async (_req, res) => {
     Promise.all(fallbackUrls.map(probeRpc)),
   ])
 
+  // Surface the event-store internals so operators can tell whether the
+  // background sync is keeping up. Added after a production incident where
+  // /ready showed lastSyncedBlock frozen for >30 min while the worker
+  // uptime kept growing — without these fields it was impossible to tell
+  // whether sync() was looping with errors, stuck mid-call, or simply not
+  // being scheduled.
+  const eventStore = getEventStore() as unknown as {
+    getSyncDebug?: () => unknown
+  }
+  const sync = typeof eventStore.getSyncDebug === 'function' ? eventStore.getSyncDebug() : null
+
   res.json({
     uptime: Math.floor((Date.now() - startedAt) / 1000),
     rpc: {
@@ -140,6 +159,7 @@ router.get('/diag', async (_req, res) => {
       fallbackProbes,
       anyOk: configuredProbes.some((p) => p.ok) || fallbackProbes.some((p) => p.ok),
     },
+    eventStore: sync,
     contractAddress: config.contractAddress,
     explorerBaseUrl: config.explorerBaseUrl,
   })
