@@ -4,6 +4,7 @@ import { ethers } from 'ethers'
 import { createApp } from '../src/server.js'
 import * as blockchain from '../src/services/blockchain.js'
 import { getEventStore } from '../src/services/event-store.js'
+import * as adminLabels from '../src/services/admin-labels.js'
 
 const app = createApp()
 
@@ -12,22 +13,23 @@ const ADMIN_WALLET = new ethers.Wallet(
 )
 
 const TARGET_ADDRESS = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
+// Matches getMinterAddress() mock in test/setup.ts.
+const MINTER_ADDRESS = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
 
 describe('GET /api/v1/admin', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
+    adminLabels.__resetForTests()
   })
 
-  it('should return the current admin list with valid auth', async () => {
+  it('should return admin entries with label + isMinter flag', async () => {
     const timestamp = Math.floor(Date.now() / 1000)
     const message = `List admins at ${timestamp}`
     const signature = await ADMIN_WALLET.signMessage(message)
 
+    adminLabels.setLabel(TARGET_ADDRESS, 'Jasmin')
     vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
-    vi.mocked(getEventStore()).getCurrentAdmins.mockReturnValue([
-      '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-      TARGET_ADDRESS,
-    ])
+    vi.mocked(getEventStore()).getCurrentAdmins.mockReturnValue([MINTER_ADDRESS, TARGET_ADDRESS])
 
     const res = await request(app)
       .get('/api/v1/admin')
@@ -37,7 +39,24 @@ describe('GET /api/v1/admin', () => {
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(true)
     expect(res.body.data.admins).toHaveLength(2)
-    expect(res.body.data.admins).toContain('0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266')
+
+    const minterEntry = res.body.data.admins.find(
+      (a: { address: string }) => a.address === MINTER_ADDRESS,
+    )
+    expect(minterEntry).toMatchObject({
+      address: MINTER_ADDRESS,
+      label: null,
+      isMinter: true,
+    })
+
+    const targetEntry = res.body.data.admins.find(
+      (a: { address: string }) => a.address === TARGET_ADDRESS,
+    )
+    expect(targetEntry).toMatchObject({
+      address: TARGET_ADDRESS,
+      label: 'Jasmin',
+      isMinter: false,
+    })
   })
 
   it('should return empty array when no admins', async () => {
@@ -62,6 +81,91 @@ describe('GET /api/v1/admin', () => {
 
     expect(res.status).toBe(401)
     expect(res.body.error).toBe('UNAUTHORIZED')
+  })
+})
+
+describe('PUT /api/v1/admin/label', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks()
+    adminLabels.__resetForTests()
+  })
+
+  it('should set a new label with valid signature', async () => {
+    const timestamp = Math.floor(Date.now() / 1000)
+    const message = `Set admin label ${TARGET_ADDRESS} at ${timestamp}`
+    const signature = await ADMIN_WALLET.signMessage(message)
+
+    vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
+
+    const res = await request(app).put('/api/v1/admin/label').send({
+      address: TARGET_ADDRESS,
+      label: 'Jasmin',
+      adminSignature: signature,
+      adminMessage: message,
+    })
+
+    expect(res.status).toBe(200)
+    expect(res.body.success).toBe(true)
+    expect(res.body.data).toEqual({ address: TARGET_ADDRESS, label: 'Jasmin' })
+    expect(adminLabels.getLabel(TARGET_ADDRESS)).toBe('Jasmin')
+  })
+
+  it('should clear a label when given empty string', async () => {
+    const timestamp = Math.floor(Date.now() / 1000)
+    const message = `Set admin label ${TARGET_ADDRESS} at ${timestamp}`
+    const signature = await ADMIN_WALLET.signMessage(message)
+
+    adminLabels.setLabel(TARGET_ADDRESS, 'Old')
+    vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
+
+    const res = await request(app).put('/api/v1/admin/label').send({
+      address: TARGET_ADDRESS,
+      label: '   ',
+      adminSignature: signature,
+      adminMessage: message,
+    })
+
+    expect(res.status).toBe(200)
+    expect(res.body.data.label).toBeNull()
+    expect(adminLabels.getLabel(TARGET_ADDRESS)).toBeNull()
+  })
+
+  it('should reject from a non-admin wallet', async () => {
+    const nonAdmin = ethers.Wallet.createRandom()
+    const timestamp = Math.floor(Date.now() / 1000)
+    const message = `Set admin label ${TARGET_ADDRESS} at ${timestamp}`
+    const signature = await nonAdmin.signMessage(message)
+
+    vi.mocked(blockchain.isAdmin).mockResolvedValue(false)
+
+    const res = await request(app).put('/api/v1/admin/label').send({
+      address: TARGET_ADDRESS,
+      label: 'Jasmin',
+      adminSignature: signature,
+      adminMessage: message,
+    })
+
+    expect(res.status).toBe(403)
+  })
+
+  it('should reject labels longer than the limit', async () => {
+    const timestamp = Math.floor(Date.now() / 1000)
+    const message = `Set admin label ${TARGET_ADDRESS} at ${timestamp}`
+    const signature = await ADMIN_WALLET.signMessage(message)
+
+    vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
+
+    const res = await request(app)
+      .put('/api/v1/admin/label')
+      .send({
+        address: TARGET_ADDRESS,
+        label: 'x'.repeat(200),
+        adminSignature: signature,
+        adminMessage: message,
+      })
+
+    expect(res.status).toBe(400)
+    expect(res.body.error).toBe('VALIDATION_ERROR')
   })
 })
 
@@ -238,5 +342,23 @@ describe('POST /api/v1/admin/remove', () => {
     })
 
     expect(res.status).toBe(403)
+  })
+
+  it('should refuse to remove the Minter wallet', async () => {
+    const timestamp = Math.floor(Date.now() / 1000)
+    const message = `Remove admin ${MINTER_ADDRESS} at ${timestamp}`
+    const signature = await ADMIN_WALLET.signMessage(message)
+
+    vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
+
+    const res = await request(app).post('/api/v1/admin/remove').send({
+      address: MINTER_ADDRESS,
+      adminSignature: signature,
+      adminMessage: message,
+    })
+
+    expect(res.status).toBe(400)
+    expect(res.body.error).toBe('MINTER_PROTECTED')
+    expect(blockchain.removeAdmin).not.toHaveBeenCalled()
   })
 })

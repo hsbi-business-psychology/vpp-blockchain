@@ -63,3 +63,25 @@ const mockEventStore = {
 vi.mock('../src/services/event-store.js', () => ({
   getEventStore: vi.fn(() => mockEventStore),
 }))
+
+// Mock admin-labels so tests don't write data/admin-labels.json on disk.
+// The in-memory map persists across tests in a single run; restore in
+// beforeEach if a test cares about isolation.
+const labelStore: Record<string, string> = {}
+vi.mock('../src/services/admin-labels.js', () => ({
+  MAX_LABEL_LENGTH: 64,
+  getLabel: vi.fn((addr: string) => labelStore[addr] ?? null),
+  getAllLabels: vi.fn(() => labelStore),
+  setLabel: vi.fn((addr: string, label: string) => {
+    const trimmed = label.trim()
+    if (trimmed === '') {
+      delete labelStore[addr]
+      return null
+    }
+    labelStore[addr] = trimmed
+    return trimmed
+  }),
+  __resetForTests: vi.fn(() => {
+    for (const key of Object.keys(labelStore)) delete labelStore[key]
+  }),
+}))

@@ -58,9 +58,9 @@
     "title": "Participant Points – Blockchain Project",
     "text": "Participant points are issued as tamper-proof records on the blockchain.",
     "contactTitle": "Contact",
-    "contactPerson": "Prof. Dr. Alexander Haubrock",
-    "contactPhone": "+49.521.106-70355",
-    "contactEmail": "vpstunden@hsbi.de",
+    "contactPerson": "Prof. Dr. Gerrit Hirschfeld",
+    "contactPhone": "+49.521.106-70726",
+    "contactEmail": "gerrit.hirschfeld@hsbi.de",
     "imprint": "Imprint",
     "privacy": "Privacy Policy",
     "accessibility": "Accessibility",
@@ -413,7 +413,16 @@
       "infoTip": "The ADMIN_ROLE is stored directly in the smart contract. Any admin can grant or revoke the admin role for other wallets. These changes are visible on the blockchain and immutably recorded.",
       "infoLabel": "Information about admin management",
       "you": "(You)",
-      "checking": "Checking role..."
+      "checking": "Checking role...",
+      "namePlaceholder": "Name (e.g. Jasmin)",
+      "editName": "Edit name",
+      "saveName": "Save",
+      "cancelName": "Cancel",
+      "unnamed": "(no name set)",
+      "successLabel": "Name saved.",
+      "errorLabel": "Could not save name.",
+      "minterBadge": "Minter Wallet",
+      "minterTooltip": "This address belongs to the backend server. It is required to mint points and grant new admins, so it cannot be removed."
     },
     "systemStatus": {
       "title": "System Status",
@@ -521,13 +530,14 @@
         "title": "Controller",
         "text": "The controller within the meaning of the GDPR is:",
         "address": [
-          "Prof. Dr. rer. nat. Axel Schneider",
+          "Prof. Dr. Gerrit Hirschfeld",
           "Hochschule Bielefeld – HSBI",
+          "Faculty of Business",
           "Interaktion 1",
           "D-33619 Bielefeld",
           "Germany"
         ],
-        "email": "vpstunden@hsbi.de"
+        "email": "gerrit.hirschfeld@hsbi.de"
       },
       "serverLogs": {
         "title": "Server Log Files",

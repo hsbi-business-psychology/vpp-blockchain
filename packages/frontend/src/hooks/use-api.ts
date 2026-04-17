@@ -27,8 +27,19 @@ import type {
 } from '@vpp/shared'
 import { ApiRequestError } from '@vpp/shared'
 
+export interface AdminEntry {
+  address: string
+  label: string | null
+  isMinter: boolean
+}
+
 interface AdminListData {
-  admins: string[]
+  admins: AdminEntry[]
+}
+
+interface AdminLabelResult {
+  address: string
+  label: string | null
 }
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
@@ -189,16 +200,34 @@ export function useApi() {
     [],
   )
 
-  const getAdmins = useCallback(async (signature: string, message: string): Promise<string[]> => {
-    const data = await apiFetch<AdminListData>('/api/v1/admin', {
-      headers: {
-        'Content-Type': 'application/json',
-        'x-admin-signature': signature,
-        'x-admin-message': message,
-      },
-    })
-    return data.admins
-  }, [])
+  const getAdmins = useCallback(
+    async (signature: string, message: string): Promise<AdminEntry[]> => {
+      const data = await apiFetch<AdminListData>('/api/v1/admin', {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-signature': signature,
+          'x-admin-message': message,
+        },
+      })
+      return data.admins
+    },
+    [],
+  )
+
+  const setAdminLabel = useCallback(
+    async (
+      address: string,
+      label: string,
+      adminSignature: string,
+      adminMessage: string,
+    ): Promise<AdminLabelResult> => {
+      return apiFetch<AdminLabelResult>('/api/v1/admin/label', {
+        method: 'PUT',
+        body: JSON.stringify({ address, label, adminSignature, adminMessage }),
+      })
+    },
+    [],
+  )
 
   const getPointsData = useCallback(async (address: string): Promise<PointsResult> => {
     return apiFetch<PointsResult>(`/api/v1/points/${address}`)
@@ -246,5 +275,6 @@ export function useApi() {
     getPointsData,
     addAdmin,
     removeAdmin,
+    setAdminLabel,
   }
 }

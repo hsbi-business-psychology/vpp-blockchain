@@ -58,9 +58,9 @@
     "title": "Versuchspersonenpunkte – Blockchain-Projekt",
     "text": "Versuchspersonenpunkte werden fälschungssicher auf der Blockchain vergeben.",
     "contactTitle": "Kontakt",
-    "contactPerson": "Prof. Dr. Alexander Haubrock",
-    "contactPhone": "+49.521.106-70355",
-    "contactEmail": "vpstunden@hsbi.de",
+    "contactPerson": "Prof. Dr. Gerrit Hirschfeld",
+    "contactPhone": "+49.521.106-70726",
+    "contactEmail": "gerrit.hirschfeld@hsbi.de",
     "imprint": "Impressum",
     "privacy": "Datenschutz",
     "accessibility": "Barrierefreiheit",
@@ -413,7 +413,16 @@
       "infoTip": "Die ADMIN_ROLE wird direkt im Smart Contract gespeichert. Jeder Admin kann anderen Wallets die Admin-Rolle geben oder entziehen. Diese Änderungen sind auf der Blockchain sichtbar und unveränderlich protokolliert.",
       "infoLabel": "Informationen zur Admin-Verwaltung",
       "you": "(Du)",
-      "checking": "Prüfe Rolle..."
+      "checking": "Prüfe Rolle...",
+      "namePlaceholder": "Name (z.B. Jasmin)",
+      "editName": "Name bearbeiten",
+      "saveName": "Speichern",
+      "cancelName": "Abbrechen",
+      "unnamed": "(Kein Name vergeben)",
+      "successLabel": "Name gespeichert.",
+      "errorLabel": "Name konnte nicht gespeichert werden.",
+      "minterBadge": "Minter Wallet",
+      "minterTooltip": "Diese Adresse gehört dem Backend-Server. Sie wird benötigt, um Punkte zu vergeben und neue Admins einzurichten – deshalb kann sie nicht entfernt werden."
     },
     "systemStatus": {
       "title": "System-Status",
@@ -521,13 +530,14 @@
         "title": "Verantwortliche Stelle",
         "text": "Verantwortlich im Sinne der DSGVO ist:",
         "address": [
-          "Prof. Dr. rer. nat. Axel Schneider",
+          "Prof. Dr. Gerrit Hirschfeld",
           "Hochschule Bielefeld – HSBI",
+          "Fachbereich Wirtschaft",
           "Interaktion 1",
           "D-33619 Bielefeld",
           "Deutschland"
         ],
-        "email": "vpstunden@hsbi.de"
+        "email": "gerrit.hirschfeld@hsbi.de"
       },
       "serverLogs": {
         "title": "Server-Logdateien",

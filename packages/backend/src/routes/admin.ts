@@ -5,9 +5,10 @@
  * through the backend's Minter wallet so that admins don't need to hold
  * ETH themselves — only a valid EIP-191 signature is required.
  *
- *   GET    /       – List current admin addresses (event store or RPC fallback).
- *   POST   /add    – Grant ADMIN_ROLE to a new address.
- *   POST   /remove – Revoke ADMIN_ROLE from an address.
+ *   GET    /        – List current admin addresses with labels + role flags.
+ *   POST   /add     – Grant ADMIN_ROLE to a new address.
+ *   POST   /remove  – Revoke ADMIN_ROLE from an address (Minter is protected).
+ *   PUT    /label   – Set / clear a human-readable label for an address.
  */
 import { Router } from 'express'
 import { z } from 'zod'
@@ -18,6 +19,7 @@ import { throwValidationError } from '../lib/validation.js'
 import { requireAdminHandler } from '../middleware/auth.js'
 import * as blockchain from '../services/blockchain.js'
 import { getEventStore } from '../services/event-store.js'
+import { getAllLabels, setLabel, MAX_LABEL_LENGTH } from '../services/admin-labels.js'
 
 const router: Router = Router()
 
@@ -26,6 +28,32 @@ const roleSchema = z.object({
   adminSignature: z.string().min(1),
   adminMessage: z.string().min(1),
 })
+
+const labelSchema = z.object({
+  address: z.string().refine(ethers.isAddress, 'Invalid Ethereum address'),
+  label: z.string().max(MAX_LABEL_LENGTH, `Label exceeds ${MAX_LABEL_LENGTH} characters`),
+  adminSignature: z.string().min(1),
+  adminMessage: z.string().min(1),
+})
+
+interface AdminEntry {
+  address: string
+  label: string | null
+  isMinter: boolean
+}
+
+function buildEntries(addresses: string[]): AdminEntry[] {
+  const labels = getAllLabels()
+  const minter = blockchain.getMinterAddress().toLowerCase()
+  return addresses.map((raw) => {
+    const checksum = ethers.getAddress(raw)
+    return {
+      address: checksum,
+      label: labels[checksum] ?? null,
+      isMinter: checksum.toLowerCase() === minter,
+    }
+  })
+}
 
 router.get('/', requireAdminHandler, async (_req, res, next) => {
   try {
@@ -51,7 +79,7 @@ router.get('/', requireAdminHandler, async (_req, res, next) => {
     } else {
       admins = await blockchain.getAdminAddresses()
     }
-    res.json({ success: true, data: { admins } })
+    res.json({ success: true, data: { admins: buildEntries(admins) } })
   } catch (err) {
     next(err)
   }
@@ -95,6 +123,20 @@ router.post('/remove', requireAdminHandler, async (req, res, next) => {
       throwValidationError(parsed.error)
     }
 
+    // Defense in depth: even though the frontend hides the remove button
+    // for the Minter wallet, refuse the action server-side. Without the
+    // Minter's ADMIN_ROLE the backend cannot mint points or grant new
+    // admins — losing it would brick the entire app and require a
+    // contract redeploy or DEFAULT_ADMIN intervention to recover.
+    const minter = blockchain.getMinterAddress().toLowerCase()
+    if (parsed.data.address.toLowerCase() === minter) {
+      throw new AppError(
+        400,
+        'MINTER_PROTECTED',
+        'The Minter wallet cannot be removed — the backend would lose its ability to mint points or manage admins. Edit the label only.',
+      )
+    }
+
     const isCurrentAdmin = await blockchain.isAdmin(parsed.data.address)
     if (!isCurrentAdmin) {
       throw new AppError(
@@ -112,6 +154,33 @@ router.post('/remove', requireAdminHandler, async (req, res, next) => {
       data: {
         txHash: receipt.hash,
         explorerUrl: `${config.explorerBaseUrl}/tx/${receipt.hash}`,
+      },
+    })
+  } catch (err) {
+    next(err)
+  }
+})
+
+/**
+ * Sets or clears the human-readable label for an admin address. Empty
+ * string clears the label. Stored in `data/admin-labels.json` (off-chain
+ * UX metadata only — no on-chain side effects).
+ */
+router.put('/label', requireAdminHandler, async (req, res, next) => {
+  try {
+    const parsed = labelSchema.safeParse(req.body)
+    if (!parsed.success) {
+      throwValidationError(parsed.error)
+    }
+
+    const checksum = ethers.getAddress(parsed.data.address)
+    const newLabel = setLabel(checksum, parsed.data.label)
+
+    res.json({
+      success: true,
+      data: {
+        address: checksum,
+        label: newLabel,
       },
     })
   } catch (err) {
