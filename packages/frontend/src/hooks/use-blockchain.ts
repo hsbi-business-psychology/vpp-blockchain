@@ -24,7 +24,14 @@ function getContract() {
     throw new Error('Contract address not configured')
   }
   if (!cachedContract) {
-    cachedProvider = new ethers.JsonRpcProvider(config.rpcUrl)
+    // batchMaxCount: 1 disables ethers' default JSON-RPC batching. Free-tier
+    // providers like drpc.org reject batches of more than 3 requests, which
+    // breaks any view that fires several reads in parallel (e.g. the points
+    // overview). Sending one HTTP request per call is the only way to stay
+    // compatible with all common public RPCs.
+    cachedProvider = new ethers.JsonRpcProvider(config.rpcUrl, undefined, {
+      batchMaxCount: 1,
+    })
     cachedContract = new ethers.Contract(config.contractAddress, SURVEY_POINTS_ABI, cachedProvider)
   }
   return cachedContract

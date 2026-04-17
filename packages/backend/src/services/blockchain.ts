@@ -32,7 +32,15 @@ function loadContractABI(): ethers.InterfaceAbi {
 
 const abi = loadContractABI()
 
-const provider = new ethers.JsonRpcProvider(config.rpcUrl)
+// IMPORTANT: ethers v6 batches RPC requests by default (up to 100 per batch).
+// Free-tier providers like drpc.org reject batches > 3 with a 500 ("Batch of more
+// than 3 requests are not allowed on free tier"). Disabling batching turns the
+// blockchain layer back into a sequence of normal individual JSON-RPC calls,
+// which every provider tolerates. This was the root cause of all "blockchain
+// disconnected" / 500 errors in production.
+const provider = new ethers.JsonRpcProvider(config.rpcUrl, undefined, {
+  batchMaxCount: 1,
+})
 const wallet = new ethers.Wallet(config.minterPrivateKey, provider)
 const managedSigner = new ethers.NonceManager(wallet)
 const contract = new ethers.Contract(config.contractAddress, abi, managedSigner)
