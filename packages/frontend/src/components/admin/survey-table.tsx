@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import {
   Download,
   XCircle,
+  CheckCircle2,
+  Key,
   MoreHorizontal,
   ChevronRight,
   ChevronLeft,
@@ -39,6 +41,8 @@ interface SurveyTableProps {
   surveys: SurveyInfo[]
   onDownloadTemplate: (surveyId: number) => void
   onDeactivate: (surveyId: number) => void
+  onReactivate?: (surveyId: number) => void
+  onShowKey?: (surveyId: number) => void
   onSelect?: (surveyId: number) => void
 }
 
@@ -56,6 +60,8 @@ export function SurveyTable({
   surveys,
   onDownloadTemplate,
   onDeactivate,
+  onReactivate,
+  onShowKey,
   onSelect,
 }: SurveyTableProps) {
   const { t } = useTranslation()
@@ -195,6 +201,12 @@ export function SurveyTable({
                               <Download className="mr-2 size-4" />
                               {t('admin.surveys.downloadTemplate')}
                             </DropdownMenuItem>
+                            {onShowKey && (
+                              <DropdownMenuItem onClick={() => onShowKey(survey.surveyId)}>
+                                <Key className="mr-2 size-4" />
+                                {t('admin.surveys.showKey')}
+                              </DropdownMenuItem>
+                            )}
                             {survey.active && (
                               <DropdownMenuItem
                                 onClick={() => onDeactivate(survey.surveyId)}
@@ -202,6 +214,12 @@ export function SurveyTable({
                               >
                                 <XCircle className="mr-2 size-4" />
                                 {t('admin.surveys.deactivate')}
+                              </DropdownMenuItem>
+                            )}
+                            {!survey.active && onReactivate && (
+                              <DropdownMenuItem onClick={() => onReactivate(survey.surveyId)}>
+                                <CheckCircle2 className="mr-2 size-4 text-success" />
+                                {t('admin.surveys.reactivate.button')}
                               </DropdownMenuItem>
                             )}
                           </DropdownMenuContent>

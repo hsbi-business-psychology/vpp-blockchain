@@ -212,11 +212,14 @@
       "viewPoints": "Meine Punkte ansehen"
     },
     "error": {
-      "missingParams": "Der Claim-Link ist unvollst\u00e4ndig \u2013 es fehlt die Survey-ID oder das Secret. Bitte verwende den originalen Link aus der Umfrage.",
-      "alreadyClaimed": "Du hast f\u00fcr diese Umfrage bereits Punkte eingelöst. Jedes Wallet kann nur einmal pro Umfrage Punkte erhalten.",
-      "invalidSecret": "Das Secret ist ung\u00fcltig. Bitte stelle sicher, dass du den originalen Claim-Link aus der Umfrage verwendest und dieser nicht ver\u00e4ndert wurde.",
+      "missingParams": "Der Claim-Link ist unvollständig – es fehlen Umfrage-ID, Nonce oder Token. Bitte verwende den originalen Link aus der Umfrage.",
+      "alreadyClaimed": "Du hast für diese Umfrage bereits Punkte eingelöst. Jedes Wallet kann nur einmal pro Umfrage Punkte erhalten.",
+      "invalidToken": "Der Claim-Link ist ungültig oder wurde manipuliert. Bitte verwende den Originallink, den du am Ende der Umfrage erhalten hast.",
+      "invalidNonceFormat": "Der Claim-Link ist beschädigt (ungültige Nonce). Bitte öffne die Umfrage erneut, um einen frischen Link zu bekommen.",
+      "invalidTokenFormat": "Der Claim-Link ist beschädigt (ungültiges Token). Bitte öffne die Umfrage erneut, um einen frischen Link zu bekommen.",
+      "nonceUsed": "Dieser Claim-Link wurde bereits benutzt. Jeder Link funktioniert nur ein einziges Mal. Falls du noch keine Punkte erhalten hast, wende dich bitte an vpstunden@hsbi.de.",
       "surveyInactive": "Diese Umfrage wurde deaktiviert und nimmt keine Claims mehr an. Wende dich bei Fragen an die Studienleitung.",
-      "maxClaims": "Die maximale Teilnehmerzahl f\u00fcr diese Umfrage wurde erreicht. Es k\u00f6nnen keine weiteren Punkte vergeben werden.",
+      "maxClaims": "Die maximale Teilnehmerzahl für diese Umfrage wurde erreicht. Es können keine weiteren Punkte vergeben werden.",
       "expired": "Deine Signatur ist abgelaufen. Bitte lade die Seite neu und versuche es erneut.",
       "surveyNotFound": "Diese Umfrage ist nicht (mehr) registriert. Bitte prüfe den Claim-Link aus der Umfrage.",
       "invalidSignature": "Die Signatur konnte nicht überprüft werden. Bitte versuche es erneut – stelle sicher, dass du dieselbe Wallet verwendest.",
@@ -224,7 +227,8 @@
       "insufficientFunds": "Das System-Wallet hat aktuell nicht genug Guthaben, um deine Transaktion zu verbuchen. Bitte versuche es in ein paar Minuten erneut oder wende dich an vpstunden@hsbi.de.",
       "unauthorized": "Das System-Wallet besitzt im Smart Contract aktuell nicht die nötige Berechtigung. Bitte wende dich an vpstunden@hsbi.de.",
       "network": "Netzwerkfehler. Die Blockchain ist gerade nicht erreichbar. Bitte versuche es in wenigen Sekunden erneut.",
-      "generic": "Die Punkte konnten nicht eingelöst werden. Bitte pr\u00fcfe deine Internetverbindung und versuche es erneut. Falls das Problem bestehen bleibt, wende dich an vpstunden@hsbi.de."
+      "config": "Diese Umfrage ist nicht vollständig konfiguriert. Bitte wende dich an die Studienleitung (vpstunden@hsbi.de).",
+      "generic": "Die Punkte konnten nicht eingelöst werden. Bitte prüfe deine Internetverbindung und versuche es erneut. Falls das Problem bestehen bleibt, wende dich an vpstunden@hsbi.de."
     }
   },
   "points": {
@@ -309,6 +313,12 @@
         "tx": "Transaktion"
       },
       "downloadTemplate": "Vorlage herunterladen",
+      "showKey": "HMAC-Schlüssel anzeigen",
+      "reactivate": {
+        "button": "Reaktivieren",
+        "success": "Umfrage wurde reaktiviert.",
+        "error": "Reaktivierung fehlgeschlagen. Bitte später erneut versuchen."
+      },
       "deactivate": "Deaktivieren",
       "deactivateConfirm": {
         "title": "Umfrage deaktivieren",
@@ -319,10 +329,7 @@
       "templateDialog": {
         "title": "Vorlage herunterladen",
         "description": "Wähle das Umfrage-Tool, für das du die Vorlage benötigst. Die Vorlage enthält den Claim-Button, den Teilnehmende am Ende der Umfrage sehen.",
-        "secretLabel": "Umfrage-Secret",
-        "secretPlaceholder": "Secret eingeben (z. B. vpp-...)",
-        "secretDescription": "Das Secret wird benötigt, weil es im Claim-Link enthalten sein muss – es ist auf der Blockchain nur als Hash gespeichert und kann nicht ausgelesen werden.",
-        "secretHint": "Du hast das Secret bei der Registrierung erhalten. Falls du es auf diesem Gerät registriert hast, wird es automatisch gespeichert.",
+        "descriptionV2": "Wähle dein Umfrage-Tool. Die Vorlage enthält ein PHP-Snippet mit dem HMAC-Schlüssel der Umfrage. Pro Teilnehmer:in wird daraus serverseitig ein einmaliger Claim-Link erzeugt – der Schlüssel verlässt deinen SoSci-/LimeSurvey-Server nicht.",
         "sosci": {
           "title": "SoSci Survey",
           "description": "Projektdatei (.xml) für SoSci Survey. Importiere sie als neues Befragungsprojekt.",
@@ -333,6 +340,20 @@
           "description": "Umfrage-Vorlage (.lss) f\u00fcr LimeSurvey. Importiere sie \u00fcber Umfrage erstellen \u2192 Importieren. Der Claim-Button ist in der Endnachricht enthalten.",
           "download": "LimeSurvey-Vorlage herunterladen"
         }
+      },
+      "keyDialog": {
+        "title": "HMAC-Schlüssel der Umfrage",
+        "description": "Dieser Schlüssel signiert die einmaligen Claim-Links auf deinem SoSci-/LimeSurvey-Server. Er wird nur einmal hier angezeigt – speichere ihn sicher (z. B. im Passwort-Manager) und füge ihn in die heruntergeladene Vorlage ein.",
+        "keyLabel": "Schlüssel (base64url)",
+        "createdAt": "Erstellt am: {{date}}",
+        "copy": "In die Zwischenablage kopieren",
+        "securityHint": "Der Schlüssel ist hochsensibel: Wer ihn kennt, kann gültige Claim-Links erzeugen. Niemals per E-Mail, Chat oder in eine ungeschützte Vorlage einfügen.",
+        "rotateButton": "Neuen Schlüssel erzeugen (rotieren)",
+        "rotateWarning": "Achtung: Nach dem Rotieren werden alle bereits ausgegebenen Claim-Links sofort ungültig. Setze die neue Vorlage erst online, sobald der neue Schlüssel im SoSci/LimeSurvey eingetragen ist.",
+        "rotateConfirm": "Ja, jetzt rotieren",
+        "rotateSuccess": "Neuer Schlüssel erzeugt. Aktualisiere die Vorlage in deinem Umfrage-Tool.",
+        "rotateError": "Schlüssel konnte nicht rotiert werden. Bitte erneut versuchen.",
+        "error": "Schlüssel konnte nicht geladen werden. Möglicherweise wurde noch keiner erstellt – registriere die Umfrage erneut oder rotiere."
       },
       "filter": {
         "all": "Alle",
@@ -351,19 +372,19 @@
     },
     "register": {
       "title": "Neue Umfrage registrieren",
+      "descriptionV2": "Nach der Registrierung erzeugt das System einmalig einen HMAC-Schlüssel für diese Umfrage. Du erhältst ihn direkt im Anschluss angezeigt – speichere ihn sicher.",
       "surveyTitle": "Titel",
       "surveyTitlePlaceholder": "z. B. Persönlichkeitstest WS 2025",
       "surveyId": "Umfrage-ID",
       "points": "Punkte pro Claim",
-      "secret": "Secret",
       "button": "Registrieren",
-      "success": "Umfrage erfolgreich registriert! Du kannst die Vorlage jetzt in der Tabelle herunterladen.",
-      "error": "Umfrage konnte nicht registriert werden. Pr\u00fcfe, ob die ID bereits vergeben ist und ob das Backend-Wallet \u00fcber ausreichend Guthaben verf\u00fcgt.",
-      "autoGenerated": "Automatisch generiert"
+      "success": "Umfrage erfolgreich registriert! Der HMAC-Schlüssel wird gleich angezeigt – speichere ihn sicher.",
+      "error": "Umfrage konnte nicht registriert werden. Prüfe, ob die ID bereits vergeben ist und ob das Backend-Wallet über ausreichend Guthaben verfügt.",
+      "autoGenerated": "Automatisch generiert",
+      "keyExplanation": "Bei der Registrierung erzeugt der Server einen frischen HMAC-Schlüssel. Du siehst ihn direkt im Anschluss einmalig – speichere ihn (z. B. im Passwort-Manager) und füge ihn in die SoSci-/LimeSurvey-Vorlage ein."
     },
     "info": {
       "surveyId": "Wird automatisch vergeben. Du kannst den Wert bei Bedarf ändern.",
-      "secret": "Wird automatisch generiert. Am Ende der Umfrage wird es für den Claim-Link benötigt.",
       "title": "Ein kurzer Name für die Umfrage, damit du sie leicht wiederfindest.",
       "minterRole": "Die MINTER_ROLE erlaubt dem Backend, Punkte zu vergeben. Nur autorisierte Wallets können diese Funktion nutzen."
     },

@@ -14,17 +14,25 @@ import { SystemStatus } from '@/components/admin/system-status'
 import { AdminAuthGate } from '@/components/admin/admin-auth-gate'
 import { DeactivateSurveyDialog } from '@/components/admin/deactivate-survey-dialog'
 import { TemplateDownloadDialog } from '@/components/admin/template-download-dialog'
+import { SurveyKeyDialog } from '@/components/admin/survey-key-dialog'
 import { useWallet } from '@/hooks/use-wallet'
 import { useApi } from '@/hooks/use-api'
 import { useBlockchain } from '@/hooks/use-blockchain'
 import { ApiRequestError } from '@vpp/shared'
 import type { SurveyInfo } from '@vpp/shared'
-import { storeSecret, getSecret } from '@/lib/survey-secrets'
 
 export default function AdminPage() {
   const { t } = useTranslation()
   const { wallet, hasWallet, sign } = useWallet()
-  const { getSurveys, registerSurvey, downloadTemplate, deactivateSurvey } = useApi()
+  const {
+    getSurveys,
+    registerSurvey,
+    downloadTemplate,
+    deactivateSurvey,
+    reactivateSurvey,
+    getSurveyKey,
+    rotateSurveyKey,
+  } = useApi()
   const { isAdmin: checkIsAdmin } = useBlockchain()
 
   const [adminCheck, setAdminCheck] = useState<'loading' | 'admin' | 'denied'>('loading')
@@ -42,8 +50,13 @@ export default function AdminPage() {
   const [deactivateLoading, setDeactivateLoading] = useState(false)
 
   const [templateTarget, setTemplateTarget] = useState<SurveyInfo | null>(null)
-  const [templateSecret, setTemplateSecret] = useState('')
   const [templateLoading, setTemplateLoading] = useState(false)
+
+  const [keyTarget, setKeyTarget] = useState<SurveyInfo | null>(null)
+  const [keyValue, setKeyValue] = useState<string | null>(null)
+  const [keyCreatedAt, setKeyCreatedAt] = useState<string | null>(null)
+  const [keyLoading, setKeyLoading] = useState(false)
+  const [keyRotating, setKeyRotating] = useState(false)
 
   // ── Admin check ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -112,7 +125,6 @@ export default function AdminPage() {
   const handleRegister = async (data: {
     surveyId: number
     points: number
-    secret: string
     maxClaims: number
     title: string
   }) => {
@@ -122,15 +134,24 @@ export default function AdminPage() {
       const message = `Register survey ${data.surveyId} by ${wallet!.address} at ${timestamp}`
       const signature = await sign(message)
 
-      await registerSurvey({
+      const result = await registerSurvey({
         ...data,
         adminSignature: signature,
         adminMessage: message,
       })
 
-      storeSecret(data.surveyId, data.secret)
       toast.success(t('admin.register.success'))
       await fetchSurveys()
+
+      // Surface the freshly minted HMAC key in the same dialog the
+      // admin uses later for rotation. Avoids surprising admins with
+      // a separate "save this somewhere!" toast.
+      const fresh = (await getSurveys()).find((s) => s.surveyId === data.surveyId)
+      if (fresh) {
+        setKeyTarget(fresh)
+        setKeyValue(result.key)
+        setKeyCreatedAt(result.keyCreatedAt)
+      }
     } catch (err) {
       toast.error(err instanceof ApiRequestError ? err.message : t('admin.register.error'))
       throw err
@@ -155,23 +176,32 @@ export default function AdminPage() {
     }
   }
 
+  const handleReactivate = async (surveyId: number) => {
+    if (!wallet) return
+    try {
+      const timestamp = Math.floor(Date.now() / 1000)
+      const message = `Reactivate survey ${surveyId} by ${wallet.address} at ${timestamp}`
+      const signature = await sign(message)
+      await reactivateSurvey(surveyId, signature, message)
+      toast.success(t('admin.surveys.reactivate.success'))
+      await fetchSurveys()
+    } catch (err) {
+      toast.error(
+        err instanceof ApiRequestError ? err.message : t('admin.surveys.reactivate.error'),
+      )
+    }
+  }
+
   const handleTemplateFormatDownload = async (format: 'sosci' | 'limesurvey') => {
-    if (!templateTarget || !templateSecret.trim()) return
+    if (!templateTarget) return
     setTemplateLoading(true)
     try {
-      storeSecret(templateTarget.surveyId, templateSecret.trim())
       const timestamp = Math.floor(Date.now() / 1000)
       const message = `Download template ${templateTarget.surveyId} by ${
         wallet!.address
       } at ${timestamp}`
       const signature = await sign(message)
-      const blob = await downloadTemplate(
-        templateTarget.surveyId,
-        templateSecret.trim(),
-        format,
-        signature,
-        message,
-      )
+      const blob = await downloadTemplate(templateTarget.surveyId, format, signature, message)
       const ext = format === 'limesurvey' ? 'lss' : 'xml'
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -195,13 +225,60 @@ export default function AdminPage() {
     const survey = surveys.find((s) => s.surveyId === surveyId)
     if (!survey) return
     setTemplateTarget(survey)
-    setTemplateSecret(getSecret(surveyId) || '')
   }
 
   const handleDeactivate = (surveyId: number) => {
     const survey = surveys.find((s) => s.surveyId === surveyId)
     if (survey) setDeactivateTarget(survey)
   }
+
+  const handleShowKey = useCallback(
+    async (surveyId: number) => {
+      if (!wallet) return
+      const survey = surveys.find((s) => s.surveyId === surveyId)
+      if (!survey) return
+      setKeyTarget(survey)
+      setKeyValue(null)
+      setKeyCreatedAt(null)
+      setKeyLoading(true)
+      try {
+        const timestamp = Math.floor(Date.now() / 1000)
+        const message = `Reveal survey key ${surveyId} by ${wallet.address} at ${timestamp}`
+        const signature = await sign(message)
+        const info = await getSurveyKey(surveyId, signature, message)
+        setKeyValue(info.key)
+        setKeyCreatedAt(info.keyCreatedAt)
+      } catch (err) {
+        toast.error(
+          err instanceof ApiRequestError ? err.message : t('admin.surveys.keyDialog.error'),
+        )
+        setKeyTarget(null)
+      } finally {
+        setKeyLoading(false)
+      }
+    },
+    [wallet, surveys, sign, getSurveyKey, t],
+  )
+
+  const handleRotateKey = useCallback(async () => {
+    if (!wallet || !keyTarget) return
+    setKeyRotating(true)
+    try {
+      const timestamp = Math.floor(Date.now() / 1000)
+      const message = `Rotate survey key ${keyTarget.surveyId} by ${wallet.address} at ${timestamp}`
+      const signature = await sign(message)
+      const info = await rotateSurveyKey(keyTarget.surveyId, signature, message)
+      setKeyValue(info.key)
+      setKeyCreatedAt(info.keyCreatedAt)
+      toast.success(t('admin.surveys.keyDialog.rotateSuccess'))
+    } catch (err) {
+      toast.error(
+        err instanceof ApiRequestError ? err.message : t('admin.surveys.keyDialog.rotateError'),
+      )
+    } finally {
+      setKeyRotating(false)
+    }
+  }, [wallet, keyTarget, sign, rotateSurveyKey, t])
 
   const handleLogout = () => {
     setAuthenticated(false)
@@ -271,6 +348,8 @@ export default function AdminPage() {
               surveys={surveys}
               onDownloadTemplate={handleDownloadTemplate}
               onDeactivate={handleDeactivate}
+              onReactivate={handleReactivate}
+              onShowKey={handleShowKey}
             />
           )}
         </CardContent>
@@ -297,11 +376,23 @@ export default function AdminPage() {
 
       <TemplateDownloadDialog
         survey={templateTarget}
-        secret={templateSecret}
-        onSecretChange={setTemplateSecret}
         loading={templateLoading}
         onDownload={handleTemplateFormatDownload}
         onClose={() => setTemplateTarget(null)}
+      />
+
+      <SurveyKeyDialog
+        survey={keyTarget}
+        surveyKey={keyValue}
+        keyCreatedAt={keyCreatedAt}
+        loading={keyLoading}
+        rotating={keyRotating}
+        onRotate={handleRotateKey}
+        onClose={() => {
+          setKeyTarget(null)
+          setKeyValue(null)
+          setKeyCreatedAt(null)
+        }}
       />
     </div>
   )

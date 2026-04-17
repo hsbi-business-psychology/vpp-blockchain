@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Download, Loader2, Info } from 'lucide-react'
-import { Input } from '@/components/ui/input'
+import { Download, Loader2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -12,8 +11,6 @@ import type { SurveyInfo } from '@vpp/shared'
 
 interface TemplateDownloadDialogProps {
   survey: SurveyInfo | null
-  secret: string
-  onSecretChange: (value: string) => void
   loading: boolean
   onDownload: (format: 'sosci' | 'limesurvey') => void
   onClose: () => void
@@ -21,8 +18,6 @@ interface TemplateDownloadDialogProps {
 
 export function TemplateDownloadDialog({
   survey,
-  secret,
-  onSecretChange,
   loading,
   onDownload,
   onClose,
@@ -37,7 +32,7 @@ export function TemplateDownloadDialog({
             <Download className="size-6 text-primary" />
           </div>
           <DialogTitle>{t('admin.surveys.templateDialog.title')}</DialogTitle>
-          <DialogDescription>{t('admin.surveys.templateDialog.description')}</DialogDescription>
+          <DialogDescription>{t('admin.surveys.templateDialog.descriptionV2')}</DialogDescription>
         </DialogHeader>
 
         {survey && (
@@ -49,33 +44,11 @@ export function TemplateDownloadDialog({
           </div>
         )}
 
-        {!secret.trim() && (
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              {t('admin.surveys.templateDialog.secretLabel')}
-            </label>
-            <Input
-              value={secret}
-              onChange={(e) => onSecretChange(e.target.value)}
-              placeholder={t('admin.surveys.templateDialog.secretPlaceholder')}
-              type="password"
-              className="font-mono text-xs"
-            />
-            <p className="text-xs text-muted-foreground">
-              {t('admin.surveys.templateDialog.secretDescription')}
-            </p>
-            <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
-              <Info className="mt-0.5 size-3 shrink-0" />
-              {t('admin.surveys.templateDialog.secretHint')}
-            </p>
-          </div>
-        )}
-
         <div className="grid gap-3 sm:grid-cols-2">
           <button
             type="button"
             onClick={() => onDownload('sosci')}
-            disabled={!secret.trim() || loading}
+            disabled={loading}
             className="flex flex-col items-start gap-2 rounded-lg border border-border p-4 text-left transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
           >
             <div className="flex w-full items-center justify-between">
@@ -98,7 +71,7 @@ export function TemplateDownloadDialog({
           <button
             type="button"
             onClick={() => onDownload('limesurvey')}
-            disabled={!secret.trim() || loading}
+            disabled={loading}
             className="flex flex-col items-start gap-2 rounded-lg border border-border p-4 text-left transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
           >
             <div className="flex w-full items-center justify-between">

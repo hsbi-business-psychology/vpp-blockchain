@@ -212,9 +212,12 @@
       "viewPoints": "View my points"
     },
     "error": {
-      "missingParams": "The claim link is incomplete \u2013 the survey ID or secret is missing. Please use the original link from the survey.",
+      "missingParams": "The claim link is incomplete – survey ID, nonce, or token is missing. Please use the original link from the survey.",
       "alreadyClaimed": "You have already claimed points for this survey. Each wallet can only claim once per survey.",
-      "invalidSecret": "The secret is invalid. Please make sure you are using the original claim link from the survey and it has not been altered.",
+      "invalidToken": "The claim link is invalid or has been tampered with. Please use the original link you received at the end of the survey.",
+      "invalidNonceFormat": "The claim link is malformed (invalid nonce). Please open the survey again to receive a fresh link.",
+      "invalidTokenFormat": "The claim link is malformed (invalid token). Please open the survey again to receive a fresh link.",
+      "nonceUsed": "This claim link has already been used. Each link works exactly once. If you have not yet received your points, please contact vpstunden@hsbi.de.",
       "surveyInactive": "This survey has been deactivated and no longer accepts claims. Contact the survey administrator if you have questions.",
       "maxClaims": "The maximum number of participants for this survey has been reached. No more points can be awarded.",
       "expired": "Your signature has expired. Please reload the page and try again.",
@@ -224,6 +227,7 @@
       "insufficientFunds": "The system wallet does not have enough balance right now. Please try again in a few minutes or contact vpstunden@hsbi.de.",
       "unauthorized": "The system wallet currently lacks the required permission in the smart contract. Please contact vpstunden@hsbi.de.",
       "network": "Network error. The blockchain is currently unreachable. Please try again in a few seconds.",
+      "config": "This survey is not fully configured. Please contact the study lead (vpstunden@hsbi.de).",
       "generic": "Points could not be claimed. Please check your internet connection and try again. If the problem persists, contact vpstunden@hsbi.de."
     }
   },
@@ -309,6 +313,12 @@
         "tx": "Transaction"
       },
       "downloadTemplate": "Download template",
+      "showKey": "Show HMAC key",
+      "reactivate": {
+        "button": "Reactivate",
+        "success": "Survey has been reactivated.",
+        "error": "Reactivation failed. Please try again later."
+      },
       "deactivate": "Deactivate",
       "deactivateConfirm": {
         "title": "Deactivate Survey",
@@ -319,10 +329,7 @@
       "templateDialog": {
         "title": "Download Template",
         "description": "Choose the survey tool you need the template for. The template contains the claim button participants see at the end of the survey.",
-        "secretLabel": "Survey Secret",
-        "secretPlaceholder": "Enter secret (e.g. vpp-...)",
-        "secretDescription": "The secret is needed because it must be part of the claim link — it is only stored as a hash on the blockchain and cannot be read back.",
-        "secretHint": "You received the secret when registering the survey. If you registered it on this device, it is saved automatically.",
+        "descriptionV2": "Choose your survey tool. The template embeds the survey's HMAC key in a PHP snippet that mints a one-time claim link per participant on your SoSci/LimeSurvey server — the key never leaves that server.",
         "sosci": {
           "title": "SoSci Survey",
           "description": "Project file (.xml) for SoSci Survey. Import it as a new survey project.",
@@ -333,6 +340,20 @@
           "description": "Survey template (.lss) for LimeSurvey. Import via \"Create survey → Import\". The claim button is included in the end message.",
           "download": "Download LimeSurvey template"
         }
+      },
+      "keyDialog": {
+        "title": "Survey HMAC Key",
+        "description": "This key signs the one-time claim links your SoSci/LimeSurvey server hands out. It is shown here only once — store it securely (e.g. in a password manager) and paste it into the downloaded template.",
+        "keyLabel": "Key (base64url)",
+        "createdAt": "Created at: {{date}}",
+        "copy": "Copy to clipboard",
+        "securityHint": "This key is highly sensitive: anyone who knows it can mint valid claim links. Never send it via email or chat, and never paste it into an unprotected template.",
+        "rotateButton": "Generate new key (rotate)",
+        "rotateWarning": "Warning: rotating immediately invalidates every claim link already in circulation. Only publish the new template once the new key is in place on SoSci/LimeSurvey.",
+        "rotateConfirm": "Yes, rotate now",
+        "rotateSuccess": "New key generated. Update the template in your survey tool.",
+        "rotateError": "Failed to rotate key. Please try again.",
+        "error": "Could not load key. It may not have been created yet — re-register the survey or rotate."
       },
       "filter": {
         "all": "All",
@@ -351,19 +372,19 @@
     },
     "register": {
       "title": "Register New Survey",
+      "descriptionV2": "After registration the system mints a fresh HMAC key for this survey. You will see it once right after — store it securely.",
       "surveyTitle": "Title",
       "surveyTitlePlaceholder": "e.g. Personality Test WS 2025",
       "surveyId": "Survey ID",
       "points": "Points per Claim",
-      "secret": "Secret",
       "button": "Register",
-      "success": "Survey registered successfully! You can now download the template from the table.",
+      "success": "Survey registered successfully! The HMAC key will be shown next — store it securely.",
       "error": "Failed to register survey. Check if the ID is already taken and if the backend wallet has sufficient balance.",
-      "autoGenerated": "Auto-generated"
+      "autoGenerated": "Auto-generated",
+      "keyExplanation": "On registration the server mints a fresh HMAC key. You will see it once right after — store it (e.g. in a password manager) and paste it into the SoSci/LimeSurvey template."
     },
     "info": {
       "surveyId": "Assigned automatically. You can change the value if needed.",
-      "secret": "Generated automatically. It will be needed for the claim link at the end of the survey.",
       "title": "A short name for the survey so you can easily identify it.",
       "minterRole": "The MINTER_ROLE allows the backend to award points. Only authorized wallets can use this function."
     },

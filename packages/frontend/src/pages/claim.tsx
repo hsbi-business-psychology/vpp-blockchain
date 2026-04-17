@@ -23,8 +23,11 @@ export default function ClaimPage() {
   const { wallet, hasWallet, sign } = useWallet()
   const { claimPoints } = useApi()
 
-  const surveyId = searchParams.get('surveyId')
-  const secret = searchParams.get('secret')
+  // V2 URL params produced by the SoSci/LimeSurvey PHP snippet:
+  //   /claim?s=<surveyId>&n=<nonce>&t=<token>
+  const surveyId = searchParams.get('s')
+  const nonce = searchParams.get('n')
+  const token = searchParams.get('t')
 
   const [currentStep, setCurrentStep] = useState<ClaimStep>('wallet')
   const [loading, setLoading] = useState(false)
@@ -37,7 +40,7 @@ export default function ClaimPage() {
     }
   }, [hasWallet, currentStep])
 
-  if (!surveyId || !secret) {
+  if (!surveyId || !nonce || !token) {
     return (
       <div className="mx-auto max-w-lg space-y-4 py-8">
         <h1 className="text-2xl font-bold">{t('claim.title')}</h1>
@@ -62,7 +65,8 @@ export default function ClaimPage() {
       const res = await claimPoints({
         walletAddress: wallet!.address,
         surveyId: Number(surveyId),
-        secret,
+        nonce,
+        token,
         signature,
         message,
       })
@@ -73,7 +77,10 @@ export default function ClaimPage() {
       if (err instanceof ApiRequestError) {
         const errorMap: Record<string, string> = {
           ALREADY_CLAIMED: t('claim.error.alreadyClaimed'),
-          INVALID_SECRET: t('claim.error.invalidSecret'),
+          INVALID_TOKEN: t('claim.error.invalidToken'),
+          INVALID_NONCE_FORMAT: t('claim.error.invalidNonceFormat'),
+          INVALID_TOKEN_FORMAT: t('claim.error.invalidTokenFormat'),
+          NONCE_USED: t('claim.error.nonceUsed'),
           SURVEY_INACTIVE: t('claim.error.surveyInactive'),
           SURVEY_NOT_FOUND: t('claim.error.surveyNotFound'),
           MAX_CLAIMS_REACHED: t('claim.error.maxClaims'),
@@ -83,6 +90,7 @@ export default function ClaimPage() {
           INSUFFICIENT_FUNDS: t('claim.error.insufficientFunds'),
           ROLE_UNAUTHORIZED: t('claim.error.unauthorized'),
           NETWORK_ERROR: t('claim.error.network'),
+          CONFIG_ERROR: t('claim.error.config'),
         }
         setError(errorMap[err.code] ?? t('claim.error.generic'))
       } else {

@@ -36,8 +36,12 @@ vi.mock('@/hooks/use-api', () => ({
     claimPoints: vi.fn(),
     getSurveys: vi.fn(),
     registerSurvey: vi.fn(),
+    getSurveyKey: vi.fn(),
+    rotateSurveyKey: vi.fn(),
     downloadTemplate: vi.fn(),
     deactivateSurvey: vi.fn(),
+    reactivateSurvey: vi.fn(),
+    revokePoints: vi.fn(),
     getWalletSubmissionStatus: vi.fn(),
     markWalletSubmitted: vi.fn(),
     unmarkWalletSubmitted: vi.fn(),
@@ -46,6 +50,7 @@ vi.mock('@/hooks/use-api', () => ({
     getPointsData: vi.fn(),
     addAdmin: vi.fn(),
     removeAdmin: vi.fn(),
+    setAdminLabel: vi.fn(),
   }),
 }))
 
@@ -112,7 +117,12 @@ describe('Routing — page renderability', () => {
 
   it('/claim renders ClaimPage', async () => {
     const { default: ClaimPage } = await import('@/pages/claim')
-    renderPage(ClaimPage, '/claim?surveyId=1&secret=test')
+    // V2 url shape: ?s=<id>&n=<nonce>&t=<token> — fixture nonce/token are
+    // shape-only (the page never verifies them client-side; only mounts).
+    renderPage(
+      ClaimPage,
+      '/claim?s=1&n=AAAAAAAAAAAAAAAA&t=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    )
     expect(screen.getByText('claim.title')).toBeInTheDocument()
   })
 

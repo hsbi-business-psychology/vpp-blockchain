@@ -23,8 +23,12 @@ const mockApiReturn = {
   claimPoints: vi.fn(),
   getSurveys: vi.fn(),
   registerSurvey: vi.fn(),
+  getSurveyKey: vi.fn(),
+  rotateSurveyKey: vi.fn(),
   downloadTemplate: vi.fn(),
   deactivateSurvey: vi.fn(),
+  reactivateSurvey: vi.fn(),
+  revokePoints: vi.fn(),
   getWalletSubmissionStatus: vi.fn(),
   markWalletSubmitted: vi.fn(),
   unmarkWalletSubmitted: vi.fn(),
@@ -33,6 +37,7 @@ const mockApiReturn = {
   getPointsData: vi.fn(),
   addAdmin: vi.fn(),
   removeAdmin: vi.fn(),
+  setAdminLabel: vi.fn(),
 }
 
 vi.mock('@/hooks/use-wallet', () => ({
@@ -48,7 +53,14 @@ vi.mock('@/lib/config', () => ({
   getTxUrl: (hash: string) => `https://explorer.test/tx/${hash}`,
 }))
 
-function renderClaim(params = '?surveyId=1&secret=abc') {
+// Shape-valid V2 query parameters: s=<surveyId>, n=<nonce, 16-128 url-safe
+// base64 chars>, t=<token, exactly 43 url-safe base64 chars>. Values do not
+// have to be cryptographically valid because the backend mock just resolves.
+const VALID_NONCE = 'AAAAAAAAAAAAAAAA'
+const VALID_TOKEN = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+const VALID_PARAMS = `?s=1&n=${VALID_NONCE}&t=${VALID_TOKEN}`
+
+function renderClaim(params = VALID_PARAMS) {
   return render(
     <MemoryRouter initialEntries={[`/claim${params}`]}>
       <React.Suspense fallback={<div>Loading...</div>}>
@@ -69,8 +81,8 @@ describe('ClaimPage', () => {
     ClaimPage = mod.default
   })
 
-  it('shows error when surveyId or secret is missing', () => {
-    renderClaim('?surveyId=1')
+  it('shows error when surveyId, nonce, or token is missing', () => {
+    renderClaim('?s=1&n=' + VALID_NONCE)
 
     expect(screen.getByText('claim.error.missingParams')).toBeInTheDocument()
   })
@@ -113,6 +125,16 @@ describe('ClaimPage', () => {
 
     expect(screen.getByText('25')).toBeInTheDocument()
     expect(screen.getByText('0xTxHash123')).toBeInTheDocument()
+
+    // Verify the claim went through with the V2 nonce + token shape.
+    expect(mockApiReturn.claimPoints).toHaveBeenCalledWith(
+      expect.objectContaining({
+        walletAddress: '0xMyWallet',
+        surveyId: 1,
+        nonce: VALID_NONCE,
+        token: VALID_TOKEN,
+      }),
+    )
   })
 
   it('shows ALREADY_CLAIMED error with translated message', async () => {
@@ -129,6 +151,40 @@ describe('ClaimPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('claim.error.alreadyClaimed')).toBeInTheDocument()
+    })
+  })
+
+  it('shows NONCE_USED error (replay protection) with friendly copy', async () => {
+    const user = userEvent.setup()
+    mockWalletReturn.wallet = { address: '0xMyWallet', privateKey: '0xPK', type: 'local' }
+    mockWalletReturn.hasWallet = true
+    mockApiReturn.claimPoints.mockRejectedValue(
+      new ApiRequestError('NONCE_USED', 'Nonce already consumed', 409),
+    )
+
+    renderClaim()
+
+    await user.click(screen.getByText('common.submit'))
+
+    await waitFor(() => {
+      expect(screen.getByText('claim.error.nonceUsed')).toBeInTheDocument()
+    })
+  })
+
+  it('shows INVALID_TOKEN error when HMAC verification fails', async () => {
+    const user = userEvent.setup()
+    mockWalletReturn.wallet = { address: '0xMyWallet', privateKey: '0xPK', type: 'local' }
+    mockWalletReturn.hasWallet = true
+    mockApiReturn.claimPoints.mockRejectedValue(
+      new ApiRequestError('INVALID_TOKEN', 'Bad signature', 403),
+    )
+
+    renderClaim()
+
+    await user.click(screen.getByText('common.submit'))
+
+    await waitFor(() => {
+      expect(screen.getByText('claim.error.invalidToken')).toBeInTheDocument()
     })
   })
 

@@ -1,16 +1,19 @@
 /**
  * @module use-api
  *
- * React hook providing typed wrappers around the VPP Backend REST API.
- * All functions use `apiFetch` which automatically prepends the API base URL,
- * sets JSON headers, and throws on non-success responses.
+ * React hook providing typed wrappers around the VPP Backend REST API
+ * (V2 contract surface, HMAC claim flow).
  *
  * Exposed methods map 1:1 to backend routes:
- *   - claimPoints       → POST /api/v1/claim
+ *   - claimPoints       → POST /api/v1/claim                  (HMAC nonce + token)
  *   - getSurveys        → GET  /api/v1/surveys
- *   - registerSurvey    → POST /api/v1/surveys
+ *   - registerSurvey    → POST /api/v1/surveys                (server mints HMAC key)
+ *   - getSurveyKey      → GET  /api/v1/surveys/:id/key        (admin, never logged)
+ *   - rotateSurveyKey   → POST /api/v1/surveys/:id/key/rotate (admin)
  *   - downloadTemplate  → POST /api/v1/surveys/:id/template
  *   - deactivateSurvey  → POST /api/v1/surveys/:id/deactivate
+ *   - reactivateSurvey  → POST /api/v1/surveys/:id/reactivate
+ *   - revokePoints      → POST /api/v1/surveys/:id/revoke
  *   - addAdmin          → POST /api/v1/admin/add
  *   - removeAdmin       → POST /api/v1/admin/remove
  *   - getSystemStatus   → GET  /api/v1/status
@@ -19,6 +22,7 @@
 import { useCallback } from 'react'
 import { config } from '@/lib/config'
 import type {
+  ClaimRequest,
   ClaimResult,
   SurveyInfo,
   SurveyRegisterResult,
@@ -40,6 +44,12 @@ interface AdminListData {
 interface AdminLabelResult {
   address: string
   label: string | null
+}
+
+export interface SurveyKeyInfo {
+  surveyId: number
+  key: string
+  keyCreatedAt: string
 }
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
@@ -64,21 +74,12 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export function useApi() {
-  const claimPoints = useCallback(
-    async (params: {
-      walletAddress: string
-      surveyId: number
-      secret: string
-      signature: string
-      message: string
-    }): Promise<ClaimResult> => {
-      return apiFetch<ClaimResult>('/api/v1/claim', {
-        method: 'POST',
-        body: JSON.stringify(params),
-      })
-    },
-    [],
-  )
+  const claimPoints = useCallback(async (params: ClaimRequest): Promise<ClaimResult> => {
+    return apiFetch<ClaimResult>('/api/v1/claim', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    })
+  }, [])
 
   const getSurveys = useCallback(async (): Promise<SurveyInfo[]> => {
     return apiFetch<SurveyInfo[]>('/api/v1/surveys')
@@ -87,7 +88,6 @@ export function useApi() {
   const registerSurvey = useCallback(
     async (params: {
       surveyId: number
-      secret: string
       points: number
       maxClaims?: number
       title?: string
@@ -102,11 +102,45 @@ export function useApi() {
     [],
   )
 
+  const getSurveyKey = useCallback(
+    async (
+      surveyId: number,
+      adminSignature: string,
+      adminMessage: string,
+    ): Promise<SurveyKeyInfo> => {
+      return apiFetch<SurveyKeyInfo>(`/api/v1/surveys/${surveyId}/key`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-signature': adminSignature,
+          'x-admin-message': adminMessage,
+        },
+      })
+    },
+    [],
+  )
+
+  const rotateSurveyKey = useCallback(
+    async (
+      surveyId: number,
+      adminSignature: string,
+      adminMessage: string,
+    ): Promise<SurveyKeyInfo> => {
+      return apiFetch<SurveyKeyInfo>(`/api/v1/surveys/${surveyId}/key/rotate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-signature': adminSignature,
+          'x-admin-message': adminMessage,
+        },
+      })
+    },
+    [],
+  )
+
   const downloadTemplate = useCallback(
     async (
       surveyId: number,
-      secret: string,
-      format: 'sosci' | 'limesurvey' = 'sosci',
+      format: 'sosci' | 'limesurvey',
       adminSignature: string,
       adminMessage: string,
     ): Promise<Blob> => {
@@ -118,7 +152,7 @@ export function useApi() {
           'x-admin-signature': adminSignature,
           'x-admin-message': adminMessage,
         },
-        body: JSON.stringify({ secret, format }),
+        body: JSON.stringify({ format }),
       })
       if (!res.ok) {
         const json = await res.json().catch(() => ({}))
@@ -143,6 +177,40 @@ export function useApi() {
           'x-admin-signature': signature,
           'x-admin-message': message,
         },
+      })
+    },
+    [],
+  )
+
+  const reactivateSurvey = useCallback(
+    async (surveyId: number, signature: string, message: string): Promise<{ txHash: string }> => {
+      return apiFetch<{ txHash: string }>(`/api/v1/surveys/${surveyId}/reactivate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-signature': signature,
+          'x-admin-message': message,
+        },
+      })
+    },
+    [],
+  )
+
+  const revokePoints = useCallback(
+    async (
+      surveyId: number,
+      walletAddress: string,
+      signature: string,
+      message: string,
+    ): Promise<{ txHash: string }> => {
+      return apiFetch<{ txHash: string }>(`/api/v1/surveys/${surveyId}/revoke`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-signature': signature,
+          'x-admin-message': message,
+        },
+        body: JSON.stringify({ walletAddress }),
       })
     },
     [],
@@ -265,8 +333,12 @@ export function useApi() {
     claimPoints,
     getSurveys,
     registerSurvey,
+    getSurveyKey,
+    rotateSurveyKey,
     downloadTemplate,
     deactivateSurvey,
+    reactivateSurvey,
+    revokePoints,
     getWalletSubmissionStatus,
     markWalletSubmitted,
     unmarkWalletSubmitted,
