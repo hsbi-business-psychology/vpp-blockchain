@@ -31,7 +31,7 @@ export function PointsOverview({
             {dataLoading && totalPoints === null ? (
               <Loader2 className="size-8 animate-spin" />
             ) : (
-              totalPoints ?? 0
+              (totalPoints ?? 0)
             )}
           </p>
           <p className="mt-1 text-sm text-muted-foreground sm:text-base">{t('points.total')}</p>

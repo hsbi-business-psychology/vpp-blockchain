@@ -2,7 +2,7 @@
  * Auto-generated from packages/contracts/artifacts.
  * Do not edit manually — run: pnpm sync-abi
  */
- 
+
 export const SURVEY_POINTS_ABI = [
   {
     inputs: [

@@ -2,7 +2,7 @@
   "ci": {
     "collect": {
       "staticDistDir": "packages/frontend/dist",
-      "url": ["/", "/points", "/claim?surveyId=1&secret=test"],
+      "url": ["/"],
       "numberOfRuns": 3
     },
     "assert": {

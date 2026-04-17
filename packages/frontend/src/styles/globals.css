@@ -139,7 +139,9 @@ html.menu-open body {
 .fade-in-section {
   opacity: 0;
   transform: translateY(24px);
-  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  transition:
+    opacity 0.7s ease-out,
+    transform 0.7s ease-out;
 }
 .fade-in-section.is-visible {
   opacity: 1;

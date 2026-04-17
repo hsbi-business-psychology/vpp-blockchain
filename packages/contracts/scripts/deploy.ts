@@ -61,7 +61,7 @@ async function main() {
   }
 
   const deployTx = contract.deploymentTransaction()
-  const deployBlock = deployTx ? (await deployTx.wait())?.blockNumber ?? 0 : 0
+  const deployBlock = deployTx ? ((await deployTx.wait())?.blockNumber ?? 0) : 0
 
   console.log('\n--- Deployment Summary ---')
   console.log(`Contract:     ${address}`)
