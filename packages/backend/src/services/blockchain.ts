@@ -17,6 +17,7 @@ import { readFileSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { config } from '../config.js'
+import { withRpcRetry } from '../lib/rpcRetry.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -37,11 +38,33 @@ const managedSigner = new ethers.NonceManager(wallet)
 const contract = new ethers.Contract(config.contractAddress, abi, managedSigner)
 const readOnlyContract = new ethers.Contract(config.contractAddress, abi, provider)
 
+const MIN_BALANCE_WEI = 50_000n * 1_000_000n // ~50k gas units at 1 Mwei/gas
+
+/**
+ * Throws a descriptive error if the minter wallet balance is too low
+ * to cover even a single transaction. Called before every write operation
+ * so users get a clear 503 instead of a cryptic provider error.
+ */
+async function assertSufficientBalance(): Promise<void> {
+  const balance = await withRpcRetry(() => provider.getBalance(wallet.address), {
+    label: 'getBalance',
+  })
+  if (balance < MIN_BALANCE_WEI) {
+    const err = new Error(
+      `Minter wallet balance too low: ${ethers.formatEther(balance)} ETH. ` +
+        'Top up the wallet to resume operations.',
+    )
+    ;(err as unknown as Record<string, unknown>).code = 'INSUFFICIENT_FUNDS'
+    throw err
+  }
+}
+
 export async function awardPoints(
   student: string,
   surveyId: number,
   secret: string,
 ): Promise<ethers.TransactionReceipt> {
+  await assertSufficientBalance()
   const tx = await contract.awardPoints(student, surveyId, secret)
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
@@ -55,6 +78,7 @@ export async function registerSurvey(
   maxClaims: number,
   title: string,
 ): Promise<ethers.TransactionReceipt> {
+  await assertSufficientBalance()
   const tx = await contract.registerSurvey(surveyId, secretHash, points, maxClaims, title)
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
@@ -72,6 +96,7 @@ export interface SurveyInfoRaw {
 }
 
 export async function deactivateSurvey(surveyId: number): Promise<ethers.TransactionReceipt> {
+  await assertSufficientBalance()
   const tx = await contract.deactivateSurvey(surveyId)
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
@@ -79,7 +104,9 @@ export async function deactivateSurvey(surveyId: number): Promise<ethers.Transac
 }
 
 export async function getSurveyInfo(surveyId: number): Promise<SurveyInfoRaw> {
-  const result = await readOnlyContract.getSurveyInfo(surveyId)
+  const result = await withRpcRetry(() => readOnlyContract.getSurveyInfo(surveyId), {
+    label: 'getSurveyInfo',
+  })
   return {
     secretHash: result[0],
     points: Number(result[1]),
@@ -92,17 +119,23 @@ export async function getSurveyInfo(surveyId: number): Promise<SurveyInfoRaw> {
 }
 
 export async function getTotalPoints(walletAddress: string): Promise<number> {
-  const points = await readOnlyContract.totalPoints(walletAddress)
+  const points = await withRpcRetry(() => readOnlyContract.totalPoints(walletAddress), {
+    label: 'totalPoints',
+  })
   return Number(points)
 }
 
 export async function getSurveyPoints(walletAddress: string, surveyId: number): Promise<number> {
-  const points = await readOnlyContract.surveyPoints(walletAddress, surveyId)
+  const points = await withRpcRetry(() => readOnlyContract.surveyPoints(walletAddress, surveyId), {
+    label: 'surveyPoints',
+  })
   return Number(points)
 }
 
 export async function hasClaimed(walletAddress: string, surveyId: number): Promise<boolean> {
-  return readOnlyContract.claimed(walletAddress, surveyId)
+  return withRpcRetry(() => readOnlyContract.claimed(walletAddress, surveyId), {
+    label: 'claimed',
+  })
 }
 
 export interface PointsAwardedEvent {
@@ -168,10 +201,11 @@ export async function getSurveyRegisteredEvents(): Promise<SurveyRegisteredEvent
 }
 
 export async function isAdmin(address: string): Promise<boolean> {
-  return readOnlyContract.isAdmin(address)
+  return withRpcRetry(() => readOnlyContract.isAdmin(address), { label: 'isAdmin' })
 }
 
 export async function addAdmin(address: string): Promise<ethers.TransactionReceipt> {
+  await assertSufficientBalance()
   const tx = await contract.addAdmin(address)
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
@@ -179,6 +213,7 @@ export async function addAdmin(address: string): Promise<ethers.TransactionRecei
 }
 
 export async function removeAdmin(address: string): Promise<ethers.TransactionReceipt> {
+  await assertSufficientBalance()
   const tx = await contract.removeAdmin(address)
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
@@ -188,6 +223,7 @@ export async function removeAdmin(address: string): Promise<ethers.TransactionRe
 export async function markWalletSubmitted(
   walletAddress: string,
 ): Promise<ethers.TransactionReceipt> {
+  await assertSufficientBalance()
   const tx = await contract.markWalletSubmitted(walletAddress)
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
@@ -197,6 +233,7 @@ export async function markWalletSubmitted(
 export async function unmarkWalletSubmitted(
   walletAddress: string,
 ): Promise<ethers.TransactionReceipt> {
+  await assertSufficientBalance()
   const tx = await contract.unmarkWalletSubmitted(walletAddress)
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
@@ -204,7 +241,9 @@ export async function unmarkWalletSubmitted(
 }
 
 export async function isWalletSubmitted(walletAddress: string): Promise<boolean> {
-  return readOnlyContract.isWalletSubmitted(walletAddress)
+  return withRpcRetry(() => readOnlyContract.isWalletSubmitted(walletAddress), {
+    label: 'isWalletSubmitted',
+  })
 }
 
 export function getMinterAddress(): string {
@@ -212,15 +251,15 @@ export function getMinterAddress(): string {
 }
 
 export async function getMinterBalance(): Promise<bigint> {
-  return provider.getBalance(wallet.address)
+  return withRpcRetry(() => provider.getBalance(wallet.address), { label: 'getBalance' })
 }
 
 export async function getBlockNumber(): Promise<number> {
-  return provider.getBlockNumber()
+  return withRpcRetry(() => provider.getBlockNumber(), { label: 'getBlockNumber' })
 }
 
 export async function getNetwork(): Promise<string> {
-  const network = await provider.getNetwork()
+  const network = await withRpcRetry(() => provider.getNetwork(), { label: 'getNetwork' })
   return network.name
 }
 
@@ -235,15 +274,21 @@ async function queryFilterChunked(
   fromBlock: number,
 ): Promise<(ethers.EventLog | ethers.Log)[]> {
   const chunkSize = config.chunkSize
-  const latestBlock = await contract.runner!.provider!.getBlockNumber()
+  const latestBlock = await withRpcRetry(() => contract.runner!.provider!.getBlockNumber(), {
+    label: 'getBlockNumber',
+  })
   if (latestBlock - fromBlock <= chunkSize) {
-    return contract.queryFilter(filter, fromBlock, latestBlock)
+    return withRpcRetry(() => contract.queryFilter(filter, fromBlock, latestBlock), {
+      label: 'queryFilter',
+    })
   }
 
   const results: (ethers.EventLog | ethers.Log)[] = []
   for (let start = fromBlock; start <= latestBlock; start += chunkSize + 1) {
     const end = Math.min(start + chunkSize, latestBlock)
-    const chunk = await contract.queryFilter(filter, start, end)
+    const chunk = await withRpcRetry(() => contract.queryFilter(filter, start, end), {
+      label: 'queryFilter',
+    })
     results.push(...chunk)
   }
   return results

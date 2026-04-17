@@ -36,12 +36,12 @@ export const config = {
 
   claimRateLimit: {
     windowMs: parseInt(optional('CLAIM_RATE_LIMIT_WINDOW_MS', '60000'), 10),
-    max: parseInt(optional('CLAIM_RATE_LIMIT_MAX', '5'), 10),
+    max: parseInt(optional('CLAIM_RATE_LIMIT_MAX', '100'), 10),
   },
 
   apiRateLimit: {
     windowMs: parseInt(optional('API_RATE_LIMIT_WINDOW_MS', '60000'), 10),
-    max: parseInt(optional('API_RATE_LIMIT_MAX', '100'), 10),
+    max: parseInt(optional('API_RATE_LIMIT_MAX', '600'), 10),
   },
 
   trustProxy: optional('TRUST_PROXY', 'false'),
