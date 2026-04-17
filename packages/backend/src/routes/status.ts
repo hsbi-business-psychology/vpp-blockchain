@@ -11,10 +11,11 @@ const AVG_GAS_PER_REGISTER = 80_000n
 // GET /api/status — system status with wallet balance (admin only)
 router.get('/', requireAdminHandler, async (_req, res, next) => {
   try {
-    const [balance, blockNumber, network] = await Promise.all([
+    const [balance, blockNumber, network, contractVersion] = await Promise.all([
       blockchain.getMinterBalance(),
       blockchain.getBlockNumber(),
       blockchain.getNetwork(),
+      blockchain.getContractVersion(),
     ])
 
     const feeData = await blockchain.provider.getFeeData()
@@ -44,6 +45,8 @@ router.get('/', requireAdminHandler, async (_req, res, next) => {
         blockchain: {
           network,
           blockNumber,
+          contractAddress: blockchain.getContractAddress(),
+          contractVersion,
         },
       },
     })

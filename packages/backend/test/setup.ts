@@ -40,6 +40,8 @@ vi.mock('../src/services/blockchain.js', () => ({
   getMinterBalance: vi.fn(),
   getBlockNumber: vi.fn(),
   getNetwork: vi.fn(),
+  getContractAddress: vi.fn(() => '0x5FbDB2315678afecb367f032d93F642f64180aa3'),
+  getContractVersion: vi.fn(() => Promise.resolve('2.0.0')),
   provider: {
     getFeeData: vi.fn(() => Promise.resolve({ gasPrice: 1000000n })),
   },

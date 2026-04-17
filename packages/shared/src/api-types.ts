@@ -123,6 +123,15 @@ export interface SystemStatus {
   blockchain: {
     network: string
     blockNumber: number
+    /** Address of the live SurveyPoints proxy (V2). */
+    contractAddress: string
+    /**
+     * On-chain `version()` of the implementation behind the proxy
+     * (e.g. "2.0.0"). "unknown" if the call reverts — useful as a fast
+     * visual check that a freshly deployed front-end is talking to the
+     * intended V2 contract rather than a stale legacy address.
+     */
+    contractVersion: string
   }
 }
 

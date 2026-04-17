@@ -446,6 +446,28 @@ export async function getNetwork(): Promise<string> {
   return network.name
 }
 
+export function getContractAddress(): string {
+  return config.contractAddress
+}
+
+/**
+ * Returns the on-chain contract version string (e.g. "2.0.0").
+ *
+ * Used by the admin status panel so operators can verify at a glance
+ * which implementation is actually live behind the proxy. Falls back
+ * to "unknown" if the call reverts (e.g. when pointing at a non-V2
+ * deployment during migration).
+ */
+export async function getContractVersion(): Promise<string> {
+  try {
+    return (await withRpcRetry(() => readOnlyContract.version(), {
+      label: 'contract.version',
+    })) as string
+  } catch {
+    return 'unknown'
+  }
+}
+
 /**
  * Queries event logs in chunks to stay within RPC provider block-range limits.
  * Most free-tier RPCs (drpc, publicnode) cap at 10,000 blocks per request.

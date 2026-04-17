@@ -462,7 +462,12 @@
       "statusLow": "Low",
       "loadError": "Failed to load system status. Check if the backend is reachable.",
       "infoTip": "The backend wallet pays all transaction costs (gas fees) on the blockchain. When the balance runs out, no new claims or surveys can be processed. Top up ETH to the displayed address in time.",
-      "infoLabel": "Information about system status"
+      "infoLabel": "Information about system status",
+      "contractAddress": "Smart Contract",
+      "contractVersion": "Contract Version",
+      "versionUpToDate": "current",
+      "versionLegacy": "legacy",
+      "copyContract": "Copy contract address"
     }
   },
   "infoTips": {

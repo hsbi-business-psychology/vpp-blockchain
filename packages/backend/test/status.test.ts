@@ -55,6 +55,8 @@ describe('GET /api/v1/status', () => {
     expect(data.estimates.costPerRegistration).toBeDefined()
     expect(data.blockchain.network).toBe('base-sepolia')
     expect(data.blockchain.blockNumber).toBe(12345)
+    expect(data.blockchain.contractAddress).toBe('0x5FbDB2315678afecb367f032d93F642f64180aa3')
+    expect(data.blockchain.contractVersion).toBe('2.0.0')
   })
 
   it('should flag lowBalance when balance is below threshold', async () => {

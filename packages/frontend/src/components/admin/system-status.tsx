@@ -39,6 +39,8 @@ interface StatusData {
   blockchain: {
     network: string
     blockNumber: number
+    contractAddress: string
+    contractVersion: string
   }
 }
 
@@ -78,6 +80,9 @@ export function SystemStatus({ adminSignature, adminMessage }: SystemStatusProps
 
   const explorerUrl = status?.minterAddress
     ? `${config.explorerUrl}/address/${status.minterAddress}`
+    : null
+  const contractExplorerUrl = status?.blockchain.contractAddress
+    ? `${config.explorerUrl}/address/${status.blockchain.contractAddress}`
     : null
 
   return (
@@ -209,6 +214,52 @@ export function SystemStatus({ adminSignature, adminMessage }: SystemStatusProps
                   'admin.systemStatus.blockNumber',
                 )}: ${status.blockchain.blockNumber.toLocaleString()}`}
               />
+              <StatusItem
+                icon={Activity}
+                label={t('admin.systemStatus.contractVersion')}
+                value={status.blockchain.contractVersion}
+                badge={
+                  status.blockchain.contractVersion.startsWith('2.')
+                    ? t('admin.systemStatus.versionUpToDate')
+                    : t('admin.systemStatus.versionLegacy')
+                }
+                badgeColor={
+                  status.blockchain.contractVersion.startsWith('2.') ? 'emerald' : 'amber'
+                }
+              />
+              <div className="flex items-center gap-3 rounded-md bg-muted/50 p-3">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded bg-muted">
+                  <Copy className="size-3.5 text-muted-foreground" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs text-muted-foreground">
+                    {t('admin.systemStatus.contractAddress')}
+                  </p>
+                  <div className="flex items-center gap-1.5">
+                    {contractExplorerUrl ? (
+                      <a
+                        href={contractExplorerUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="truncate font-mono text-xs text-primary hover:underline"
+                      >
+                        {status.blockchain.contractAddress}
+                      </a>
+                    ) : (
+                      <p className="truncate font-mono text-xs">
+                        {status.blockchain.contractAddress}
+                      </p>
+                    )}
+                    <button
+                      onClick={() => copyAddress(status.blockchain.contractAddress)}
+                      className="shrink-0 rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
+                      aria-label={t('admin.systemStatus.copyContract')}
+                    >
+                      <Copy className="size-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
               <div className="flex items-center gap-3 rounded-md bg-muted/50 p-3">
                 <div className="flex size-8 shrink-0 items-center justify-center rounded bg-muted">
                   <Copy className="size-3.5 text-muted-foreground" />

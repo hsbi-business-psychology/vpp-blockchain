@@ -462,7 +462,12 @@
       "statusLow": "Niedrig",
       "loadError": "System-Status konnte nicht geladen werden. Pr\u00fcfe, ob das Backend erreichbar ist.",
       "infoTip": "Das Backend-Wallet bezahlt alle Transaktionskosten (Gas-Fees) auf der Blockchain. Wenn das Guthaben aufgebraucht ist, können keine neuen Claims oder Umfragen mehr verarbeitet werden. Lade rechtzeitig ETH auf die angezeigte Adresse nach.",
-      "infoLabel": "Informationen zum Systemstatus"
+      "infoLabel": "Informationen zum Systemstatus",
+      "contractAddress": "Smart-Contract",
+      "contractVersion": "Contract-Version",
+      "versionUpToDate": "aktuell",
+      "versionLegacy": "veraltet",
+      "copyContract": "Contract-Adresse kopieren"
     }
   },
   "infoTips": {
