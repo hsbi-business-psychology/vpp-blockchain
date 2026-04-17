@@ -45,6 +45,15 @@
  *                            ADMIN_ADDRESS holds both roles, the
  *                            deployer renounces its own roles so the
  *                            deploy key is no longer privileged.
+ *   EXCLUDE_FROM_ADMIN_MIGRATION –
+ *                            comma-separated list of addresses that
+ *                            must NOT receive ADMIN_ROLE on V2 even if
+ *                            they had ADMIN_ROLE on V1. Use this to
+ *                            strip legacy over-privileged accounts
+ *                            during cutover. MINTER_ADDRESS is ALWAYS
+ *                            excluded automatically (least-privilege —
+ *                            the backend signer never needs admin
+ *                            rights).
  *   SKIP_VERIFY            – set to "true" to skip BaseScan verification.
  *
  * Idempotency:
@@ -182,6 +191,23 @@ async function main() {
   const skipVerify = (process.env.SKIP_VERIFY || '').toLowerCase() === 'true'
   const keepDeployerAdmin = (process.env.KEEP_DEPLOYER_ADMIN || '').toLowerCase() === 'true'
 
+  // Addresses that must NOT receive ADMIN_ROLE on V2 even when they had
+  // it on V1. The MINTER_ADDRESS is added unconditionally so a
+  // historically over-privileged minter wallet gets downgraded to
+  // MINTER_ROLE-only during the cutover.
+  const manualExcludes = (process.env.EXCLUDE_FROM_ADMIN_MIGRATION || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
+  for (const addr of manualExcludes) {
+    if (!ethers.isAddress(addr)) {
+      throw new Error(`EXCLUDE_FROM_ADMIN_MIGRATION contains invalid address: ${addr}`)
+    }
+  }
+  const adminMigrationExcludes = new Set<string>(
+    [minterAddress, ...manualExcludes].map((a) => ethers.getAddress(a).toLowerCase()),
+  )
+
   const deployerIsTargetAdmin = deployer.address.toLowerCase() === adminAddress.toLowerCase()
 
   console.log('=== Deploying SurveyPointsV2 (UUPS) ===')
@@ -189,6 +215,13 @@ async function main() {
   console.log(`  Deployer:    ${deployer.address}`)
   console.log(`  Target admin: ${adminAddress}${deployerIsTargetAdmin ? ' (= deployer)' : ''}`)
   console.log(`  Minter:      ${minterAddress}`)
+  if (adminMigrationExcludes.size > 0) {
+    console.log(`  Admin-migration excludes:`)
+    for (const e of adminMigrationExcludes) {
+      const reason = e === minterAddress.toLowerCase() ? ' (minter — least privilege)' : ''
+      console.log(`    - ${ethers.getAddress(e)}${reason}`)
+    }
+  }
   console.log(
     `  Balance:     ${ethers.formatEther(await ethers.provider.getBalance(deployer.address))} ETH`,
   )
@@ -262,6 +295,11 @@ async function main() {
     for (const admin of plan.admins) {
       if (admin.toLowerCase() === deployer.address.toLowerCase()) {
         console.log(`   - ${admin} (= deployer, already initial admin)`)
+        continue
+      }
+      if (adminMigrationExcludes.has(admin.toLowerCase())) {
+        const reason = admin.toLowerCase() === minterAddress.toLowerCase() ? 'minter' : 'manual'
+        console.log(`   - ${admin} SKIPPED (${reason} — not migrated)`)
         continue
       }
       const tx = await v2Migrator.addAdmin(admin)
