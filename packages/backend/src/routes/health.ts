@@ -114,19 +114,31 @@ async function probeRpc(rpcUrl: string): Promise<{
 }
 
 router.get('/diag', async (_req, res) => {
-  const urls = config.rpcUrl
+  // Probe ALL URLs that the FallbackProvider could route to — both the
+  // operator-configured RPC_URL list AND the hard-coded public Base
+  // fallbacks. Otherwise an operator looking at /diag would see only the
+  // misconfigured primary as "down" and panic, even though the system was
+  // happily serving traffic via a fallback.
+  const configured = config.rpcUrl
     .split(',')
     .map((u) => u.trim())
     .filter(Boolean)
+  const effective = blockchain.getEffectiveRpcUrls()
+  const fallbackUrls = effective.filter((u) => !configured.includes(u))
 
-  const probes = await Promise.all(urls.map(probeRpc))
+  const [configuredProbes, fallbackProbes] = await Promise.all([
+    Promise.all(configured.map(probeRpc)),
+    Promise.all(fallbackUrls.map(probeRpc)),
+  ])
 
   res.json({
     uptime: Math.floor((Date.now() - startedAt) / 1000),
     rpc: {
-      configured: urls.length,
-      probes,
-      anyOk: probes.some((p) => p.ok),
+      configured: configured.length,
+      configuredProbes,
+      fallbacks: fallbackUrls.length,
+      fallbackProbes,
+      anyOk: configuredProbes.some((p) => p.ok) || fallbackProbes.some((p) => p.ok),
     },
     contractAddress: config.contractAddress,
     explorerBaseUrl: config.explorerBaseUrl,

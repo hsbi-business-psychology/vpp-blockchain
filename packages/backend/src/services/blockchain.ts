@@ -64,17 +64,27 @@ const KNOWN_BASE_FALLBACKS = [
   'https://base.drpc.org',
 ]
 
-function buildReadProvider(): ethers.AbstractProvider {
+/**
+ * Public list of RPC URLs actually in use (operator-configured + dedup'd
+ * fallbacks). Exposed so `/api/v1/health/diag` can probe each one and tell
+ * the operator which provider is healthy and which is degraded — including
+ * the fallback URLs, not only the primary.
+ */
+export function getEffectiveRpcUrls(): string[] {
   const configured = config.rpcUrl
     .split(',')
     .map((u) => u.trim())
     .filter(Boolean)
   const seen = new Set<string>()
-  const urls = [...configured, ...KNOWN_BASE_FALLBACKS].filter((u) => {
+  return [...configured, ...KNOWN_BASE_FALLBACKS].filter((u) => {
     if (seen.has(u)) return false
     seen.add(u)
     return true
   })
+}
+
+function buildReadProvider(): ethers.AbstractProvider {
+  const urls = getEffectiveRpcUrls()
 
   const subProviders = urls.map((url, idx) => ({
     provider: new ethers.JsonRpcProvider(url, undefined, { batchMaxCount: 1 }),
