@@ -13,10 +13,63 @@ Was direkt vor dem Test-Run am Montag (~100 Studierende) passiert ist:
 - **CSP-Verletzung** im Frontend entfernt (Inline-Script in `index.html`).
 - **FallbackProvider** mit 3 Public Base RPCs als Sicherheitsnetz, sowohl für Reads als
   auch Writes — überlebt den Ausfall jedes einzelnen Providers ohne Operator-Eingriff.
-- **`/api/v1/health/diag`** als operationelle Diagnose, zeigt pro RPC ob er gerade healthy ist.
+- **`/api/v1/health/diag`** als operationelle Diagnose, zeigt pro RPC ob er gerade healthy ist
+  und schließt jetzt einen kompletten Snapshot der Event-Store-Sync-Internas ein
+  (`syncing`, `lastSyncedBlock`, `lastSyncError`, `lastSyncAgeSeconds`).
 - **Atomic Write** für `events.json` — kein korrupter Cache mehr bei Plesk-Restart mid-write.
 - **Hash-basierter Skip** für `node_modules`-Upload — Hot-Fix-Deploys jetzt unter 1 Minute
   statt 13 Minuten.
+- **Event-Store-Sync stabilisiert** mit Watchdog (45s Timeout pro Run), opportunistischem
+  Refresh aus `/health/ready` und `/admin GET`, sowie dediziertem Event-RPC-Provider
+  (Alchemy Free Tier wird automatisch von `eth_getLogs` ausgeschlossen — siehe Incident
+  unten).
+- **Integration-Test-Suite repariert** — FallbackProvider darf nicht mehr Hardhat-localhost
+  mit Mainnet-RPCs mischen. CI ist jetzt komplett grün.
+
+## Incident: Admin-Liste aktualisiert sich nicht (17.04.2026)
+
+Nachdem der Operator über `/api/v1/admin/add` einen neuen Admin gesetzt und dafür eine
+Erfolgs-Antwort vom Backend bekommen hat, ist die Admin-Liste in der UI minutenlang nicht
+aktualisiert worden. On-chain war die `RoleGranted`-Transaktion sofort gemined, aber der
+JSON-Event-Store hatte den Block nie verarbeitet.
+
+**Root Cause:** Alchemy's Free Tier limitiert `eth_getLogs` auf eine 10-Block-Range und
+antwortet auf größere Anfragen mit JSON-RPC-Code `-32600` ("Invalid Request",
+`"Under the Free tier plan…"`). Unser `queryFilterChunked` arbeitet mit 9000-Block-Chunks
+(der Sweet Spot für Public Base RPCs). Jeder Sync-Lauf hat Alchemy als Primary-Provider
+getroffen, einen 400-Fehler bekommen und geworfen. Der `FallbackProvider` macht NICHT
+auf `-32600` ein Failover, weil er den Code als permanenten Caller-Fehler interpretiert
+(falsche Parameter, nicht "Provider down") — folglich wurden die drei gesunden Public-Base-
+RPCs (`mainnet.base.org`, `base.publicnode.com`, `base.drpc.org`) nie probiert, obwohl sie
+identische Anfragen problemlos bedient hätten.
+
+**Fix:** Wir splitten den Read-Provider auf:
+
+- `provider` (Alchemy + Fallbacks) bedient weiterhin `eth_call`, `getBalance`,
+  `broadcastTransaction` etc. — also alles, wo Alchemy Free Tier bequem reicht und der
+  Latenz-Vorteil zählt.
+- `eventProvider` schließt automatisch `*.alchemy.com`-URLs aus und nutzt für `eth_getLogs`
+  / `queryFilter` ausschließlich die Public Base RPCs. Operator auf Alchemy Growth/Scale
+  können das via neuem `EVENT_RPC_URL=...`-ENV-Var überschreiben.
+
+**Sekundäre Härtungen** für künftige ähnliche Klassen von Bugs:
+
+- Das `/diag`-Endpoint zeigt jetzt `lastSyncError` (verbatim Provider-Antwort), `syncing`,
+  `currentSyncAgeSeconds` etc. — so ein Bug ist beim nächsten Mal in 30 Sekunden
+  diagnostiziert statt in 30 Minuten.
+- Sync-Watchdog mit 45s-Hard-Timeout: Selbst wenn ein Provider hängt statt zu antworten,
+  wird der `syncing`-Lock garantiert wieder freigegeben.
+- `/health/ready` triggert opportunistisch einen Sync, wenn der Cache älter als 60s ist —
+  Plesk Passenger pausiert Worker zwischen Requests, das verhindert Drift im
+  60s-`setInterval`. UptimeRobot pingt `/ready` ohnehin → garantierter Sync-Heartbeat.
+- `getCurrentAdmins` (in `/api/v1/admin GET`) erzwingt einen Sync wenn Cache > 5min stale,
+  triggert einen Background-Sync wenn > 30s stale — der Operator sieht bei jedem
+  UI-Aufruf einen praktisch live-aktuellen Stand.
+
+**Warum nicht einfach "Alchemy upgraden"?** Weil das System auch ohne bezahlte Anbieter
+laufen muss. Drei Public Base RPCs als Backbone + Alchemy Free Tier für die Latenz-
+sensiblen Calls ist die kostenneutrale Konfiguration, die für ~100 gleichzeitige
+Studierende völlig reicht. Die Architektur sollte das aushalten — und tut es jetzt auch.
 
 Was getestet ist:
 
@@ -42,14 +95,14 @@ Was getestet ist:
 
 Nichts davon blockiert Montag, aber wäre für den Echtbetrieb sinnvoll.
 
-| Bereich                 | Aktueller Zustand                                                             | Empfehlung                                                                                                                                                                                                                   | Aufwand        |
-| ----------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| **Primary RPC**         | `1rpc.io` (Free, hat das Quota-Limit erreicht)                                | In Plesk-`.env` auf **Alchemy Free Tier** wechseln. 300M compute units/Monat reicht für ~30k Lehrveranstaltungen                                                                                                             | 5 min          |
-| **Minter-Wallet-Topup** | 0.000492 ETH (~1100 Claims). Kein Auto-Topup.                                 | Mit ~5 € regelmäßig auf den Minter senden. Endpoint `/api/v1/status` zeigt `lowBalance: true` wenn weniger als 100 Claims drin sind                                                                                          | 2 min          |
-| **Monitoring**          | Keines — Probleme werden nur durch User-Beschwerden sichtbar                  | UptimeRobot (kostenlos) auf `https://vpstunden.hsbi.de/api/v1/health/ready` einrichten — 5min-Probe, Alert per E-Mail wenn nicht-200                                                                                         | 10 min         |
-| **Logs**                | Pino → stdout → Plesk-Logs. Rotation/Retention unklar.                        | Plesk Log-Rotation aktivieren, alte Logs nach 30 Tagen löschen                                                                                                                                                               | 5 min in Plesk |
-| **events.json Backup**  | Single File auf Plesk, kein Off-Site-Backup                                   | Optional: Cron-Job auf Plesk der `events.json` täglich wegspeichert. Aber: bei Verlust kann der Cache jederzeit komplett neu vom Contract aufgebaut werden — wäre nur langsam (~5min initial sync). Nicht wirklich kritisch. | optional       |
-| **`EXPECTED_CHAIN_ID`** | Nicht gesetzt → kein Schutz vor falscher RPC-URL (z.B. Sepolia statt Mainnet) | In Plesk-`.env`: `EXPECTED_CHAIN_ID=8453`. Backend exit'et beim Start wenn der RPC nicht Base mainnet liefert.                                                                                                               | 1 min          |
+| Bereich                 | Aktueller Zustand                                                                                | Empfehlung                                                                                                                                                                                                                   | Aufwand        |
+| ----------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| **Primary RPC**         | Alchemy Free Tier ist für `eth_call` etc. perfekt, aber `eth_getLogs` ist auf 10 Blöcke begrenzt | **Schon erledigt:** Das Backend routet `eth_getLogs` jetzt automatisch an die Public Base RPCs vorbei an Alchemy. Operator auf Alchemy Growth/Scale können via `EVENT_RPC_URL=<alchemy-url>` opt-in zurück.                  | 0 min          |
+| **Minter-Wallet-Topup** | 0.000492 ETH (~1100 Claims). Kein Auto-Topup.                                                    | Mit ~5 € regelmäßig auf den Minter senden. Endpoint `/api/v1/status` zeigt `lowBalance: true` wenn weniger als 100 Claims drin sind                                                                                          | 2 min          |
+| **Monitoring**          | Keines — Probleme werden nur durch User-Beschwerden sichtbar                                     | UptimeRobot (kostenlos) auf `https://vpstunden.hsbi.de/api/v1/health/ready` einrichten — 5min-Probe, Alert per E-Mail wenn nicht-200                                                                                         | 10 min         |
+| **Logs**                | Pino → stdout → Plesk-Logs. Rotation/Retention unklar.                                           | Plesk Log-Rotation aktivieren, alte Logs nach 30 Tagen löschen                                                                                                                                                               | 5 min in Plesk |
+| **events.json Backup**  | Single File auf Plesk, kein Off-Site-Backup                                                      | Optional: Cron-Job auf Plesk der `events.json` täglich wegspeichert. Aber: bei Verlust kann der Cache jederzeit komplett neu vom Contract aufgebaut werden — wäre nur langsam (~5min initial sync). Nicht wirklich kritisch. | optional       |
+| **`EXPECTED_CHAIN_ID`** | Nicht gesetzt → kein Schutz vor falscher RPC-URL (z.B. Sepolia statt Mainnet)                    | In Plesk-`.env`: `EXPECTED_CHAIN_ID=8453`. Backend exit'et beim Start wenn der RPC nicht Base mainnet liefert.                                                                                                               | 1 min          |
 
 ## Risiken (rot — wenn etwas, dann das vor Montag)
 
@@ -94,6 +147,20 @@ In dieser Reihenfolge, dauert insgesamt < 30 Minuten:
 ## Architekturentscheidungen die OK aber bewusst sind
 
 Damit klar ist was Tradeoffs sind und nicht Bugs:
+
+- **Admin-Archivierung statt Hard-Delete**: Wenn ein Admin entfernt wird, wird seine
+  Adresse nicht aus dem Cache gelöscht, sondern in einer separaten "Archived
+  Admins"-Sektion sichtbar gemacht. Begründung: Auf der Blockchain bleibt der
+  `RoleGranted`-Event ohnehin für immer im Log (kein "Vergessen" möglich), also wäre
+  ein Hard-Delete im Backend-Cache **irreführend** — er würde suggerieren der Vorgang
+  sei rückgängig gemacht worden, dabei ist er nur durch ein zweites Event neutralisiert.
+  Audit-Trail erhalten = Compliance-Pflicht (DSGVO Art. 5(1)(e) "Speicherbegrenzung"
+  trifft hier nicht zu, weil die Daten weder personenbezogen noch löschbar sind: eine
+  EOA-Adresse ist ein öffentlicher Schlüssel, kein Identifier zu einer natürlichen
+  Person, und sie ist on-chain unauslöschlich). Falls für einen Lehr-Reset doch ein
+  echtes Delete gewünscht ist: `events.json` einfach löschen, der Cache baut sich
+  vollständig aus dem Contract neu auf — die Live-Liste bleibt korrekt, das "Archiv"
+  beginnt halt von vorne.
 
 - **JSON-File statt Postgres** für den Event-Cache: bewusst, weil Single-Instance-Plesk
   und der Cache jederzeit aus dem Contract neu aufbaubar ist. Wenn ihr mehrere Instanzen
