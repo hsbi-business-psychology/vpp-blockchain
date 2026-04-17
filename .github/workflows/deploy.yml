@@ -100,10 +100,10 @@ jobs:
             set mirror:parallel-transfer-count 5;
             open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ftp://hosting.hsbi.de;
             mirror --reverse --verbose --only-newer \
-              --exclude .bin/ \
-              --exclude .env \
-              --exclude node_modules/ \
-              --exclude tmp/ \
+              --exclude-glob .bin \
+              --exclude-glob .env \
+              --exclude-glob tmp \
+              --exclude-glob .DS_Store \
               deploy/ /httpdocs/;
             mkdir -p /httpdocs/packages/backend/tmp;
             put /dev/null -o /httpdocs/packages/backend/tmp/restart.txt;
