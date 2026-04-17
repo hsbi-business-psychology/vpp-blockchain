@@ -12,7 +12,7 @@ export const config = {
   contractAddress: import.meta.env.VITE_CONTRACT_ADDRESS || '',
   contractDeployBlock: parseInt(import.meta.env.VITE_CONTRACT_DEPLOY_BLOCK || '0', 10),
   explorerUrl: import.meta.env.VITE_EXPLORER_URL || 'https://sepolia.basescan.org',
-  defaultLocale: import.meta.env.VITE_DEFAULT_LOCALE || 'en',
+  defaultLocale: import.meta.env.VITE_DEFAULT_LOCALE || 'de',
 } as const
 
 export function getTxUrl(txHash: string): string {

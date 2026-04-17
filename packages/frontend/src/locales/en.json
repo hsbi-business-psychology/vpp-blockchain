@@ -37,7 +37,8 @@
     "close": "Close",
     "search": "Search",
     "noResults": "No results found",
-    "backToTop": "Back to top"
+    "backToTop": "Back to top",
+    "wallet": "Wallet"
   },
   "nav": {
     "home": "Home",
@@ -202,6 +203,7 @@
     "createFirst": "Create Wallet First",
     "signing": "Signing message...",
     "submitting": "Submitting claim...",
+    "surveyLabel": "Survey",
     "success": {
       "title": "Points Claimed!",
       "points": "{{points}} points awarded",
@@ -216,6 +218,12 @@
       "surveyInactive": "This survey has been deactivated and no longer accepts claims. Contact the survey administrator if you have questions.",
       "maxClaims": "The maximum number of participants for this survey has been reached. No more points can be awarded.",
       "expired": "Your signature has expired. Please reload the page and try again.",
+      "surveyNotFound": "This survey is no longer registered. Please verify the claim link from the survey.",
+      "invalidSignature": "The signature could not be verified. Please try again — make sure you are using the same wallet.",
+      "rateLimited": "Too many requests in a short time. Please wait a moment and try again.",
+      "insufficientFunds": "The system wallet does not have enough balance right now. Please try again in a few minutes or contact vpstunden@hsbi.de.",
+      "unauthorized": "The system wallet currently lacks the required permission in the smart contract. Please contact vpstunden@hsbi.de.",
+      "network": "Network error. The blockchain is currently unreachable. Please try again in a few seconds.",
       "generic": "Points could not be claimed. Please check your internet connection and try again. If the problem persists, contact vpstunden@hsbi.de."
     }
   },

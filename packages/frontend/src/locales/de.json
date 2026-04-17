@@ -37,7 +37,8 @@
     "close": "Schließen",
     "search": "Suchen",
     "noResults": "Keine Ergebnisse gefunden",
-    "backToTop": "Zurück nach oben"
+    "backToTop": "Zurück nach oben",
+    "wallet": "Wallet"
   },
   "nav": {
     "home": "Startseite",
@@ -202,6 +203,7 @@
     "createFirst": "Zuerst Wallet erstellen",
     "signing": "Nachricht wird signiert...",
     "submitting": "Claim wird eingereicht...",
+    "surveyLabel": "Umfrage",
     "success": {
       "title": "Punkte eingelöst!",
       "points": "{{points}} Punkte vergeben",
@@ -216,6 +218,12 @@
       "surveyInactive": "Diese Umfrage wurde deaktiviert und nimmt keine Claims mehr an. Wende dich bei Fragen an die Studienleitung.",
       "maxClaims": "Die maximale Teilnehmerzahl f\u00fcr diese Umfrage wurde erreicht. Es k\u00f6nnen keine weiteren Punkte vergeben werden.",
       "expired": "Deine Signatur ist abgelaufen. Bitte lade die Seite neu und versuche es erneut.",
+      "surveyNotFound": "Diese Umfrage ist nicht (mehr) registriert. Bitte prüfe den Claim-Link aus der Umfrage.",
+      "invalidSignature": "Die Signatur konnte nicht überprüft werden. Bitte versuche es erneut – stelle sicher, dass du dieselbe Wallet verwendest.",
+      "rateLimited": "Zu viele Anfragen in kurzer Zeit. Bitte warte einen Moment und versuche es dann erneut.",
+      "insufficientFunds": "Das System-Wallet hat aktuell nicht genug Guthaben, um deine Transaktion zu verbuchen. Bitte versuche es in ein paar Minuten erneut oder wende dich an vpstunden@hsbi.de.",
+      "unauthorized": "Das System-Wallet besitzt im Smart Contract aktuell nicht die nötige Berechtigung. Bitte wende dich an vpstunden@hsbi.de.",
+      "network": "Netzwerkfehler. Die Blockchain ist gerade nicht erreichbar. Bitte versuche es in wenigen Sekunden erneut.",
       "generic": "Die Punkte konnten nicht eingelöst werden. Bitte pr\u00fcfe deine Internetverbindung und versuche es erneut. Falls das Problem bestehen bleibt, wende dich an vpstunden@hsbi.de."
     }
   },

@@ -75,8 +75,14 @@ export default function ClaimPage() {
           ALREADY_CLAIMED: t('claim.error.alreadyClaimed'),
           INVALID_SECRET: t('claim.error.invalidSecret'),
           SURVEY_INACTIVE: t('claim.error.surveyInactive'),
+          SURVEY_NOT_FOUND: t('claim.error.surveyNotFound'),
           MAX_CLAIMS_REACHED: t('claim.error.maxClaims'),
           EXPIRED_MESSAGE: t('claim.error.expired'),
+          INVALID_SIGNATURE: t('claim.error.invalidSignature'),
+          RATE_LIMITED: t('claim.error.rateLimited'),
+          INSUFFICIENT_FUNDS: t('claim.error.insufficientFunds'),
+          ROLE_UNAUTHORIZED: t('claim.error.unauthorized'),
+          NETWORK_ERROR: t('claim.error.network'),
         }
         setError(errorMap[err.code] ?? t('claim.error.generic'))
       } else {
@@ -163,7 +169,7 @@ export default function ClaimPage() {
           <CardHeader>
             <CardTitle>{t('claim.steps.sign')}</CardTitle>
             <CardDescription>
-              Survey <Badge variant="secondary">{surveyId}</Badge>
+              {t('claim.surveyLabel')} <Badge variant="secondary">{surveyId}</Badge>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -174,7 +180,7 @@ export default function ClaimPage() {
               </Alert>
             )}
             <div className="rounded-lg bg-muted p-3">
-              <p className="text-xs text-muted-foreground">Wallet</p>
+              <p className="text-xs text-muted-foreground">{t('common.wallet')}</p>
               <p className="truncate text-sm font-mono">{wallet?.address}</p>
             </div>
             <Button onClick={handleSign} disabled={loading} className="w-full">
