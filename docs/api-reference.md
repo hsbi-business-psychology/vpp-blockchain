@@ -3,6 +3,8 @@
 The VPP backend exposes a REST API on the configured port (default: `3000`). All endpoints are prefixed with `/api/v1`. Legacy calls to `/api/*` are redirected with HTTP 308.
 
 > A machine-readable [OpenAPI 3.0 specification](openapi.yaml) is available for use with Swagger UI, Postman, or code generators.
+>
+> **V2 update (April 2026):** The claim and survey-registration flows no longer accept plaintext `secret` values. Claims are authenticated with per-participant HMAC tokens, and surveys have a per-survey HMAC key managed entirely by the backend. See [ADR 0004](adr/0004-hmac-claim-tokens-and-upgradeable-contract.md) for background.
 
 ## Base URL
 
@@ -40,7 +42,7 @@ Rate limit headers are included in every response:
 
 ### POST /api/v1/claim
 
-Claim survey participation points for a wallet.
+Claim survey participation points for a wallet, using an HMAC token minted by the survey server.
 
 **Request Body:**
 
@@ -48,19 +50,21 @@ Claim survey participation points for a wallet.
 {
   "walletAddress": "0x1234...abcd",
   "surveyId": 42,
-  "secret": "VPP-x8k2m9",
+  "nonce": "Ik3pj8sN-Vf9aD2EXAMPLE",
+  "token": "R4Bc...HMAC_SHA256_BASE64URL",
   "signature": "0xabcd...1234",
-  "message": "Claim:42:0x1234...abcd:1710000000"
+  "message": "claim:42:Ik3pj8sN-Vf9aD2EXAMPLE:1710000000"
 }
 ```
 
-| Field           | Type     | Description                                                |
-| --------------- | -------- | ---------------------------------------------------------- |
-| `walletAddress` | `string` | Ethereum address of the claimant                           |
-| `surveyId`      | `number` | Positive integer identifying the survey                    |
-| `secret`        | `string` | Survey secret (received via redirect URL)                  |
-| `signature`     | `string` | EIP-191 signature over `message`                           |
-| `message`       | `string` | Format: `Claim:{surveyId}:{walletAddress}:{unixTimestamp}` |
+| Field           | Type     | Description                                                            |
+| --------------- | -------- | ---------------------------------------------------------------------- | ---------- | -------------------------------- |
+| `walletAddress` | `string` | Ethereum address of the claimant                                       |
+| `surveyId`      | `number` | Positive integer identifying the survey                                |
+| `nonce`         | `string` | Single-use base64url nonce minted by the survey server (URL param `n`) |
+| `token`         | `string` | base64url HMAC-SHA256 of `v1                                           | <surveyId> | <nonce>`(URL param`t`, 43 chars) |
+| `signature`     | `string` | EIP-191 signature over `message`                                       |
+| `message`       | `string` | Format: `claim:<surveyId>:<nonce>:<unixSeconds>` (≤ 5 minutes old)     |
 
 **Success Response (200):**
 
@@ -70,22 +74,30 @@ Claim survey participation points for a wallet.
   "data": {
     "txHash": "0x...",
     "points": 2,
-    "explorerUrl": "https://sepolia.basescan.org/tx/0x..."
+    "explorerUrl": "https://basescan.org/tx/0x..."
   }
 }
 ```
 
 **Error Responses:**
 
-| Status | Error Code          | When                                    |
-| ------ | ------------------- | --------------------------------------- |
-| 400    | `VALIDATION_ERROR`  | Invalid request body                    |
-| 400    | `EXPIRED_MESSAGE`   | Signed message is too old               |
-| 400    | `INVALID_SIGNATURE` | Signature does not match wallet address |
-| 400    | `INVALID_TIMESTAMP` | Message timestamp is in the future      |
-| 404    | `SURVEY_NOT_FOUND`  | Survey does not exist on-chain          |
-| 400    | `SURVEY_INACTIVE`   | Survey has been deactivated             |
-| 409    | `ALREADY_CLAIMED`   | Wallet has already claimed this survey  |
+| Status | Error Code             | When                                                                |
+| ------ | ---------------------- | ------------------------------------------------------------------- |
+| 400    | `VALIDATION_ERROR`     | Invalid request body                                                |
+| 400    | `INVALID_MESSAGE`      | Signed message is malformed                                         |
+| 400    | `EXPIRED_MESSAGE`      | Signed message is too old (> 5 min)                                 |
+| 400    | `INVALID_TIMESTAMP`    | Message timestamp is in the future                                  |
+| 400    | `INVALID_SIGNATURE`    | Signature does not match wallet address                             |
+| 400    | `INVALID_NONCE_FORMAT` | `nonce` is not a valid base64url string of acceptable length        |
+| 400    | `INVALID_TOKEN_FORMAT` | `token` is not a valid base64url string of the expected length      |
+| 400    | `INVALID_TOKEN`        | HMAC verification failed (tampered or wrong key / survey)           |
+| 404    | `SURVEY_NOT_FOUND`     | Survey does not exist on-chain                                      |
+| 409    | `ALREADY_CLAIMED`      | Wallet has already claimed this survey                              |
+| 409    | `NONCE_USED`           | The `nonce` has already been redeemed — links are single-use        |
+| 410    | `SURVEY_INACTIVE`      | Survey has been deactivated                                         |
+| 500    | `CONFIG_ERROR`         | Server is missing an HMAC key for the registered survey (ops issue) |
+
+> Replay protection is fail-closed: the nonce is marked consumed **before** the on-chain transaction is broadcast. If the transaction later fails, the participant must reopen the survey end page to get a fresh nonce.
 
 ---
 
@@ -135,14 +147,13 @@ Get the total points and claim history for a wallet address.
 
 ### POST /api/v1/surveys
 
-Register a new survey on-chain. **Admin authentication required.**
+Register a new survey on-chain and provision an HMAC key for it. **Admin authentication required.**
 
 **Request Body:**
 
 ```json
 {
   "surveyId": 42,
-  "secret": "VPP-x8k2m9",
   "points": 2,
   "maxClaims": 100,
   "title": "Cognitive Load Study",
@@ -154,12 +165,13 @@ Register a new survey on-chain. **Admin authentication required.**
 | Field            | Type     | Description                            |
 | ---------------- | -------- | -------------------------------------- |
 | `surveyId`       | `number` | Unique positive integer for the survey |
-| `secret`         | `string` | Secret that participants need to claim |
 | `points`         | `number` | Points awarded per claim (1–255)       |
 | `maxClaims`      | `number` | Maximum claims allowed (0 = unlimited) |
 | `title`          | `string` | Human-readable survey title (optional) |
 | `adminSignature` | `string` | EIP-191 signature from an admin wallet |
 | `adminMessage`   | `string` | Signed message for verification        |
+
+> The HMAC key is generated server-side; it is **not** part of the request.
 
 **Success Response (201):**
 
@@ -168,20 +180,25 @@ Register a new survey on-chain. **Admin authentication required.**
   "success": true,
   "data": {
     "txHash": "0x...",
-    "explorerUrl": "https://sepolia.basescan.org/tx/0x...",
-    "templateDownloadUrl": "/api/v1/surveys/42/template"
+    "explorerUrl": "https://basescan.org/tx/0x...",
+    "templateDownloadUrl": "/api/v1/surveys/42/template",
+    "key": "<base64url HMAC key, 43 chars>",
+    "keyCreatedAt": "2026-04-10T14:30:00.000Z"
   }
 }
 ```
 
+> **The `key` is returned exactly once.** Copy it into a password manager. It can be retrieved again via `GET /api/v1/surveys/:id/key`, or rolled via `POST /api/v1/surveys/:id/key/rotate`.
+
 **Error Responses:**
 
-| Status | Error Code         | When                              |
-| ------ | ------------------ | --------------------------------- |
-| 400    | `VALIDATION_ERROR` | Invalid request body              |
-| 401    | `UNAUTHORIZED`     | Missing admin signature           |
-| 403    | `FORBIDDEN`        | Signer is not an authorized admin |
-| 409    | `SURVEY_EXISTS`    | Survey ID already registered      |
+| Status | Error Code         | When                                                                  |
+| ------ | ------------------ | --------------------------------------------------------------------- |
+| 400    | `VALIDATION_ERROR` | Invalid request body                                                  |
+| 401    | `UNAUTHORIZED`     | Missing admin signature                                               |
+| 403    | `FORBIDDEN`        | Signer is not an authorized admin                                     |
+| 409    | `SURVEY_EXISTS`    | Survey ID already registered                                          |
+| 409    | `KEY_EXISTS`       | A leftover key from a previous failed registration exists — rotate it |
 
 ---
 
@@ -211,6 +228,64 @@ List all registered surveys with their current status.
 
 ---
 
+### POST /api/v1/surveys/:id/deactivate
+
+Stop accepting claims for a survey. **Admin authentication required.**
+
+**Success Response (200):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "txHash": "0x...",
+    "explorerUrl": "https://basescan.org/tx/0x..."
+  }
+}
+```
+
+| Status | Error Code         | When                          |
+| ------ | ------------------ | ----------------------------- |
+| 404    | `SURVEY_NOT_FOUND` | Survey does not exist         |
+| 409    | `ALREADY_INACTIVE` | Survey is already deactivated |
+
+---
+
+### POST /api/v1/surveys/:id/reactivate
+
+Re-enable a previously deactivated survey. **Admin authentication required.** Response format matches `deactivate`.
+
+| Status | Error Code              | When                                               |
+| ------ | ----------------------- | -------------------------------------------------- |
+| 404    | `SURVEY_NOT_FOUND`      | Survey does not exist                              |
+| 409    | `SURVEY_ALREADY_ACTIVE` | Survey is already active (no-op rejected on-chain) |
+
+---
+
+### POST /api/v1/surveys/:id/revoke
+
+Revoke a previously awarded claim (e.g. fraud cleanup). Removes the wallet's points for this survey on-chain. **Admin authentication required.**
+
+**Request Body:**
+
+```json
+{
+  "student": "0xabcd...1234",
+  "adminSignature": "0x...",
+  "adminMessage": "revoke:42:1710000000"
+}
+```
+
+**Success Response (200):** same shape as `deactivate`.
+
+| Status | Error Code         | When                                             |
+| ------ | ------------------ | ------------------------------------------------ |
+| 400    | `INVALID_ADDRESS`  | `student` is not a valid Ethereum address        |
+| 404    | `SURVEY_NOT_FOUND` | Survey does not exist                            |
+| 409    | `NOT_CLAIMED`      | The specified wallet has not claimed this survey |
+
+---
+
 ### POST /api/v1/surveys/:id/template
 
 Download a SoSci Survey or LimeSurvey XML template for a specific survey. **Admin authentication required.**
@@ -225,8 +300,9 @@ Download a SoSci Survey or LimeSurvey XML template for a specific survey. **Admi
 
 | Field    | Type     | Description                       |
 | -------- | -------- | --------------------------------- |
-| `secret` | `string` | Survey secret (required)          |
 | `format` | `string` | `sosci` (default) or `limesurvey` |
+
+The HMAC key is embedded into the downloaded template server-side — it is **not** requested in the body.
 
 **Success Response (200):**
 
@@ -234,11 +310,60 @@ Returns an XML file with `Content-Type: application/xml` and `Content-Dispositio
 
 **Error Responses:**
 
-| Status | Error Code          | When                            |
-| ------ | ------------------- | ------------------------------- |
-| 400    | `INVALID_SURVEY_ID` | ID is not a positive integer    |
-| 400    | `VALIDATION_ERROR`  | Missing or invalid request body |
-| 404    | `SURVEY_NOT_FOUND`  | Survey does not exist           |
+| Status | Error Code          | When                                                             |
+| ------ | ------------------- | ---------------------------------------------------------------- |
+| 400    | `INVALID_SURVEY_ID` | ID is not a positive integer                                     |
+| 400    | `VALIDATION_ERROR`  | Missing or invalid request body                                  |
+| 404    | `SURVEY_NOT_FOUND`  | Survey does not exist                                            |
+| 404    | `KEY_NOT_FOUND`     | Server has no HMAC key for this survey — use `/key/rotate` first |
+
+---
+
+### GET /api/v1/surveys/:id/key
+
+Retrieve the current HMAC key for a registered survey. **Admin authentication required.** Use this if you lost the key from the registration response.
+
+**Success Response (200):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "surveyId": 42,
+    "key": "<base64url HMAC key>",
+    "createdAt": "2026-04-10T14:30:00.000Z"
+  }
+}
+```
+
+| Status | Error Code      | When                                |
+| ------ | --------------- | ----------------------------------- |
+| 404    | `KEY_NOT_FOUND` | No HMAC key on file for this survey |
+
+---
+
+### POST /api/v1/surveys/:id/key/rotate
+
+Generate a fresh HMAC key for a registered survey, invalidating the previous one. **Admin authentication required.**
+
+> Rotating a key invalidates **every already-distributed claim link**. Do this only after a data-collection window has closed, or in immediate response to a leak.
+
+**Success Response (200):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "surveyId": 42,
+    "key": "<new base64url HMAC key>",
+    "createdAt": "2026-04-11T09:00:00.000Z"
+  }
+}
+```
+
+| Status | Error Code         | When                                                   |
+| ------ | ------------------ | ------------------------------------------------------ |
+| 404    | `SURVEY_NOT_FOUND` | Survey does not exist (cannot rotate for unregistered) |
 
 ---
 

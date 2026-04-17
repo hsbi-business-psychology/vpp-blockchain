@@ -14,53 +14,82 @@ See [Getting Started](getting-started.md#full-local-stack) for the full setup in
 
 ## Test Scenarios
 
+> **V2 note:** Claim URLs use `?s=<id>&n=<nonce>&t=<token>`. The per-survey HMAC key is displayed once in the admin UI at registration time; copy it into SoSci/LimeSurvey when importing the downloaded template. For local tests you can mint a token with the backend's `issueToken` helper (see `packages/backend/src/services/hmac.ts`) or run `pnpm --filter @vpp/backend test -- integration/hardhat` for an automated end-to-end path.
+
 ### 1. Happy Path: Complete Claim Flow
 
-| Step | Action                                                                                     | Expected Result                                       |
-| ---- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
-| 1    | Open admin dashboard (`/admin`)                                                            | Admin page loads with empty survey table              |
-| 2    | Connect admin wallet (import private key)                                                  | Wallet connected, address shown                       |
-| 3    | Register a new survey (ID: 1, Points: 2, Secret: "test-secret", Max Claims: 100)           | Success toast, survey appears in table, TX hash shown |
-| 4    | Download SoSci template                                                                    | XML file downloads with correct surveyId and secret   |
-| 5    | Open claim page: `/claim?surveyId=1&secret=test-secret`                                    | Claim page shows survey details                       |
-| 6    | Create a new wallet                                                                        | Wallet created, address and private key shown         |
-| 7    | Click "Claim Points"                                                                       | Loading state → success confirmation with TX hash     |
-| 8    | Navigate to Points page (`/points`)                                                        | Shows 2 total points, 1 claim entry                   |
-| 9    | On the Points page (`/points`), use the Wallet Search section and enter the wallet address | Shows same 2 points                                   |
-| 10   | Verify on local Hardhat node                                                               | `totalPoints(wallet) == 2`                            |
+| Step | Action                                                                              | Expected Result                                                                       |
+| ---- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 1    | Open admin dashboard (`/admin`)                                                     | Admin page loads with empty survey table                                              |
+| 2    | Connect admin wallet (import private key)                                           | Wallet connected, address shown                                                       |
+| 3    | Register a new survey (ID: 1, Points: 2, Max Claims: 100)                           | Success toast, key dialog shows HMAC key once, survey appears in table, TX hash shown |
+| 4    | Download SoSci template                                                             | XML file downloads; goodbye page contains PHP snippet with the HMAC key embedded      |
+| 5    | Mint a claim URL (SoSci preview **or** `issueToken(surveyId=1, nonce)` from a REPL) | URL looks like `/claim?s=1&n=<nonce>&t=<token>`                                       |
+| 6    | Open that URL in the frontend                                                       | Claim page shows survey details                                                       |
+| 7    | Create a new wallet                                                                 | Wallet created, address and private key shown                                         |
+| 8    | Click "Claim Points"                                                                | Loading state → success confirmation with TX hash                                     |
+| 9    | Navigate to Points page (`/points`)                                                 | Shows 2 total points, 1 claim entry                                                   |
+| 10   | On the Points page, use the Wallet Search section and enter the wallet address      | Shows same 2 points                                                                   |
+| 11   | Verify on local Hardhat node                                                        | `totalPoints(wallet) == 2`                                                            |
 
-### 2. Double Claim Prevention
+### 2. Double Claim Prevention (Wallet)
 
-| Step | Action                                                             | Expected Result                          |
-| ---- | ------------------------------------------------------------------ | ---------------------------------------- |
-| 1    | Complete the happy path (claim survey 1)                           | Success                                  |
-| 2    | Open `/claim?surveyId=1&secret=test-secret` again with same wallet | Claim page shows "Already Claimed" error |
-| 3    | API returns                                                        | `409 ALREADY_CLAIMED`                    |
+| Step | Action                                                     | Expected Result          |
+| ---- | ---------------------------------------------------------- | ------------------------ |
+| 1    | Complete the happy path (claim survey 1)                   | Success                  |
+| 2    | Mint a **fresh** claim URL for the same wallet and open it | Claim page loads         |
+| 3    | Click "Claim Points"                                       | Error: "Already Claimed" |
+| 4    | API returns                                                | `409 ALREADY_CLAIMED`    |
 
-### 3. Invalid Secret
+### 3. Replay Prevention (Nonce reuse)
 
-| Step | Action                                         | Expected Result              |
-| ---- | ---------------------------------------------- | ---------------------------- |
-| 1    | Register a survey with secret "correct-secret" | Success                      |
-| 2    | Open `/claim?surveyId=2&secret=wrong-secret`   | Claim attempt                |
-| 3    | Click "Claim Points"                           | Error: "Invalid secret"      |
-| 4    | API returns                                    | `400` with blockchain revert |
+| Step | Action                                                 | Expected Result                                  |
+| ---- | ------------------------------------------------------ | ------------------------------------------------ |
+| 1    | Claim a survey with a fresh URL                        | Success                                          |
+| 2    | Open **the same URL** again (different wallet or same) | Error: "Dieser Claim-Link wurde bereits benutzt" |
+| 3    | API returns                                            | `409 NONCE_USED`                                 |
 
-### 4. Survey Not Found
+### 4. Invalid Token (tampered URL)
 
-| Step | Action                                       | Expected Result           |
-| ---- | -------------------------------------------- | ------------------------- |
-| 1    | Open `/claim?surveyId=99999&secret=anything` | Claim page loads          |
-| 2    | Click "Claim Points"                         | Error: "Survey not found" |
-| 3    | API returns                                  | `404 SURVEY_NOT_FOUND`    |
+| Step | Action                                                | Expected Result        |
+| ---- | ----------------------------------------------------- | ---------------------- |
+| 1    | Register a survey                                     | Success                |
+| 2    | Flip one character in `t=` parameter and open the URL | Claim attempt          |
+| 3    | Click "Claim Points"                                  | Error: "Invalid token" |
+| 4    | API returns                                           | `400 INVALID_TOKEN`    |
 
-### 5. Deactivated Survey
+### 5. Survey Not Found
+
+| Step | Action                                | Expected Result           |
+| ---- | ------------------------------------- | ------------------------- |
+| 1    | Open `/claim?s=99999&n=<any>&t=<any>` | Claim page loads          |
+| 2    | Click "Claim Points"                  | Error: "Survey not found" |
+| 3    | API returns                           | `404 SURVEY_NOT_FOUND`    |
+
+### 5b. Deactivated Survey
 
 | Step | Action                                  | Expected Result                |
 | ---- | --------------------------------------- | ------------------------------ |
 | 1    | Register survey and then deactivate it  | Survey status shows "Inactive" |
 | 2    | Attempt to claim the deactivated survey | Error: "Survey inactive"       |
-| 3    | API returns                             | `400 SURVEY_INACTIVE`          |
+| 3    | API returns                             | `410 SURVEY_INACTIVE`          |
+
+### 5c. Reactivate Survey
+
+| Step | Action                                          | Expected Result                              |
+| ---- | ----------------------------------------------- | -------------------------------------------- |
+| 1    | Deactivate a registered survey                  | Status "Inactive"                            |
+| 2    | In the admin table row menu, click "Reactivate" | Success toast, status flips back to "Active" |
+| 3    | Attempt a fresh claim                           | Success (`200`)                              |
+
+### 5d. Rotate HMAC Key
+
+| Step | Action                                                 | Expected Result                                   |
+| ---- | ------------------------------------------------------ | ------------------------------------------------- |
+| 1    | Open a claim URL generated with the current key        | (Do not redeem yet — just make sure you have one) |
+| 2    | Open admin → row menu → "Show HMAC key" → "Rotate key" | New key displayed, toast confirms rotation        |
+| 3    | Redeem the **old** URL from step 1                     | Error: "Invalid token"                            |
+| 4    | API returns                                            | `400 INVALID_TOKEN`                               |
 
 ### 6. Max Claims Reached
 
@@ -83,11 +112,11 @@ See [Getting Started](getting-started.md#full-local-stack) for the full setup in
 
 ### 8. No Wallet on Claim Page
 
-| Step | Action                                      | Expected Result                         |
-| ---- | ------------------------------------------- | --------------------------------------- |
-| 1    | Clear localStorage (no wallet)              | —                                       |
-| 2    | Open `/claim?surveyId=1&secret=test-secret` | Page shows "Create wallet first" prompt |
-| 3    | Create wallet on claim page                 | Wallet created, claim button appears    |
+| Step | Action                                | Expected Result                         |
+| ---- | ------------------------------------- | --------------------------------------- |
+| 1    | Clear localStorage (no wallet)        | —                                       |
+| 2    | Open `/claim?s=1&n=<nonce>&t=<token>` | Page shows "Create wallet first" prompt |
+| 3    | Create wallet on claim page           | Wallet created, claim button appears    |
 
 ### 9. Multiple Surveys
 

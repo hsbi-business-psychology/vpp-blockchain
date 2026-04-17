@@ -5,7 +5,7 @@ info:
     REST API for the VPP (Verifiable Participant Points) system.
     All endpoints are prefixed with `/api/v1`. Legacy calls to `/api/*`
     are redirected with HTTP 308.
-  version: 1.0.0
+  version: 2.0.0
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
@@ -40,14 +40,18 @@ paths:
     post:
       tags: [Claim]
       summary: Claim survey points
-      description: Award survey participation points to a wallet after verifying an EIP-191 signature.
+      description: |
+        Award survey participation points to a wallet after verifying an
+        EIP-191 signature AND an HMAC claim token minted by the survey
+        server. The `nonce` is marked single-use before the on-chain TX
+        is broadcast.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [walletAddress, surveyId, secret, signature, message]
+              required: [walletAddress, surveyId, nonce, token, signature, message]
               properties:
                 walletAddress:
                   type: string
@@ -57,10 +61,14 @@ paths:
                   type: integer
                   minimum: 1
                   description: Positive integer identifying the survey
-                secret:
+                nonce:
                   type: string
                   minLength: 1
-                  description: Survey secret received via redirect URL
+                  description: Single-use base64url nonce from the survey URL (param `n`)
+                token:
+                  type: string
+                  minLength: 1
+                  description: base64url HMAC-SHA256 of `v1|<surveyId>|<nonce>` (param `t`, 43 chars)
                 signature:
                   type: string
                   minLength: 1
@@ -68,7 +76,7 @@ paths:
                 message:
                   type: string
                   minLength: 1
-                  description: 'Format: Claim:{surveyId}:{walletAddress}:{unixTimestamp}'
+                  description: 'Format: claim:<surveyId>:<nonce>:<unixSeconds> (<= 5 minutes old)'
       responses:
         '200':
           description: Points awarded successfully
@@ -87,8 +95,20 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+        '410':
+          description: Survey deactivated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '429':
           $ref: '#/components/responses/TooManyRequests'
+        '500':
+          description: Server misconfiguration (e.g. missing HMAC key)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /points/{wallet}:
     get:
@@ -134,16 +154,12 @@ paths:
           application/json:
             schema:
               type: object
-              required: [surveyId, secret, points, adminSignature, adminMessage]
+              required: [surveyId, points, adminSignature, adminMessage]
               properties:
                 surveyId:
                   type: integer
                   minimum: 1
                   description: Unique positive integer for the survey
-                secret:
-                  type: string
-                  minLength: 1
-                  description: Secret that participants need to claim
                 points:
                   type: integer
                   minimum: 1
@@ -242,13 +258,45 @@ paths:
         '409':
           $ref: '#/components/responses/Conflict'
 
-  /surveys/{id}/template:
+  /surveys/{id}/reactivate:
     post:
       tags: [Surveys]
-      summary: Download survey template
+      summary: Reactivate a survey
+      description: Re-enable a previously deactivated survey. Requires admin authentication.
+      security:
+        - adminSignature: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Survey ID
+      responses:
+        '200':
+          description: Survey reactivated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/TransactionResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /surveys/{id}/revoke:
+    post:
+      tags: [Surveys]
+      summary: Revoke a previously awarded claim
       description: |
-        Generate and download a SoSci Survey or LimeSurvey template XML file.
-        Requires admin authentication. The secret is passed in the request body.
+        Remove the wallet's points for this survey on-chain (fraud cleanup).
+        Requires admin authentication.
       security:
         - adminSignature: []
       parameters:
@@ -265,12 +313,61 @@ paths:
           application/json:
             schema:
               type: object
-              required: [secret]
+              required: [student, adminSignature, adminMessage]
               properties:
-                secret:
+                student:
+                  type: string
+                  description: Wallet address whose claim should be revoked
+                adminSignature:
                   type: string
                   minLength: 1
-                  description: Survey secret
+                adminMessage:
+                  type: string
+                  minLength: 1
+      responses:
+        '200':
+          description: Claim revoked
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/TransactionResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /surveys/{id}/template:
+    post:
+      tags: [Surveys]
+      summary: Download survey template
+      description: |
+        Generate and download a SoSci Survey or LimeSurvey template XML file.
+        The HMAC key is embedded server-side; it is not requested in the body.
+        Requires admin authentication.
+      security:
+        - adminSignature: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Survey ID
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
                 format:
                   type: string
                   enum: [sosci, limesurvey]
@@ -285,6 +382,71 @@ paths:
                 type: string
         '400':
           $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /surveys/{id}/key:
+    get:
+      tags: [Surveys]
+      summary: Retrieve current HMAC key for a survey
+      description: |
+        Returns the current HMAC key for a registered survey. Use this
+        when the original registration response was lost. Requires admin
+        authentication.
+      security:
+        - adminSignature: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Survey ID
+      responses:
+        '200':
+          description: Current HMAC key
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SurveyKeyResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /surveys/{id}/key/rotate:
+    post:
+      tags: [Surveys]
+      summary: Rotate the HMAC key for a survey
+      description: |
+        Generate a fresh HMAC key, invalidating every already-distributed
+        claim link. Requires admin authentication.
+      security:
+        - adminSignature: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Survey ID
+      responses:
+        '200':
+          description: New HMAC key
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SurveyKeyResult'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -663,6 +825,28 @@ components:
           type: string
         templateDownloadUrl:
           type: string
+        key:
+          type: string
+          description: |
+            The HMAC key for this survey (base64url, 43 chars). Returned
+            once on registration; store it in a password manager. Can be
+            retrieved again via GET /surveys/{id}/key.
+        keyCreatedAt:
+          type: string
+          format: date-time
+
+    SurveyKeyResult:
+      type: object
+      properties:
+        surveyId:
+          type: integer
+        key:
+          type: string
+          description: base64url-encoded HMAC key (43 chars)
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
 
     TransactionResult:
       type: object

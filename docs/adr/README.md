@@ -14,8 +14,9 @@ Each ADR is a short Markdown file with these sections:
 
 ## Index
 
-| ADR                                       | Title                                          | Status   |
-| ----------------------------------------- | ---------------------------------------------- | -------- |
-| [0001](0001-base-l2-als-blockchain.md)    | Use Base L2 as the target blockchain           | Accepted |
-| [0002](0002-mappings-statt-erc721.md)     | Use simple mappings instead of token standards | Accepted |
-| [0003](0003-stateless-backend-relayer.md) | Stateless backend as transaction relayer       | Accepted |
+| ADR                                                        | Title                                          | Status   |
+| ---------------------------------------------------------- | ---------------------------------------------- | -------- |
+| [0001](0001-base-l2-als-blockchain.md)                     | Use Base L2 as the target blockchain           | Accepted |
+| [0002](0002-mappings-statt-erc721.md)                      | Use simple mappings instead of token standards | Accepted |
+| [0003](0003-stateless-backend-relayer.md)                  | Stateless backend as transaction relayer       | Accepted |
+| [0004](0004-hmac-claim-tokens-and-upgradeable-contract.md) | HMAC claim tokens & upgradeable SurveyPointsV2 | Accepted |
