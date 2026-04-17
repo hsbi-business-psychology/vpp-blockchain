@@ -26,6 +26,15 @@ export const config = {
   port: parseInt(optional('PORT', '3000'), 10),
 
   rpcUrl: required('RPC_URL'),
+  /**
+   * Optional override for the RPC providers used by `eth_getLogs` /
+   * `queryFilter`. When unset, the backend auto-detects Alchemy Free Tier
+   * URLs in `RPC_URL` and excludes them from event sync (Alchemy Free caps
+   * `eth_getLogs` to 10 blocks, which kills full-history sync). Operators
+   * on Alchemy Growth/Scale should set this to their Alchemy URL to opt
+   * back in. Comma-separated list, same format as RPC_URL.
+   */
+  eventRpcUrl: process.env.EVENT_RPC_URL || undefined,
   contractAddress: required('CONTRACT_ADDRESS'),
   minterPrivateKey: required('MINTER_PRIVATE_KEY'),
 

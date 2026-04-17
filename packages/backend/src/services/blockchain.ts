@@ -109,9 +109,7 @@ export function getEffectiveRpcUrls(): string[] {
   })
 }
 
-function buildReadProvider(): ethers.AbstractProvider {
-  const urls = getEffectiveRpcUrls()
-
+function buildReadProvider(urls: string[]): ethers.AbstractProvider {
   const subProviders = urls.map((url, idx) => ({
     provider: new ethers.JsonRpcProvider(url, undefined, { batchMaxCount: 1 }),
     priority: idx + 1,
@@ -127,7 +125,49 @@ function buildReadProvider(): ethers.AbstractProvider {
   return new ethers.FallbackProvider(subProviders, undefined, { quorum: 1 })
 }
 
-const provider = buildReadProvider()
+const provider = buildReadProvider(getEffectiveRpcUrls())
+
+/**
+ * Alchemy's Free Tier caps `eth_getLogs` to a 10-block range and reports
+ * the rejection as JSON-RPC error code -32600 ("Invalid Request"). ethers'
+ * FallbackProvider treats -32600 as a permanent user-error (not a provider
+ * outage), so it does NOT fail over to a healthier sub-provider — it
+ * propagates the error to the caller. Net effect: the entire event-store
+ * sync loop dies on every run as long as Alchemy Free is the primary RPC,
+ * even though all three public Base RPCs would have happily served the
+ * same query.
+ *
+ * The cleanest workaround that keeps Alchemy for what it's actually good at
+ * (eth_call, getBalance, broadcastTransaction — under typical class-room
+ * load this stays well inside the Free Tier compute-unit budget) is to
+ * route `eth_getLogs` traffic through a SEPARATE provider chain that
+ * excludes the Free-Tier Alchemy URL. Operators on Alchemy Growth/Scale
+ * can opt back in by setting `EVENT_RPC_URL=<their alchemy URL>`, which
+ * overrides the auto-detection.
+ */
+function isAlchemyFreeUrl(url: string): boolean {
+  try {
+    return new URL(url).hostname.endsWith('.alchemy.com')
+  } catch {
+    return false
+  }
+}
+
+function getEventRpcUrls(): string[] {
+  const explicit = (config.eventRpcUrl ?? '')
+    .split(',')
+    .map((u) => u.trim())
+    .filter(Boolean)
+  if (explicit.length > 0) return explicit
+  const filtered = getEffectiveRpcUrls().filter((u) => !isAlchemyFreeUrl(u))
+  // If the operator only configured Alchemy, fall back to the known Base
+  // mainnet RPCs explicitly so events keep flowing. Better to lose the
+  // Alchemy-quality reads on event sync than to lose event sync entirely.
+  if (filtered.length === 0) return [...KNOWN_BASE_FALLBACKS]
+  return filtered
+}
+
+const eventProvider = buildReadProvider(getEventRpcUrls())
 // Wallet uses the SAME FallbackProvider so write operations (addAdmin,
 // awardPoints, etc.) survive a quota-locked / down primary RPC. Without
 // this, /api/v1/admin/add returned a 500 even though reads worked,
@@ -137,6 +177,9 @@ const wallet = new ethers.Wallet(config.minterPrivateKey, provider)
 const managedSigner = new ethers.NonceManager(wallet)
 const contract = new ethers.Contract(config.contractAddress, abi, managedSigner)
 const readOnlyContract = new ethers.Contract(config.contractAddress, abi, provider)
+// Dedicated contract for queryFilter / getLogs operations. See `eventProvider`
+// above for why this is split off from `readOnlyContract`.
+const eventReadOnlyContract = new ethers.Contract(config.contractAddress, abi, eventProvider)
 
 const MIN_BALANCE_WEI = 50_000n * 1_000_000n // ~50k gas units at 1 Mwei/gas
 
@@ -369,16 +412,21 @@ export async function getNetwork(): Promise<string> {
  * Chunk size is configurable via CHUNK_SIZE env var (default: 9000).
  */
 async function queryFilterChunked(
-  contract: ethers.Contract,
+  _ignoredContract: ethers.Contract,
   filter: ethers.ContractEventName,
   fromBlock: number,
 ): Promise<(ethers.EventLog | ethers.Log)[]> {
+  // Always route event queries through `eventReadOnlyContract` regardless
+  // of which contract instance the caller passed in. This guarantees that
+  // getLogs traffic uses the dedicated event-RPC chain (no Alchemy Free)
+  // even if a caller still references `contract` or `readOnlyContract`.
+  const evContract = eventReadOnlyContract
   const chunkSize = config.chunkSize
-  const latestBlock = await withRpcRetry(() => contract.runner!.provider!.getBlockNumber(), {
+  const latestBlock = await withRpcRetry(() => eventProvider.getBlockNumber(), {
     label: 'getBlockNumber',
   })
   if (latestBlock - fromBlock <= chunkSize) {
-    return withRpcRetry(() => contract.queryFilter(filter, fromBlock, latestBlock), {
+    return withRpcRetry(() => evContract.queryFilter(filter, fromBlock, latestBlock), {
       label: 'queryFilter',
     })
   }
@@ -386,7 +434,7 @@ async function queryFilterChunked(
   const results: (ethers.EventLog | ethers.Log)[] = []
   for (let start = fromBlock; start <= latestBlock; start += chunkSize + 1) {
     const end = Math.min(start + chunkSize, latestBlock)
-    const chunk = await withRpcRetry(() => contract.queryFilter(filter, start, end), {
+    const chunk = await withRpcRetry(() => evContract.queryFilter(filter, start, end), {
       label: 'queryFilter',
     })
     results.push(...chunk)
