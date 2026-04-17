@@ -64,12 +64,14 @@ import { ethers, network, run, upgrades } from 'hardhat'
 
 const ADMIN_ROLE = ethers.keccak256(ethers.toUtf8Bytes('ADMIN_ROLE'))
 
-// Public Base RPC fallbacks. We keep the eth_getLogs traffic on these
-// instead of Alchemy Free Tier since the role-replay sweep can otherwise
-// trip the 10-block range cap on dense windows.
+// Public Base RPC fallbacks used exclusively for log scanning during
+// the V1 migration phase. We keep these off Alchemy Free Tier because
+// the role-replay sweep would otherwise trip the 10-block range cap.
+// Ordering matters — `publicnode` tolerates wider ranges and higher
+// request rates than `mainnet.base.org`, so we prefer it as primary.
 const PUBLIC_BASE_RPCS: Record<number, string[]> = {
-  84532: ['https://sepolia.base.org', 'https://base-sepolia.publicnode.com'],
-  8453: ['https://mainnet.base.org', 'https://base.publicnode.com'],
+  84532: ['https://base-sepolia.publicnode.com', 'https://sepolia.base.org'],
+  8453: ['https://base.publicnode.com', 'https://mainnet.base.org'],
 }
 
 function eventScannerProvider(): ethers.Provider {
@@ -88,6 +90,10 @@ function eventScannerProvider(): ethers.Provider {
   })
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms))
+}
+
 async function queryFilterChunked<T extends ethers.EventLog | ethers.Log>(
   contract: ethers.Contract,
   filter: ethers.DeferredTopicFilter,
@@ -98,9 +104,37 @@ async function queryFilterChunked<T extends ethers.EventLog | ethers.Log>(
   const out: T[] = []
   for (let start = fromBlock; start <= toBlock; start += chunkSize + 1) {
     const end = Math.min(start + chunkSize, toBlock)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ethers.js types are too narrow here
-    const logs = (await contract.queryFilter(filter as any, start, end)) as T[]
-    out.push(...logs)
+
+    // Retry up to 5 times with exponential backoff. Public RPCs
+    // occasionally return 429 Too Many Requests or transient 5xx;
+    // failing here mid-migration would waste ETH on a zombie proxy.
+    let attempt = 0
+    let success = false
+    let lastErr: unknown
+    while (attempt < 5 && !success) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ethers.js types are too narrow here
+        const logs = (await contract.queryFilter(filter as any, start, end)) as T[]
+        out.push(...logs)
+        success = true
+      } catch (err) {
+        lastErr = err
+        attempt++
+        const wait = 800 * 2 ** (attempt - 1)
+        const msg = err instanceof Error ? err.message.slice(0, 80) : String(err).slice(0, 80)
+        console.warn(`   [retry ${attempt}/5] blocks ${start}→${end}: ${msg} — waiting ${wait}ms`)
+        await sleep(wait)
+      }
+    }
+    if (!success) {
+      throw new Error(
+        `queryFilter failed after 5 retries for blocks ${start}→${end}: ` +
+          (lastErr instanceof Error ? lastErr.message : String(lastErr)),
+      )
+    }
+
+    // Gentle pacing to be a good citizen on public RPCs.
+    await sleep(100)
   }
   return out
 }
