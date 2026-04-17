@@ -59,13 +59,15 @@ jobs:
         run: pnpm --filter @vpp/contracts run coverage
 
       - name: Upload coverage to Codecov
-        if: always()
+        if: ${{ always() && env.CODECOV_TOKEN != '' }}
         uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: contracts
           directory: packages/contracts/coverage
-          fail_ci_if_error: true
+          fail_ci_if_error: false
 
   backend:
     name: Backend Tests
@@ -95,13 +97,15 @@ jobs:
         run: pnpm --filter @vpp/backend run test:integration
 
       - name: Upload coverage to Codecov
-        if: always()
+        if: ${{ always() && env.CODECOV_TOKEN != '' }}
         uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: backend
           directory: packages/backend/coverage
-          fail_ci_if_error: true
+          fail_ci_if_error: false
 
   frontend:
     name: Frontend Build & Tests
@@ -125,13 +129,15 @@ jobs:
         run: pnpm --filter @vpp/frontend run test:coverage
 
       - name: Upload coverage to Codecov
-        if: always()
+        if: ${{ always() && env.CODECOV_TOKEN != '' }}
         uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: frontend
           directory: packages/frontend/coverage
-          fail_ci_if_error: true
+          fail_ci_if_error: false
 
   lighthouse:
     name: Lighthouse CI
