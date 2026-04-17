@@ -55,6 +55,7 @@ const mockEventStore = {
   getCurrentAdmins: vi.fn(() => []),
   getLastSyncedBlock: vi.fn(() => 1),
   isReady: vi.fn(() => true),
+  isStale: vi.fn(() => false),
   start: vi.fn(() => Promise.resolve()),
   stop: vi.fn(),
 }

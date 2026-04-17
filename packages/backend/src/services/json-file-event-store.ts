@@ -34,8 +34,19 @@ export class JsonFileEventStore implements EventStore {
   }
 
   private syncing = false
+  private syncStartedAt = 0
+  private lastSuccessfulSyncAt = 0
   private adminRoleHash: string | null = null
   private syncInterval: ReturnType<typeof setInterval> | null = null
+
+  /** Hard ceiling per sync run. If a single sync takes longer than this,
+   * something is hanging (free-tier RPC stalled forever, FallbackProvider
+   * race never resolved, etc). The watchdog releases the `syncing` lock so
+   * the NEXT scheduled sync can try again instead of being permanently
+   * blocked. 45s is generous enough for an honest cold sync over many
+   * chunks but short enough that operators see fresh data within a minute
+   * of any single hang. */
+  private static readonly SYNC_TIMEOUT_MS = 45_000
 
   private load(): void {
     if (!existsSync(STORE_PATH)) return
@@ -84,9 +95,41 @@ export class JsonFileEventStore implements EventStore {
     return map
   }
 
+  /** Public-facing sync that callers can fire-and-forget from request
+   * handlers. Wraps `runSync` in a watchdog so a single hung RPC call
+   * cannot freeze the cache forever. */
   async sync(): Promise<void> {
-    if (this.syncing) return
+    if (this.syncing) {
+      // If a previous sync has been running for longer than the timeout,
+      // the watchdog should have already released the lock. If we still
+      // see syncing=true with a stale start time, force-release as a last
+      // resort so we don't get stuck for the lifetime of the worker.
+      const ageMs = Date.now() - this.syncStartedAt
+      if (ageMs < JsonFileEventStore.SYNC_TIMEOUT_MS) return
+      logger.warn({ ageMs }, 'Sync lock was held longer than SYNC_TIMEOUT_MS — force-releasing')
+      this.syncing = false
+    }
     this.syncing = true
+    this.syncStartedAt = Date.now()
+    try {
+      await Promise.race([
+        this.runSync(),
+        new Promise<never>((_, reject) =>
+          setTimeout(
+            () => reject(new Error(`sync watchdog (>${JsonFileEventStore.SYNC_TIMEOUT_MS}ms)`)),
+            JsonFileEventStore.SYNC_TIMEOUT_MS,
+          ),
+        ),
+      ])
+      this.lastSuccessfulSyncAt = Date.now()
+    } catch (err) {
+      logger.error({ err }, 'Event store sync failed (watchdog)')
+    } finally {
+      this.syncing = false
+    }
+  }
+
+  private async runSync(): Promise<void> {
     try {
       const latestBlock = await provider.getBlockNumber()
       const fromBlock = this.store.lastSyncedBlock
@@ -177,9 +220,15 @@ export class JsonFileEventStore implements EventStore {
       )
     } catch (err) {
       logger.error({ err }, 'Event store sync failed')
-    } finally {
-      this.syncing = false
+      throw err
     }
+  }
+
+  /** Returns true if the last successful sync is older than `staleMs`.
+   * Used by request handlers to opportunistically refresh the cache when
+   * Plesk/Passenger has paused the background interval between requests. */
+  isStale(staleMs: number): boolean {
+    return Date.now() - this.lastSuccessfulSyncAt > staleMs
   }
 
   getSurveyRegisteredEvents(): StoredSurveyEvent[] {

@@ -30,6 +30,21 @@ const roleSchema = z.object({
 router.get('/', requireAdminHandler, async (_req, res, next) => {
   try {
     const store = getEventStore()
+
+    // Plesk/Passenger occasionally pauses the worker between requests,
+    // which means the background sync interval might not have fired in
+    // a while. Refresh opportunistically:
+    //  - very stale (>5 min): await the sync so the caller sees the
+    //    current list right now (this is the path that fixes the
+    //    "I just added an admin and they don't show up" UX)
+    //  - moderately stale (>30s): kick off a background sync, return
+    //    cached data, next request will see the update
+    if (store.isStale(300_000)) {
+      await store.sync()
+    } else if (store.isStale(30_000)) {
+      void store.sync()
+    }
+
     let admins: string[]
     if (store.isReady()) {
       admins = store.getCurrentAdmins()
