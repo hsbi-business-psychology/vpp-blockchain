@@ -93,8 +93,38 @@ jobs:
       - name: Run tests with coverage
         run: pnpm --filter @vpp/backend run test:coverage
 
+      # Integration tests need a running Hardhat node + deployed/seeded
+      # contract. Start the node in the background, wait for it to be
+      # responsive, then deploy + seed before running the suite.
+      - name: Start local Hardhat node
+        working-directory: packages/contracts
+        run: |
+          nohup pnpm exec hardhat node > /tmp/hardhat-node.log 2>&1 &
+          echo $! > /tmp/hardhat-node.pid
+          for i in {1..30}; do
+            if curl -s -o /dev/null -X POST -H "Content-Type: application/json" \
+                --data '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}' \
+                http://127.0.0.1:8545; then
+              echo "Hardhat node ready after ${i}s"
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Deploy + seed contract on local node
+        working-directory: packages/contracts
+        run: pnpm exec hardhat run scripts/deploy-local.ts --network localhost
+
       - name: Run integration tests
         run: pnpm --filter @vpp/backend run test:integration
+
+      - name: Stop local Hardhat node
+        if: always()
+        run: |
+          if [ -f /tmp/hardhat-node.pid ]; then
+            kill "$(cat /tmp/hardhat-node.pid)" 2>/dev/null || true
+          fi
+          tail -n 50 /tmp/hardhat-node.log 2>/dev/null || true
 
       - name: Upload coverage to Codecov
         if: ${{ always() && env.CODECOV_TOKEN != '' }}
