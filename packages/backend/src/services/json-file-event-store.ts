@@ -12,7 +12,7 @@
  * It is loaded at startup and re-synced every 60 seconds and immediately
  * after any write transaction.
  */
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync, existsSync, renameSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { config } from '../config.js'
@@ -56,7 +56,15 @@ export class JsonFileEventStore implements EventStore {
     if (!existsSync(DATA_DIR)) {
       mkdirSync(DATA_DIR, { recursive: true })
     }
-    writeFileSync(STORE_PATH, JSON.stringify(this.store, null, 2))
+    // Atomic write: write to a sibling temp file first, then rename. POSIX
+    // rename is atomic, so even if Plesk hard-restarts the worker between
+    // the two operations, events.json will either be the previous valid
+    // version or the new valid version — never a half-written truncated
+    // JSON that crashes the next startup. Crucial for the JSON-file store
+    // because there's no checkpoint / WAL.
+    const tmp = STORE_PATH + '.tmp'
+    writeFileSync(tmp, JSON.stringify(this.store, null, 2))
+    renameSync(tmp, STORE_PATH)
   }
 
   private async getAdminRoleHash(): Promise<string> {

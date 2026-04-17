@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      force_full:
+        description: 'Force full upload (re-upload node_modules even if signature matches)'
+        type: boolean
+        default: false
 
 concurrency:
   group: deploy
@@ -81,13 +86,85 @@ jobs:
             echo "::warning::Could not fetch cert chain from hosting.hsbi.de — falling back to encrypted-but-unverified TLS"
           fi
 
+      # Compute a deterministic signature of everything that affects what
+      # ends up in node_modules. If the live server already has node_modules
+      # produced from the same inputs, we can skip the ~36 MB upload entirely
+      # and let lftp only push the small dist + public + app.js + package.json
+      # files (a few hundred KB total). Cuts hot-fix deploy time from ~13 min
+      # down to under a minute.
+      - name: Compute node_modules signature
+        id: nm-sig
+        run: |
+          HASH=$(cat \
+              pnpm-lock.yaml \
+              .nvmrc \
+              packages/backend/package.json \
+              scripts/build-deploy-ci.sh \
+            | sha256sum | cut -d' ' -f1)
+          echo "hash=$HASH" >> "$GITHUB_OUTPUT"
+          mkdir -p deploy
+          echo "$HASH" > deploy/.deploy-meta
+          echo "Local node_modules signature: $HASH"
+
+      - name: Check live deploy signature
+        id: live-sig
+        env:
+          FORCE_FULL: ${{ inputs.force_full || 'false' }}
+          LOCAL_HASH: ${{ steps.nm-sig.outputs.hash }}
+        run: |
+          if [ "$FORCE_FULL" = "true" ]; then
+            echo "match=no" >> "$GITHUB_OUTPUT"
+            echo "Forced full upload via workflow_dispatch input."
+            exit 0
+          fi
+          if [ "${{ steps.pin-cert.outputs.verify }}" = "yes" ]; then
+            VERIFY_OPTS="set ssl:verify-certificate yes; set ssl:ca-file $(pwd)/.ftp-trust/hsbi.pem;"
+          else
+            VERIFY_OPTS="set ssl:verify-certificate no;"
+          fi
+          # `lftp cat` writes the file content to stdout. If the file does
+          # not exist, lftp prints an error to stderr and exits non-zero —
+          # we swallow both so first-time deploys still work.
+          LIVE=$(lftp -c "
+            set ftp:ssl-allow yes;
+            set ftp:ssl-force yes;
+            set ftp:ssl-protect-data yes;
+            $VERIFY_OPTS
+            set ftp:passive-mode yes;
+            open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ftp://hosting.hsbi.de;
+            cat /httpdocs/.deploy-meta;
+            quit;
+          " 2>/dev/null | tr -d '\r\n ' || echo "")
+          if [ -n "$LIVE" ] && [ "$LIVE" = "$LOCAL_HASH" ]; then
+            echo "match=yes" >> "$GITHUB_OUTPUT"
+            echo "Live signature matches local — skipping node_modules upload"
+          else
+            echo "match=no" >> "$GITHUB_OUTPUT"
+            echo "Local: $LOCAL_HASH"
+            echo "Live : ${LIVE:-<none>}"
+            echo "Will perform full upload"
+          fi
+
       - name: Deploy via FTP/TLS
+        env:
+          SKIP_NODE_MODULES: ${{ steps.live-sig.outputs.match == 'yes' && 'yes' || 'no' }}
         run: |
           if [ "${{ steps.pin-cert.outputs.verify }}" = "yes" ]; then
             VERIFY_OPTS="set ssl:verify-certificate yes; set ssl:ca-file $(pwd)/.ftp-trust/hsbi.pem;"
           else
             VERIFY_OPTS="set ssl:verify-certificate no;"
           fi
+          if [ "$SKIP_NODE_MODULES" = "yes" ]; then
+            EXTRA_EXCLUDE='--exclude-glob node_modules'
+            echo "::notice::Skipping node_modules upload — server signature matches"
+          else
+            EXTRA_EXCLUDE=''
+            echo "::notice::Full upload (node_modules included, ~36 MB)"
+          fi
+          # The mirror block uploads everything in deploy/ that has changed;
+          # the explicit put afterwards always refreshes .deploy-meta and
+          # touches tmp/restart.txt so Phusion Passenger picks up new dist/
+          # files even when node_modules was skipped.
           lftp -c "
             set ftp:ssl-allow yes;
             set ftp:ssl-force yes;
@@ -100,11 +177,14 @@ jobs:
             set mirror:parallel-transfer-count 5;
             open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ftp://hosting.hsbi.de;
             mirror --reverse --verbose --only-newer \
+              $EXTRA_EXCLUDE \
               --exclude-glob .bin \
               --exclude-glob .env \
               --exclude-glob tmp \
               --exclude-glob .DS_Store \
+              --exclude-glob .deploy-meta \
               deploy/ /httpdocs/;
+            put deploy/.deploy-meta -o /httpdocs/.deploy-meta;
             mkdir -p /httpdocs/packages/backend/tmp;
             put /dev/null -o /httpdocs/packages/backend/tmp/restart.txt;
             quit;
