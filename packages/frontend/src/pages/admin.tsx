@@ -51,6 +51,7 @@ export default function AdminPage() {
 
   const [templateTarget, setTemplateTarget] = useState<SurveyInfo | null>(null)
   const [templateLoading, setTemplateLoading] = useState(false)
+  const [templateFresh, setTemplateFresh] = useState(false)
 
   const [keyTarget, setKeyTarget] = useState<SurveyInfo | null>(null)
   const [keyValue, setKeyValue] = useState<string | null>(null)
@@ -143,14 +144,18 @@ export default function AdminPage() {
       toast.success(t('admin.register.success'))
       await fetchSurveys()
 
-      // Surface the freshly minted HMAC key in the same dialog the
-      // admin uses later for rotation. Avoids surprising admins with
-      // a separate "save this somewhere!" toast.
+      // V2 UX: After registration go straight to the template-download
+      // dialog. The HMAC key is already baked into that file, so there
+      // is no copy/paste step. We still cache the raw key in state so
+      // the admin can reveal it via the "show key separately" link
+      // (e.g. for a password-manager backup) without another signature
+      // round-trip.
       const fresh = (await getSurveys()).find((s) => s.surveyId === data.surveyId)
       if (fresh) {
-        setKeyTarget(fresh)
         setKeyValue(result.key)
         setKeyCreatedAt(result.keyCreatedAt)
+        setTemplateTarget(fresh)
+        setTemplateFresh(true)
       }
     } catch (err) {
       toast.error(err instanceof ApiRequestError ? err.message : t('admin.register.error'))
@@ -225,6 +230,26 @@ export default function AdminPage() {
     const survey = surveys.find((s) => s.surveyId === surveyId)
     if (!survey) return
     setTemplateTarget(survey)
+    setTemplateFresh(false)
+  }
+
+  const handleCloseTemplate = () => {
+    setTemplateTarget(null)
+    setTemplateFresh(false)
+    // Drop the cached freshly-registered key from memory once the
+    // admin closes the post-registration dialog without exporting it.
+    setKeyValue(null)
+    setKeyCreatedAt(null)
+  }
+
+  // Available right after registration: the key is still cached in
+  // state, so we can open the key dialog without another signature.
+  const handleShowKeyFromTemplate = () => {
+    if (!templateTarget || !keyValue) return
+    const survey = templateTarget
+    setTemplateTarget(null)
+    setTemplateFresh(false)
+    setKeyTarget(survey)
   }
 
   const handleDeactivate = (surveyId: number) => {
@@ -377,8 +402,11 @@ export default function AdminPage() {
       <TemplateDownloadDialog
         survey={templateTarget}
         loading={templateLoading}
+        freshlyRegistered={templateFresh}
+        canShowKey={templateFresh && !!keyValue}
+        onShowKey={handleShowKeyFromTemplate}
         onDownload={handleTemplateFormatDownload}
-        onClose={() => setTemplateTarget(null)}
+        onClose={handleCloseTemplate}
       />
 
       <SurveyKeyDialog

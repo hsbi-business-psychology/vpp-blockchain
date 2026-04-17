@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Download, Loader2 } from 'lucide-react'
+import { Download, Loader2, KeyRound, CheckCircle2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -7,19 +7,28 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import type { SurveyInfo } from '@vpp/shared'
 
 interface TemplateDownloadDialogProps {
   survey: SurveyInfo | null
   loading: boolean
+  /** True when the dialog is opened immediately after registration. */
+  freshlyRegistered?: boolean
+  /** Show the "reveal raw HMAC key" link (only useful right after registration when the key is cached). */
+  canShowKey?: boolean
   onDownload: (format: 'sosci' | 'limesurvey') => void
+  onShowKey?: () => void
   onClose: () => void
 }
 
 export function TemplateDownloadDialog({
   survey,
   loading,
+  freshlyRegistered = false,
+  canShowKey = false,
   onDownload,
+  onShowKey,
   onClose,
 }: TemplateDownloadDialogProps) {
   const { t } = useTranslation()
@@ -42,6 +51,15 @@ export function TemplateDownloadDialog({
               ID: {survey.surveyId} · {survey.points} {t('admin.register.points')}
             </p>
           </div>
+        )}
+
+        {freshlyRegistered && (
+          <Alert className="border-success/30 bg-success/5">
+            <CheckCircle2 className="size-4 text-success" />
+            <AlertDescription className="text-xs">
+              {t('admin.surveys.templateDialog.freshHint')}
+            </AlertDescription>
+          </Alert>
         )}
 
         <div className="grid gap-3 sm:grid-cols-2">
@@ -91,6 +109,21 @@ export function TemplateDownloadDialog({
             </span>
           </button>
         </div>
+
+        <p className="text-[11px] leading-relaxed text-muted-foreground">
+          {t('admin.surveys.templateDialog.embeddedKeyHint')}
+        </p>
+
+        {canShowKey && onShowKey && (
+          <button
+            type="button"
+            onClick={onShowKey}
+            className="inline-flex items-center gap-1.5 self-start text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <KeyRound className="size-3" />
+            {t('admin.surveys.templateDialog.showKeyLink')}
+          </button>
+        )}
 
         {loading && (
           <div className="flex items-center justify-center py-2">
