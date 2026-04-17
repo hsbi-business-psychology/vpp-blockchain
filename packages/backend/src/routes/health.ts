@@ -61,23 +61,20 @@ router.get('/', async (_req, res) => {
  *     egress) or in ethers' batching layer
  *   - the configured contract address and explorer base URL
  */
-router.get('/diag', async (_req, res) => {
-  const rpcUrl = config.rpcUrl
-  let rpcHost: string
+async function probeRpc(rpcUrl: string): Promise<{
+  host: string
+  ok: boolean
+  chainId?: string
+  httpStatus?: number
+  error?: string
+  elapsedMs: number
+}> {
+  let host: string
   try {
-    rpcHost = new URL(rpcUrl).host
+    host = new URL(rpcUrl).host
   } catch {
-    rpcHost = '(invalid URL)'
+    host = '(invalid URL)'
   }
-
-  const probe: {
-    ok: boolean
-    chainId?: string
-    httpStatus?: number
-    error?: string
-    elapsedMs?: number
-  } = { ok: false }
-
   const start = Date.now()
   try {
     const controller = new AbortController()
@@ -89,24 +86,48 @@ router.get('/diag', async (_req, res) => {
       signal: controller.signal,
     })
     clearTimeout(timeout)
-    probe.httpStatus = r.status
     const json = (await r.json()) as { result?: string; error?: { message?: string } }
     if (json.result) {
-      probe.ok = true
-      probe.chainId = json.result
-    } else if (json.error) {
-      probe.error = json.error.message ?? 'unknown JSON-RPC error'
-    } else {
-      probe.error = 'no result and no error in JSON-RPC response'
+      return {
+        host,
+        ok: true,
+        chainId: json.result,
+        httpStatus: r.status,
+        elapsedMs: Date.now() - start,
+      }
+    }
+    return {
+      host,
+      ok: false,
+      httpStatus: r.status,
+      error: json.error?.message ?? 'no result and no error in JSON-RPC response',
+      elapsedMs: Date.now() - start,
     }
   } catch (err) {
-    probe.error = err instanceof Error ? err.message : String(err)
+    return {
+      host,
+      ok: false,
+      error: err instanceof Error ? err.message : String(err),
+      elapsedMs: Date.now() - start,
+    }
   }
-  probe.elapsedMs = Date.now() - start
+}
+
+router.get('/diag', async (_req, res) => {
+  const urls = config.rpcUrl
+    .split(',')
+    .map((u) => u.trim())
+    .filter(Boolean)
+
+  const probes = await Promise.all(urls.map(probeRpc))
 
   res.json({
     uptime: Math.floor((Date.now() - startedAt) / 1000),
-    rpc: { host: rpcHost, probe },
+    rpc: {
+      configured: urls.length,
+      probes,
+      anyOk: probes.some((p) => p.ok),
+    },
     contractAddress: config.contractAddress,
     explorerBaseUrl: config.explorerBaseUrl,
   })

@@ -32,16 +32,67 @@ function loadContractABI(): ethers.InterfaceAbi {
 
 const abi = loadContractABI()
 
-// IMPORTANT: ethers v6 batches RPC requests by default (up to 100 per batch).
-// Free-tier providers like drpc.org reject batches > 3 with a 500 ("Batch of more
-// than 3 requests are not allowed on free tier"). Disabling batching turns the
-// blockchain layer back into a sequence of normal individual JSON-RPC calls,
-// which every provider tolerates. This was the root cause of all "blockchain
-// disconnected" / 500 errors in production.
-const provider = new ethers.JsonRpcProvider(config.rpcUrl, undefined, {
+/**
+ * Build the read provider.
+ *
+ * Two hard lessons baked in here:
+ *
+ * 1. Most public Base RPCs are flaky in their own way. 1rpc.io silently
+ *    starts returning HTTP 200 with `{"error":"You've reached the usage
+ *    limit"}` after some traffic; drpc.org Free Tier rejects batches > 3
+ *    with HTTP 500. A single hard-coded RPC URL therefore turns every
+ *    spike into a full outage. We accept either a single URL or a comma-
+ *    separated list in `RPC_URL`, plus a small set of well-known public
+ *    Base mainnet fallbacks so the system survives the loss of any one
+ *    provider without any operator action.
+ *
+ * 2. ethers v6 batches JSON-RPC requests by default (up to 100/batch).
+ *    Free-tier providers reject batches > 3. We force `batchMaxCount: 1`
+ *    on every JsonRpcProvider so each call goes out as a plain HTTP POST.
+ *
+ * Writes still need a single deterministic provider (nonce management,
+ * gas estimation, etc.) so the wallet stays bound to the *primary* URL
+ * — the first entry in the list, i.e. whatever the operator configured.
+ */
+const KNOWN_BASE_FALLBACKS = [
+  'https://mainnet.base.org',
+  'https://base.publicnode.com',
+  'https://base.drpc.org',
+]
+
+function buildReadProvider(): ethers.AbstractProvider {
+  const configured = config.rpcUrl
+    .split(',')
+    .map((u) => u.trim())
+    .filter(Boolean)
+  const seen = new Set<string>()
+  const urls = [...configured, ...KNOWN_BASE_FALLBACKS].filter((u) => {
+    if (seen.has(u)) return false
+    seen.add(u)
+    return true
+  })
+
+  const subProviders = urls.map((url, idx) => ({
+    provider: new ethers.JsonRpcProvider(url, undefined, { batchMaxCount: 1 }),
+    priority: idx + 1,
+    stallTimeout: 2_000,
+    weight: 1,
+  }))
+
+  if (subProviders.length === 1) {
+    return subProviders[0].provider
+  }
+
+  // quorum: 1 → first responding provider wins; failures fall through
+  return new ethers.FallbackProvider(subProviders, undefined, { quorum: 1 })
+}
+
+const provider = buildReadProvider()
+// Wallet/signing operations need a single provider for nonce + gas mgmt.
+const writeProvider = new ethers.JsonRpcProvider(config.rpcUrl.split(',')[0].trim(), undefined, {
   batchMaxCount: 1,
 })
-const wallet = new ethers.Wallet(config.minterPrivateKey, provider)
+const wallet = new ethers.Wallet(config.minterPrivateKey, writeProvider)
 const managedSigner = new ethers.NonceManager(wallet)
 const contract = new ethers.Contract(config.contractAddress, abi, managedSigner)
 const readOnlyContract = new ethers.Contract(config.contractAddress, abi, provider)
