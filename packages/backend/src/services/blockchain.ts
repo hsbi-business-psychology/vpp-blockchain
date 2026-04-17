@@ -50,9 +50,13 @@ const abi = loadContractABI()
  *    Free-tier providers reject batches > 3. We force `batchMaxCount: 1`
  *    on every JsonRpcProvider so each call goes out as a plain HTTP POST.
  *
- * Writes still need a single deterministic provider (nonce management,
- * gas estimation, etc.) so the wallet stays bound to the *primary* URL
- * — the first entry in the list, i.e. whatever the operator configured.
+ * Writes go through the same FallbackProvider. ethers v6's
+ * FallbackProvider implements broadcastTransaction by sending the signed
+ * tx to every healthy sub-provider — that's actually safer than pinning
+ * to one URL because mempool dedup on the chain side ensures the tx is
+ * mined exactly once. NonceManager continues to work because
+ * getTransactionCount("latest") returns the same value across all
+ * Base sub-providers (they all see the same canonical state).
  */
 const KNOWN_BASE_FALLBACKS = [
   'https://mainnet.base.org',
@@ -88,11 +92,12 @@ function buildReadProvider(): ethers.AbstractProvider {
 }
 
 const provider = buildReadProvider()
-// Wallet/signing operations need a single provider for nonce + gas mgmt.
-const writeProvider = new ethers.JsonRpcProvider(config.rpcUrl.split(',')[0].trim(), undefined, {
-  batchMaxCount: 1,
-})
-const wallet = new ethers.Wallet(config.minterPrivateKey, writeProvider)
+// Wallet uses the SAME FallbackProvider so write operations (addAdmin,
+// awardPoints, etc.) survive a quota-locked / down primary RPC. Without
+// this, /api/v1/admin/add returned a 500 even though reads worked,
+// because the wallet was hard-pinned to the primary URL (1rpc.io) which
+// had exhausted its plan limit.
+const wallet = new ethers.Wallet(config.minterPrivateKey, provider)
 const managedSigner = new ethers.NonceManager(wallet)
 const contract = new ethers.Contract(config.contractAddress, abi, managedSigner)
 const readOnlyContract = new ethers.Contract(config.contractAddress, abi, provider)
