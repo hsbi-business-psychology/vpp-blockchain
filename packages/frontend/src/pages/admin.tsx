@@ -30,6 +30,7 @@ export default function AdminPage() {
   const [adminCheck, setAdminCheck] = useState<'loading' | 'admin' | 'denied'>('loading')
   const [authenticated, setAuthenticated] = useState(false)
   const [authLoading, setAuthLoading] = useState(false)
+  const [loggedOut, setLoggedOut] = useState(false)
   const [authCredentials, setAuthCredentials] = useState<{
     signature: string
     message: string
@@ -85,10 +86,10 @@ export default function AdminPage() {
   }, [wallet, sign, t])
 
   useEffect(() => {
-    if (adminCheck === 'admin' && !authenticated && !authLoading) {
+    if (adminCheck === 'admin' && !authenticated && !authLoading && !loggedOut) {
       handleAuth()
     }
-  }, [adminCheck, authenticated, authLoading, handleAuth])
+  }, [adminCheck, authenticated, authLoading, loggedOut, handleAuth])
 
   // ── Surveys ────────────────────────────────────────────────────────────
   const fetchSurveys = useCallback(async () => {
@@ -206,18 +207,20 @@ export default function AdminPage() {
     setAuthenticated(false)
     setAuthCredentials(null)
     setSurveys([])
+    setLoggedOut(true)
   }
 
   // ── Auth gate (early returns) ──────────────────────────────────────────
-  const gate = (
-    <AdminAuthGate
-      hasWallet={hasWallet}
-      adminCheck={adminCheck}
-      authenticated={authenticated}
-      walletAddress={wallet?.address}
-    />
-  )
-  if (gate) return gate
+  if (!hasWallet || adminCheck !== 'admin' || !authenticated) {
+    return (
+      <AdminAuthGate
+        hasWallet={hasWallet}
+        adminCheck={adminCheck}
+        authenticated={authenticated}
+        walletAddress={wallet?.address}
+      />
+    )
+  }
 
   // ── Authenticated dashboard ────────────────────────────────────────────
   const totalClaims = surveys.reduce((sum, s) => sum + s.claimCount, 0)
