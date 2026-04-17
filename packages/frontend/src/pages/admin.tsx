@@ -14,7 +14,7 @@ import { SystemStatus } from '@/components/admin/system-status'
 import { AdminAuthGate } from '@/components/admin/admin-auth-gate'
 import { DeactivateSurveyDialog } from '@/components/admin/deactivate-survey-dialog'
 import { TemplateDownloadDialog } from '@/components/admin/template-download-dialog'
-import { SurveyKeyDialog } from '@/components/admin/survey-key-dialog'
+import { RegenerateTemplateDialog } from '@/components/admin/regenerate-template-dialog'
 import { useWallet } from '@/hooks/use-wallet'
 import { useApi } from '@/hooks/use-api'
 import { useBlockchain } from '@/hooks/use-blockchain'
@@ -30,7 +30,6 @@ export default function AdminPage() {
     downloadTemplate,
     deactivateSurvey,
     reactivateSurvey,
-    getSurveyKey,
     rotateSurveyKey,
   } = useApi()
   const { isAdmin: checkIsAdmin } = useBlockchain()
@@ -51,13 +50,12 @@ export default function AdminPage() {
 
   const [templateTarget, setTemplateTarget] = useState<SurveyInfo | null>(null)
   const [templateLoading, setTemplateLoading] = useState(false)
-  const [templateFresh, setTemplateFresh] = useState(false)
+  const [templateFreshMode, setTemplateFreshMode] = useState<'none' | 'registered' | 'regenerated'>(
+    'none',
+  )
 
-  const [keyTarget, setKeyTarget] = useState<SurveyInfo | null>(null)
-  const [keyValue, setKeyValue] = useState<string | null>(null)
-  const [keyCreatedAt, setKeyCreatedAt] = useState<string | null>(null)
-  const [keyLoading, setKeyLoading] = useState(false)
-  const [keyRotating, setKeyRotating] = useState(false)
+  const [regenerateTarget, setRegenerateTarget] = useState<SurveyInfo | null>(null)
+  const [regenerateLoading, setRegenerateLoading] = useState(false)
 
   // ── Admin check ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -144,19 +142,18 @@ export default function AdminPage() {
       toast.success(t('admin.register.success'))
       await fetchSurveys()
 
-      // V2 UX: After registration go straight to the template-download
-      // dialog. The HMAC key is already baked into that file, so there
-      // is no copy/paste step. We still cache the raw key in state so
-      // the admin can reveal it via the "show key separately" link
-      // (e.g. for a password-manager backup) without another signature
-      // round-trip.
+      // V2 UX: after registration go straight to the template-download
+      // dialog. The HMAC key is baked into the downloaded file — admins
+      // never have to see or handle the raw key.
       const fresh = (await getSurveys()).find((s) => s.surveyId === data.surveyId)
       if (fresh) {
-        setKeyValue(result.key)
-        setKeyCreatedAt(result.keyCreatedAt)
         setTemplateTarget(fresh)
-        setTemplateFresh(true)
+        setTemplateFreshMode('registered')
       }
+      // The result.key is intentionally discarded — it was generated
+      // server-side and is reachable later via the rotate (regenerate)
+      // flow if ever needed.
+      void result
     } catch (err) {
       toast.error(err instanceof ApiRequestError ? err.message : t('admin.register.error'))
       throw err
@@ -230,26 +227,12 @@ export default function AdminPage() {
     const survey = surveys.find((s) => s.surveyId === surveyId)
     if (!survey) return
     setTemplateTarget(survey)
-    setTemplateFresh(false)
+    setTemplateFreshMode('none')
   }
 
   const handleCloseTemplate = () => {
     setTemplateTarget(null)
-    setTemplateFresh(false)
-    // Drop the cached freshly-registered key from memory once the
-    // admin closes the post-registration dialog without exporting it.
-    setKeyValue(null)
-    setKeyCreatedAt(null)
-  }
-
-  // Available right after registration: the key is still cached in
-  // state, so we can open the key dialog without another signature.
-  const handleShowKeyFromTemplate = () => {
-    if (!templateTarget || !keyValue) return
-    const survey = templateTarget
-    setTemplateTarget(null)
-    setTemplateFresh(false)
-    setKeyTarget(survey)
+    setTemplateFreshMode('none')
   }
 
   const handleDeactivate = (surveyId: number) => {
@@ -257,53 +240,36 @@ export default function AdminPage() {
     if (survey) setDeactivateTarget(survey)
   }
 
-  const handleShowKey = useCallback(
-    async (surveyId: number) => {
-      if (!wallet) return
-      const survey = surveys.find((s) => s.surveyId === surveyId)
-      if (!survey) return
-      setKeyTarget(survey)
-      setKeyValue(null)
-      setKeyCreatedAt(null)
-      setKeyLoading(true)
-      try {
-        const timestamp = Math.floor(Date.now() / 1000)
-        const message = `Reveal survey key ${surveyId} by ${wallet.address} at ${timestamp}`
-        const signature = await sign(message)
-        const info = await getSurveyKey(surveyId, signature, message)
-        setKeyValue(info.key)
-        setKeyCreatedAt(info.keyCreatedAt)
-      } catch (err) {
-        toast.error(
-          err instanceof ApiRequestError ? err.message : t('admin.surveys.keyDialog.error'),
-        )
-        setKeyTarget(null)
-      } finally {
-        setKeyLoading(false)
-      }
-    },
-    [wallet, surveys, sign, getSurveyKey, t],
-  )
+  const handleRegenerate = (surveyId: number) => {
+    const survey = surveys.find((s) => s.surveyId === surveyId)
+    if (survey) setRegenerateTarget(survey)
+  }
 
-  const handleRotateKey = useCallback(async () => {
-    if (!wallet || !keyTarget) return
-    setKeyRotating(true)
+  // Confirmed regenerate: signs the request, rotates the underlying
+  // HMAC key on the server, then immediately opens the
+  // template-download dialog so the admin can grab the new file in one
+  // flow. The raw key never enters the UI.
+  const handleRegenerateConfirm = useCallback(async () => {
+    if (!wallet || !regenerateTarget) return
+    setRegenerateLoading(true)
     try {
       const timestamp = Math.floor(Date.now() / 1000)
-      const message = `Rotate survey key ${keyTarget.surveyId} by ${wallet.address} at ${timestamp}`
+      const message = `Rotate survey key ${regenerateTarget.surveyId} by ${wallet.address} at ${timestamp}`
       const signature = await sign(message)
-      const info = await rotateSurveyKey(keyTarget.surveyId, signature, message)
-      setKeyValue(info.key)
-      setKeyCreatedAt(info.keyCreatedAt)
-      toast.success(t('admin.surveys.keyDialog.rotateSuccess'))
+      await rotateSurveyKey(regenerateTarget.surveyId, signature, message)
+      toast.success(t('admin.surveys.regenerateConfirm.success'))
+      const target = regenerateTarget
+      setRegenerateTarget(null)
+      setTemplateTarget(target)
+      setTemplateFreshMode('regenerated')
     } catch (err) {
       toast.error(
-        err instanceof ApiRequestError ? err.message : t('admin.surveys.keyDialog.rotateError'),
+        err instanceof ApiRequestError ? err.message : t('admin.surveys.regenerateConfirm.error'),
       )
     } finally {
-      setKeyRotating(false)
+      setRegenerateLoading(false)
     }
-  }, [wallet, keyTarget, sign, rotateSurveyKey, t])
+  }, [wallet, regenerateTarget, sign, rotateSurveyKey, t])
 
   const handleLogout = () => {
     setAuthenticated(false)
@@ -374,7 +340,7 @@ export default function AdminPage() {
               onDownloadTemplate={handleDownloadTemplate}
               onDeactivate={handleDeactivate}
               onReactivate={handleReactivate}
-              onShowKey={handleShowKey}
+              onRegenerateTemplate={handleRegenerate}
             />
           )}
         </CardContent>
@@ -402,25 +368,16 @@ export default function AdminPage() {
       <TemplateDownloadDialog
         survey={templateTarget}
         loading={templateLoading}
-        freshlyRegistered={templateFresh}
-        canShowKey={templateFresh && !!keyValue}
-        onShowKey={handleShowKeyFromTemplate}
+        freshHintMode={templateFreshMode}
         onDownload={handleTemplateFormatDownload}
         onClose={handleCloseTemplate}
       />
 
-      <SurveyKeyDialog
-        survey={keyTarget}
-        surveyKey={keyValue}
-        keyCreatedAt={keyCreatedAt}
-        loading={keyLoading}
-        rotating={keyRotating}
-        onRotate={handleRotateKey}
-        onClose={() => {
-          setKeyTarget(null)
-          setKeyValue(null)
-          setKeyCreatedAt(null)
-        }}
+      <RegenerateTemplateDialog
+        survey={regenerateTarget}
+        loading={regenerateLoading}
+        onConfirm={handleRegenerateConfirm}
+        onClose={() => setRegenerateTarget(null)}
       />
     </div>
   )

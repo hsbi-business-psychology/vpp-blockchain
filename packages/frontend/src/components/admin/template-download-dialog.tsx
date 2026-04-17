@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Download, Loader2, KeyRound, CheckCircle2 } from 'lucide-react'
+import { Download, Loader2, CheckCircle2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -13,25 +13,27 @@ import type { SurveyInfo } from '@vpp/shared'
 interface TemplateDownloadDialogProps {
   survey: SurveyInfo | null
   loading: boolean
-  /** True when the dialog is opened immediately after registration. */
-  freshlyRegistered?: boolean
-  /** Show the "reveal raw HMAC key" link (only useful right after registration when the key is cached). */
-  canShowKey?: boolean
+  /** Why the dialog was opened — controls the success banner copy. */
+  freshHintMode?: 'none' | 'registered' | 'regenerated'
   onDownload: (format: 'sosci' | 'limesurvey') => void
-  onShowKey?: () => void
   onClose: () => void
 }
 
 export function TemplateDownloadDialog({
   survey,
   loading,
-  freshlyRegistered = false,
-  canShowKey = false,
+  freshHintMode = 'none',
   onDownload,
-  onShowKey,
   onClose,
 }: TemplateDownloadDialogProps) {
   const { t } = useTranslation()
+
+  const freshKey =
+    freshHintMode === 'registered'
+      ? 'admin.surveys.templateDialog.freshHint'
+      : freshHintMode === 'regenerated'
+        ? 'admin.surveys.templateDialog.freshHintRegenerate'
+        : null
 
   return (
     <Dialog open={!!survey} onOpenChange={() => onClose()}>
@@ -53,12 +55,10 @@ export function TemplateDownloadDialog({
           </div>
         )}
 
-        {freshlyRegistered && (
+        {freshKey && (
           <Alert className="border-success/30 bg-success/5">
             <CheckCircle2 className="size-4 text-success" />
-            <AlertDescription className="text-xs">
-              {t('admin.surveys.templateDialog.freshHint')}
-            </AlertDescription>
+            <AlertDescription className="text-xs">{t(freshKey)}</AlertDescription>
           </Alert>
         )}
 
@@ -109,21 +109,6 @@ export function TemplateDownloadDialog({
             </span>
           </button>
         </div>
-
-        <p className="text-[11px] leading-relaxed text-muted-foreground">
-          {t('admin.surveys.templateDialog.embeddedKeyHint')}
-        </p>
-
-        {canShowKey && onShowKey && (
-          <button
-            type="button"
-            onClick={onShowKey}
-            className="inline-flex items-center gap-1.5 self-start text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          >
-            <KeyRound className="size-3" />
-            {t('admin.surveys.templateDialog.showKeyLink')}
-          </button>
-        )}
 
         {loading && (
           <div className="flex items-center justify-center py-2">

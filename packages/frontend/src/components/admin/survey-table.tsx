@@ -4,7 +4,7 @@ import {
   Download,
   XCircle,
   CheckCircle2,
-  Key,
+  RefreshCw,
   MoreHorizontal,
   ChevronRight,
   ChevronLeft,
@@ -42,7 +42,7 @@ interface SurveyTableProps {
   onDownloadTemplate: (surveyId: number) => void
   onDeactivate: (surveyId: number) => void
   onReactivate?: (surveyId: number) => void
-  onShowKey?: (surveyId: number) => void
+  onRegenerateTemplate?: (surveyId: number) => void
   onSelect?: (surveyId: number) => void
 }
 
@@ -61,7 +61,7 @@ export function SurveyTable({
   onDownloadTemplate,
   onDeactivate,
   onReactivate,
-  onShowKey,
+  onRegenerateTemplate,
   onSelect,
 }: SurveyTableProps) {
   const { t } = useTranslation()
@@ -201,10 +201,12 @@ export function SurveyTable({
                               <Download className="mr-2 size-4" />
                               {t('admin.surveys.downloadTemplate')}
                             </DropdownMenuItem>
-                            {onShowKey && (
-                              <DropdownMenuItem onClick={() => onShowKey(survey.surveyId)}>
-                                <Key className="mr-2 size-4" />
-                                {t('admin.surveys.showKey')}
+                            {onRegenerateTemplate && (
+                              <DropdownMenuItem
+                                onClick={() => onRegenerateTemplate(survey.surveyId)}
+                              >
+                                <RefreshCw className="mr-2 size-4" />
+                                {t('admin.surveys.regenerateTemplate')}
                               </DropdownMenuItem>
                             )}
                             {survey.active && (

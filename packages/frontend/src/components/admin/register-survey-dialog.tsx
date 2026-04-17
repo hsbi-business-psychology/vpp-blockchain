@@ -134,9 +134,6 @@ export function RegisterSurveyDialog({ onRegister, nextSurveyId }: RegisterSurve
                 </div>
               </div>
             </div>
-            <p className="rounded-md bg-muted p-3 text-xs text-muted-foreground">
-              {t('admin.register.keyExplanation')}
-            </p>
           </div>
           <DialogFooter className="mt-6">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
