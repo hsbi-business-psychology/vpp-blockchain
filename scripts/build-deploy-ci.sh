@@ -17,7 +17,7 @@ BACKEND_DEPLOY="$DEPLOY/packages/backend"
 
 rm -rf "$DEPLOY"
 mkdir -p "$BACKEND_DEPLOY"
-mkdir -p "$DEPLOY/packages/contracts/artifacts/contracts/SurveyPoints.sol"
+mkdir -p "$DEPLOY/packages/contracts/artifacts/contracts/SurveyPointsV2.sol"
 
 # Backend compiled output
 cp -r "$ROOT/packages/backend/dist" "$BACKEND_DEPLOY/dist"
@@ -25,9 +25,11 @@ cp -r "$ROOT/packages/backend/dist" "$BACKEND_DEPLOY/dist"
 # Frontend build → packages/backend/public/
 cp -r "$ROOT/packages/frontend/dist" "$BACKEND_DEPLOY/public"
 
-# Contract ABI (blockchain.ts: resolve(__dirname, '../../../contracts/artifacts/...'))
-cp "$ROOT/packages/contracts/artifacts/contracts/SurveyPoints.sol/SurveyPoints.json" \
-   "$DEPLOY/packages/contracts/artifacts/contracts/SurveyPoints.sol/SurveyPoints.json"
+# Contract ABI (blockchain.ts loads SurveyPointsV2 via
+# resolve(__dirname, '../../../contracts/artifacts/contracts/SurveyPointsV2.sol/SurveyPointsV2.json'))
+# V1 was retired in the V2 cutover (see docs/v2-migration-runbook.md).
+cp "$ROOT/packages/contracts/artifacts/contracts/SurveyPointsV2.sol/SurveyPointsV2.json" \
+   "$DEPLOY/packages/contracts/artifacts/contracts/SurveyPointsV2.sol/SurveyPointsV2.json"
 
 # Generate a self-contained package.json:
 #  - same dependencies as the backend (so prod installs everything pino etc. need)
