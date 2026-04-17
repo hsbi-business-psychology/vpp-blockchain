@@ -1,5 +1,6 @@
 import type { HardhatUserConfig } from 'hardhat/config'
 import '@nomicfoundation/hardhat-toolbox'
+import '@openzeppelin/hardhat-upgrades'
 import 'dotenv/config'
 
 const PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY || ''
@@ -15,6 +16,11 @@ const config: HardhatUserConfig = {
         enabled: true,
         runs: 200,
       },
+      // Cancun is the lowest EVM version that supports EIP-1153 transient
+      // storage opcodes (TLOAD/TSTORE), which OpenZeppelin's
+      // ReentrancyGuardTransient relies on. Base mainnet has supported
+      // Cancun since the network upgrade in March 2024.
+      evmVersion: 'cancun',
     },
   },
   networks: {
