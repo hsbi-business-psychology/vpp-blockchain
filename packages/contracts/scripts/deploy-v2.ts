@@ -34,7 +34,22 @@
  *                            migrated and active surveys are deactivated.
  *                            Skip this var on a greenfield deploy.
  *   V1_DEPLOY_BLOCK        – block number the V1 contract was deployed
- *                            in. Speeds up the log scan.
+ *                            in. Speeds up the log scan fallback.
+ *   V1_ADMINS              – comma-separated list of V1 ADMIN_ROLE
+ *                            holders to migrate. When provided, the
+ *                            script skips the eth_getLogs role replay
+ *                            entirely and just verifies each address
+ *                            via isAdmin() on V1. This is orders of
+ *                            magnitude faster and robust against public
+ *                            RPC rate limits. Unknown addresses in the
+ *                            list are skipped with a warning rather
+ *                            than aborting. You can read the canonical
+ *                            list from the running Plesk admin UI.
+ *   V1_MAX_SURVEY_ID       – optional upper bound for the survey
+ *                            enumeration via getSurveyInfo view calls.
+ *                            Defaults to 512 which is plenty for the
+ *                            current deployment. Override for very
+ *                            large tenants.
  *   SKIP_V1_DEACTIVATION   – set to "true" to skip the deactivation
  *                            step (useful for staged cutovers where the
  *                            old contract should remain claimable for a
@@ -145,72 +160,96 @@ interface MigrationPlan {
   activeSurveys: number[]
 }
 
+const V1_READ_ABI = [
+  'event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)',
+  'event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)',
+  'function isAdmin(address account) view returns (bool)',
+  // NOTE: return order matches SurveyPoints V1 — (bytes32 secretHash, uint8 points, ...),
+  // NOT the order used elsewhere. Don't swap.
+  'function getSurveyInfo(uint256) view returns (bytes32 secretHash, uint8 points, uint256 maxClaims, uint256 claimCount, bool active, uint256 registeredAt, string title)',
+]
+
+async function enumerateActiveSurveys(v1: ethers.Contract, maxSurveyId: number): Promise<number[]> {
+  // V1 has no surveyCount() — we enumerate via getSurveyInfo() view calls
+  // until we see a run of un-registered IDs, then stop. `registeredAt == 0`
+  // is the "never existed" sentinel; active surveys have registeredAt > 0.
+  const active: number[] = []
+  let consecutiveMisses = 0
+  const MISS_LIMIT = 10 // stop after 10 consecutive unregistered IDs
+
+  for (let id = 1; id <= maxSurveyId; id++) {
+    const info = (await v1.getSurveyInfo(id)) as [
+      string,
+      bigint,
+      bigint,
+      bigint,
+      boolean,
+      bigint,
+      string,
+    ]
+    const registeredAt = info[5]
+    const isActive = info[4]
+    if (registeredAt === 0n) {
+      consecutiveMisses++
+      if (consecutiveMisses >= MISS_LIMIT) break
+      continue
+    }
+    consecutiveMisses = 0
+    if (isActive) active.push(id)
+  }
+  return active
+}
+
 async function buildMigrationPlan(
   v1Address: string,
   v1DeployBlock: number,
   scanner: ethers.Provider,
+  manualAdmins: string[] | null,
+  maxSurveyId: number,
 ): Promise<MigrationPlan> {
-  const v1Abi = [
-    'event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)',
-    'event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)',
-    'event SurveyRegistered(uint256 indexed surveyId, uint8 points, uint256 maxClaims, string title)',
-    'event SurveyDeactivated(uint256 indexed surveyId)',
-    'function getSurveyInfo(uint256) view returns (uint8 points, bytes32 secretHash, uint256 maxClaims, uint256 claimCount, bool active, uint256 registeredAt, string title)',
-  ]
+  const v1 = new ethers.Contract(v1Address, V1_READ_ABI, scanner)
 
-  const v1 = new ethers.Contract(v1Address, v1Abi, scanner)
-  const head = await scanner.getBlockNumber()
+  let admins: string[]
 
-  const grants = await queryFilterChunked<ethers.EventLog>(
-    v1,
-    v1.filters.RoleGranted(ADMIN_ROLE),
-    v1DeployBlock,
-    head,
-  )
-  const revokes = await queryFilterChunked<ethers.EventLog>(
-    v1,
-    v1.filters.RoleRevoked(ADMIN_ROLE),
-    v1DeployBlock,
-    head,
-  )
-
-  const adminSet = new Set<string>()
-  for (const log of grants) {
-    const addr = (log.args[1] as string).toLowerCase()
-    adminSet.add(addr)
-  }
-  for (const log of revokes) {
-    const addr = (log.args[1] as string).toLowerCase()
-    adminSet.delete(addr)
-  }
-
-  const registrations = await queryFilterChunked<ethers.EventLog>(
-    v1,
-    v1.filters.SurveyRegistered(),
-    v1DeployBlock,
-    head,
-  )
-  const deactivations = await queryFilterChunked<ethers.EventLog>(
-    v1,
-    v1.filters.SurveyDeactivated(),
-    v1DeployBlock,
-    head,
-  )
-  const deactivatedIds = new Set<string>(
-    deactivations.map((log) => (log.args[0] as bigint).toString()),
-  )
-
-  const activeSurveys: number[] = []
-  for (const log of registrations) {
-    const id = (log.args[0] as bigint).toString()
-    if (!deactivatedIds.has(id)) {
-      activeSurveys.push(Number(id))
+  if (manualAdmins && manualAdmins.length > 0) {
+    console.log(
+      `   Using ${manualAdmins.length} manually-provided admin(s); verifying via isAdmin()...`,
+    )
+    const verified: string[] = []
+    for (const addr of manualAdmins) {
+      const ok = (await v1.isAdmin(addr)) as boolean
+      if (ok) {
+        verified.push(addr)
+      } else {
+        console.warn(`     - ${addr} is NOT ADMIN_ROLE on V1 — skipping`)
+      }
     }
+    admins = verified
+  } else {
+    console.log(
+      '   No V1_ADMINS provided → falling back to eth_getLogs role replay (slow on mainnet).',
+    )
+    const head = await scanner.getBlockNumber()
+    const grants = await queryFilterChunked<ethers.EventLog>(
+      v1,
+      v1.filters.RoleGranted(ADMIN_ROLE),
+      v1DeployBlock,
+      head,
+    )
+    const revokes = await queryFilterChunked<ethers.EventLog>(
+      v1,
+      v1.filters.RoleRevoked(ADMIN_ROLE),
+      v1DeployBlock,
+      head,
+    )
+    const adminSet = new Set<string>()
+    for (const log of grants) adminSet.add((log.args[1] as string).toLowerCase())
+    for (const log of revokes) adminSet.delete((log.args[1] as string).toLowerCase())
+    admins = Array.from(adminSet).map((a) => ethers.getAddress(a))
   }
 
-  // Convert lower-cased addresses back to checksum format. ethers.getAddress
-  // throws on invalid input, which is what we want.
-  const admins = Array.from(adminSet).map((a) => ethers.getAddress(a))
+  console.log(`   Enumerating V1 surveys via getSurveyInfo (id 1..${maxSurveyId}) ...`)
+  const activeSurveys = await enumerateActiveSurveys(v1, maxSurveyId)
 
   return { v1Address, admins, activeSurveys }
 }
@@ -224,6 +263,18 @@ async function main() {
   const skipDeactivation = (process.env.SKIP_V1_DEACTIVATION || '').toLowerCase() === 'true'
   const skipVerify = (process.env.SKIP_VERIFY || '').toLowerCase() === 'true'
   const keepDeployerAdmin = (process.env.KEEP_DEPLOYER_ADMIN || '').toLowerCase() === 'true'
+  const maxSurveyId = Number(process.env.V1_MAX_SURVEY_ID || 512)
+  const manualAdminsRaw = (process.env.V1_ADMINS || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
+  for (const addr of manualAdminsRaw) {
+    if (!ethers.isAddress(addr)) {
+      throw new Error(`V1_ADMINS contains invalid address: ${addr}`)
+    }
+  }
+  const manualAdmins =
+    manualAdminsRaw.length > 0 ? manualAdminsRaw.map((a) => ethers.getAddress(a)) : null
 
   // Addresses that must NOT receive ADMIN_ROLE on V2 even when they had
   // it on V1. The MINTER_ADDRESS is added unconditionally so a
@@ -281,12 +332,18 @@ async function main() {
           'This is slow on mainnet — set V1_DEPLOY_BLOCK to the actual block number.',
       )
     }
-    console.log('\n→ Scanning V1 logs for ADMIN_ROLE holders & active surveys ...')
-    plan = await buildMigrationPlan(v1Address, v1DeployBlock, eventScannerProvider())
-    console.log(`   Found ${plan.admins.length} ADMIN_ROLE holder(s):`)
+    console.log('\n→ Building migration plan ...')
+    plan = await buildMigrationPlan(
+      v1Address,
+      v1DeployBlock,
+      eventScannerProvider(),
+      manualAdmins,
+      maxSurveyId,
+    )
+    console.log(`   ${plan.admins.length} ADMIN_ROLE holder(s) on V1:`)
     for (const a of plan.admins) console.log(`     - ${a}`)
     console.log(
-      `   Found ${plan.activeSurveys.length} active surveys: [${plan.activeSurveys.join(', ')}]`,
+      `   ${plan.activeSurveys.length} active surveys: [${plan.activeSurveys.join(', ')}]`,
     )
   }
 
