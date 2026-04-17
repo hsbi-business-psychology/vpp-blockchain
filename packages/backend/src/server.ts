@@ -79,8 +79,21 @@ export function createApp(): Express {
   // Versioned API routes
   app.use('/api/v1', createApiRouter())
 
-  // Backward-compatible redirect: /api/* -> /api/v1/*
+  // Backward-compatible redirect: /api/<unversioned-path> -> /api/v1/<path>.
+  // app.use('/api', ...) strips the /api prefix, so req.url already starts
+  // with the rest of the path. If a request was already targeting /api/v1
+  // (and just didn't match any v1 route), redirecting to /api/v1${req.url}
+  // would produce /api/v1/v1/... — an infinite-loop-ish 308. Return a clean
+  // JSON 404 in that case instead.
   app.use('/api', (req, res) => {
+    if (req.url.startsWith('/v1')) {
+      res.status(404).json({
+        success: false,
+        error: 'NOT_FOUND',
+        message: `No such API endpoint: ${req.method} /api${req.url}`,
+      })
+      return
+    }
     res.redirect(308, `/api/v1${req.url}`)
   })
 
