@@ -122,7 +122,11 @@
       "disconnectDescription": "The connection to MetaMask will be removed. Your wallet remains in MetaMask — you can reconnect at any time.",
       "reconnect": "You can reconnect at any time.",
       "switchedAccount": "MetaMask account changed",
-      "networkChanged": "MetaMask network was changed. The network does not affect signatures, but make sure everything works correctly."
+      "networkChanged": "MetaMask network was changed. The network does not affect signatures, but make sure everything works correctly.",
+      "awaitingSignTitle": "MetaMask is waiting for your confirmation",
+      "awaitingSignDescription": "Click the MetaMask fox icon in your browser toolbar to approve the signature.",
+      "signTimeoutTitle": "Signature request timed out",
+      "signTimeoutDescription": "Open MetaMask manually (fox icon), check for any pending requests, reject them if needed, then try again."
     },
     "create": {
       "title": "Create Wallet",

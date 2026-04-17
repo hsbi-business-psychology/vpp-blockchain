@@ -122,7 +122,11 @@
       "disconnectDescription": "Die Verbindung zu MetaMask wird getrennt. Dein Wallet bleibt in MetaMask erhalten – du kannst dich jederzeit erneut verbinden.",
       "reconnect": "Du kannst dich jederzeit wieder verbinden.",
       "switchedAccount": "MetaMask-Account gewechselt",
-      "networkChanged": "MetaMask-Netzwerk wurde gewechselt. Das Netzwerk hat keinen Einfluss auf die Signatur, aber stelle sicher, dass alles korrekt funktioniert."
+      "networkChanged": "MetaMask-Netzwerk wurde gewechselt. Das Netzwerk hat keinen Einfluss auf die Signatur, aber stelle sicher, dass alles korrekt funktioniert.",
+      "awaitingSignTitle": "MetaMask wartet auf deine Bestätigung",
+      "awaitingSignDescription": "Klicke oben rechts auf das MetaMask-Fuchs-Icon, um die Signatur zu bestätigen.",
+      "signTimeoutTitle": "Signatur-Anfrage abgelaufen",
+      "signTimeoutDescription": "Öffne MetaMask manuell (Fuchs-Icon), prüfe ob noch eine offene Anfrage hängt, lehne sie ggf. ab und versuche es erneut."
     },
     "create": {
       "title": "Wallet erstellen",

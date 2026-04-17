@@ -58,11 +58,86 @@ export async function connectMetaMask(): Promise<WalletData> {
   }
 }
 
-export async function signMessageMetaMask(message: string): Promise<string> {
+/**
+ * Sign a UTF-8 string with the connected MetaMask account.
+ *
+ * Hardened against three failure modes that were silently breaking the
+ * admin UI on real users:
+ *
+ *  1. MetaMask popup never appears — browser background-tab the popup,
+ *     or the extension service worker is asleep. We dispatch a wake-up
+ *     `eth_accounts` call before signing and surface a "open MetaMask"
+ *     toast via `onAwaitingUser` so the UX is unambiguous instead of
+ *     a forever-spinning button.
+ *  2. `BrowserProvider.getSigner()` triggers a stealth `eth_requestAccounts`
+ *     when MetaMask considers the dapp un-connected. That spawns a
+ *     *connect* popup that races with our personal_sign popup, and one
+ *     of them silently loses. We resolve the signer ourselves from
+ *     `eth_accounts` (read-only), only requesting permission if there
+ *     is no live connection at all.
+ *  3. `personal_sign` hanging forever — wrap in a 60 s timeout so the
+ *     caller can show a meaningful error and reset the loading state
+ *     instead of locking the form.
+ */
+export async function signMessageMetaMask(
+  message: string,
+  opts: { onAwaitingUser?: () => void; timeoutMs?: number } = {},
+): Promise<string> {
   if (!window.ethereum) throw new Error('MetaMask is not installed')
-  const provider = new ethers.BrowserProvider(window.ethereum)
-  const signer = await provider.getSigner()
-  return signer.signMessage(message)
+
+  // Read-only probe first; no popup if already connected.
+  let accounts = (await window.ethereum.request({ method: 'eth_accounts' })) as string[]
+
+  if (!accounts || accounts.length === 0) {
+    // Only now request permission. This *will* spawn the MetaMask
+    // connect popup, which is fine because we know we have to.
+    accounts = (await window.ethereum.request({
+      method: 'eth_requestAccounts',
+    })) as string[]
+  }
+
+  if (!accounts || accounts.length === 0) {
+    throw new Error('NO_METAMASK_ACCOUNT')
+  }
+
+  const from = accounts[0]
+
+  // Surface "please open MetaMask" hint to the UI shortly after the
+  // request goes out — covers the case where the popup gets parked in
+  // the extension panel because the browser refused to focus it.
+  const hintTimer = setTimeout(() => opts.onAwaitingUser?.(), 600)
+
+  // Use raw personal_sign instead of ethers' BrowserProvider.signMessage
+  // because the latter may internally re-issue eth_requestAccounts (see
+  // failure mode #2 above) on the very signer instance we'd be using.
+  const signPromise = window.ethereum.request({
+    method: 'personal_sign',
+    params: [message, from],
+  }) as Promise<string>
+
+  const timeoutMs = opts.timeoutMs ?? 60_000
+  let timeoutHandle: ReturnType<typeof setTimeout> | undefined
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutHandle = setTimeout(
+      () =>
+        reject(
+          new Error(
+            'METAMASK_TIMEOUT: Signature request timed out. ' +
+              'Open the MetaMask extension manually (fox icon) and check for ' +
+              'pending requests, then try again.',
+          ),
+        ),
+      timeoutMs,
+    )
+  })
+
+  try {
+    const sig = await Promise.race([signPromise, timeoutPromise])
+    return sig
+  } finally {
+    clearTimeout(hintTimer)
+    if (timeoutHandle) clearTimeout(timeoutHandle)
+  }
 }
 
 export async function getMetaMaskSigner(): Promise<ethers.Signer> {

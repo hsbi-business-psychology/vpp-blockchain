@@ -96,7 +96,32 @@ export function useWallet() {
     async (message: string) => {
       if (!wallet) throw new Error('No wallet available')
       if (wallet.type === 'metamask') {
-        return signMessageMetaMaskFn(message)
+        // Surface a sticky "open MetaMask" toast if the popup does not
+        // appear within ~600 ms. We dismiss it as soon as the signature
+        // resolves (or we hit the 60 s timeout). Without this hint the
+        // admin form looked frozen whenever the MetaMask extension
+        // popup got parked in the toolbar instead of focused — users
+        // had no idea they were supposed to click the fox icon.
+        let toastId: string | number | undefined
+        try {
+          return await signMessageMetaMaskFn(message, {
+            onAwaitingUser: () => {
+              toastId = toast.message(i18n.t('wallet.metamask.awaitingSignTitle'), {
+                description: i18n.t('wallet.metamask.awaitingSignDescription'),
+                duration: 60_000,
+              })
+            },
+          })
+        } catch (err) {
+          if (err instanceof Error && err.message.startsWith('METAMASK_TIMEOUT')) {
+            toast.error(i18n.t('wallet.metamask.signTimeoutTitle'), {
+              description: i18n.t('wallet.metamask.signTimeoutDescription'),
+            })
+          }
+          throw err
+        } finally {
+          if (toastId !== undefined) toast.dismiss(toastId)
+        }
       }
       return signMessageFn(wallet.privateKey, message)
     },

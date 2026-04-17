@@ -131,7 +131,10 @@ describe('useWallet', () => {
 
     const sig = await act(() => result.current.sign('hello'))
 
-    expect(walletLib.signMessageMetaMask).toHaveBeenCalledWith('hello')
+    expect(walletLib.signMessageMetaMask).toHaveBeenCalledWith(
+      'hello',
+      expect.objectContaining({ onAwaitingUser: expect.any(Function) }),
+    )
     expect(sig).toBe('0xMmSig')
   })
 
