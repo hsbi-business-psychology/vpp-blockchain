@@ -93,6 +93,13 @@ const REVERT_MAP: Record<string, { status: number; code: string; message: string
     code: 'NOT_SUBMITTED',
     message: 'This wallet is not marked as submitted, so there is nothing to undo.',
   },
+  AccessControlUnauthorizedAccount: {
+    status: 403,
+    code: 'ROLE_UNAUTHORIZED',
+    message:
+      'The backend wallet does not have the required role to perform this action. ' +
+      'Check that the wallet has both ADMIN_ROLE and MINTER_ROLE on the smart contract.',
+  },
 }
 
 /**
@@ -101,13 +108,61 @@ const REVERT_MAP: Record<string, { status: number; code: string; message: string
  */
 export function parseContractError(err: unknown): AppError | undefined {
   if (err == null || typeof err !== 'object') return undefined
-  const reason = (err as Record<string, unknown>).reason as string | undefined
-  const revertData = (err as Record<string, unknown>).revert as { name?: string } | undefined
+  const rec = err as Record<string, unknown>
+  const reason = rec.reason as string | undefined
+  const revertData = rec.revert as { name?: string } | undefined
   const errorName = revertData?.name ?? reason
+
   if (errorName && REVERT_MAP[errorName]) {
     const mapped = REVERT_MAP[errorName]
     return new AppError(mapped.status, mapped.code, mapped.message)
   }
+
+  const shortMessage = rec.shortMessage as string | undefined
+  if (shortMessage) {
+    for (const name of Object.keys(REVERT_MAP)) {
+      if (shortMessage.includes(name)) {
+        const mapped = REVERT_MAP[name]
+        return new AppError(mapped.status, mapped.code, mapped.message)
+      }
+    }
+  }
+
+  return undefined
+}
+
+/**
+ * Detects ethers.js provider-level errors like INSUFFICIENT_FUNDS that occur
+ * before a transaction reaches the contract. Returns an AppError with a clear
+ * message, or undefined for unrecognized errors.
+ */
+export function parseProviderError(err: unknown): AppError | undefined {
+  if (err == null || typeof err !== 'object') return undefined
+
+  const code = (err as Record<string, unknown>).code as string | undefined
+  if (code === 'INSUFFICIENT_FUNDS') {
+    return new AppError(
+      503,
+      'INSUFFICIENT_FUNDS',
+      'The backend wallet does not have enough ETH to pay transaction fees. ' +
+        'Please contact the system administrator to top up the wallet.',
+    )
+  }
+
+  const message = (err as Record<string, unknown>).message
+  if (
+    typeof message === 'string' &&
+    /insufficient funds/i.test(message) &&
+    !/revert/i.test(message)
+  ) {
+    return new AppError(
+      503,
+      'INSUFFICIENT_FUNDS',
+      'The backend wallet does not have enough ETH to pay transaction fees. ' +
+        'Please contact the system administrator to top up the wallet.',
+    )
+  }
+
   return undefined
 }
 
@@ -141,6 +196,17 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
       success: false,
       error: contractErr.errorCode,
       message: contractErr.message,
+    })
+    return
+  }
+
+  const providerErr = parseProviderError(err)
+  if (providerErr) {
+    logger.warn({ err }, 'Transaction failed: insufficient funds in backend wallet')
+    res.status(providerErr.statusCode).json({
+      success: false,
+      error: providerErr.errorCode,
+      message: providerErr.message,
     })
     return
   }

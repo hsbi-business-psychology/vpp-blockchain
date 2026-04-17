@@ -4,6 +4,7 @@ import {
   AppError,
   ValidationError,
   parseContractError,
+  parseProviderError,
   errorHandler,
 } from '../src/middleware/errorHandler.js'
 
@@ -104,6 +105,7 @@ describe('parseContractError', () => {
     { name: 'ZeroAddress', code: 'ZERO_ADDRESS', status: 400 },
     { name: 'WalletAlreadySubmitted', code: 'ALREADY_SUBMITTED', status: 409 },
     { name: 'WalletNotSubmitted', code: 'NOT_SUBMITTED', status: 404 },
+    { name: 'AccessControlUnauthorizedAccount', code: 'ROLE_UNAUTHORIZED', status: 403 },
   ]
 
   it.each(KNOWN_REVERTS)('should map $name to $code ($status)', ({ name, code, status }) => {
@@ -147,8 +149,58 @@ describe('parseContractError', () => {
     expect(parseContractError('some string')).toBeUndefined()
   })
 
+  it('should detect error names in shortMessage as fallback', () => {
+    const err = {
+      code: 'CALL_EXCEPTION',
+      shortMessage: 'execution reverted (unknown custom error): AccessControlUnauthorizedAccount',
+    }
+    const result = parseContractError(err)
+
+    expect(result).toBeInstanceOf(AppError)
+    expect(result!.errorCode).toBe('ROLE_UNAUTHORIZED')
+    expect(result!.statusCode).toBe(403)
+  })
+
   it('should return undefined for an object without revert or reason', () => {
     expect(parseContractError({ code: 'CALL_EXCEPTION' })).toBeUndefined()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// parseProviderError
+// ---------------------------------------------------------------------------
+describe('parseProviderError', () => {
+  it('should detect INSUFFICIENT_FUNDS error code from ethers.js', () => {
+    const err = { code: 'INSUFFICIENT_FUNDS', message: 'insufficient funds for gas' }
+    const result = parseProviderError(err)
+
+    expect(result).toBeInstanceOf(AppError)
+    expect(result!.errorCode).toBe('INSUFFICIENT_FUNDS')
+    expect(result!.statusCode).toBe(503)
+  })
+
+  it('should detect "insufficient funds" in error message as fallback', () => {
+    const err = new Error('insufficient funds for intrinsic transaction cost')
+    const result = parseProviderError(err)
+
+    expect(result).toBeInstanceOf(AppError)
+    expect(result!.errorCode).toBe('INSUFFICIENT_FUNDS')
+    expect(result!.statusCode).toBe(503)
+  })
+
+  it('should not match revert errors that mention insufficient funds', () => {
+    const err = new Error('transaction reverted: insufficient funds')
+    const result = parseProviderError(err)
+
+    expect(result).toBeUndefined()
+  })
+
+  it('should return undefined for null input', () => {
+    expect(parseProviderError(null)).toBeUndefined()
+  })
+
+  it('should return undefined for unrelated errors', () => {
+    expect(parseProviderError({ code: 'CALL_EXCEPTION' })).toBeUndefined()
   })
 })
 
@@ -197,6 +249,20 @@ describe('errorHandler', () => {
     expect(res.statusCode).toBe(400)
     const body = res.body as Record<string, unknown>
     expect(body.error).toBe('MAX_CLAIMS_REACHED')
+  })
+
+  it('should handle INSUFFICIENT_FUNDS as 503', () => {
+    const err = Object.assign(new Error('insufficient funds for gas'), {
+      code: 'INSUFFICIENT_FUNDS',
+    })
+    const res = createMockRes()
+
+    errorHandler(err, mockReq, res, mockNext)
+
+    expect(res.statusCode).toBe(503)
+    const body = res.body as Record<string, unknown>
+    expect(body.success).toBe(false)
+    expect(body.error).toBe('INSUFFICIENT_FUNDS')
   })
 
   it('should return 500 for an unknown Error', () => {
