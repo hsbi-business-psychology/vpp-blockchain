@@ -52,10 +52,30 @@ const REVERT_MAP: Record<string, { status: number; code: string; message: string
       'The maximum number of participants for this survey has been reached. No more claims are accepted.',
   },
   InvalidSecret: {
+    // V1-only revert. Kept in the map so that legacy V1 contracts encountered
+    // during migration still surface a useful error rather than a generic 500.
     status: 400,
     code: 'INVALID_SECRET',
     message:
       'The survey secret is incorrect. Make sure you are using the original claim link from the survey.',
+  },
+  NotClaimed: {
+    status: 404,
+    code: 'NOT_CLAIMED',
+    message:
+      'This wallet has not claimed this survey, so there is nothing to revoke. Check the wallet and survey ID.',
+  },
+  SurveyAlreadyActive: {
+    status: 409,
+    code: 'SURVEY_ALREADY_ACTIVE',
+    message: 'This survey is already active. Use deactivate to disable it.',
+  },
+  LastAdmin: {
+    status: 409,
+    code: 'LAST_ADMIN',
+    message:
+      'Refusing to remove the last admin — at least one ADMIN_ROLE holder must remain. ' +
+      'Add another admin first, then retry the removal.',
   },
   SurveyAlreadyExists: {
     status: 409,

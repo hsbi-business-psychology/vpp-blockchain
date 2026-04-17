@@ -26,7 +26,6 @@ export type {
 
 export interface SurveyRegisterRequest {
   surveyId: number
-  secret: string
   points: number
   maxClaims?: number
   title?: string

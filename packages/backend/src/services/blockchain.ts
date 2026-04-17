@@ -21,10 +21,18 @@ import { withRpcRetry } from '../lib/rpcRetry.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
+/**
+ * Loads the SurveyPointsV2 ABI from the contracts package artifacts. The V2
+ * proxy is what production and Sepolia run as of the V2 cutover (see
+ * docs/v2-migration-runbook.md and contracts/SurveyPointsV2.sol). V1
+ * artifacts were intentionally retired — V1 surveys are deactivated as
+ * part of the migration and their data is no longer surfaced through the
+ * backend.
+ */
 function loadContractABI(): ethers.InterfaceAbi {
   const artifactPath = resolve(
     __dirname,
-    '../../../contracts/artifacts/contracts/SurveyPoints.sol/SurveyPoints.json',
+    '../../../contracts/artifacts/contracts/SurveyPointsV2.sol/SurveyPointsV2.json',
   )
   const artifact = JSON.parse(readFileSync(artifactPath, 'utf-8'))
   return artifact.abi
@@ -202,34 +210,40 @@ async function assertSufficientBalance(): Promise<void> {
   }
 }
 
+/**
+ * Award points to `student` for `surveyId`. V2 dropped the on-chain
+ * secret parameter — proof of completion is verified off-chain by the
+ * backend (HMAC token + nonce store) before this function is called.
+ */
 export async function awardPoints(
   student: string,
   surveyId: number,
-  secret: string,
 ): Promise<ethers.TransactionReceipt> {
   await assertSufficientBalance()
-  const tx = await contract.awardPoints(student, surveyId, secret)
+  const tx = await contract.awardPoints(student, surveyId)
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
   return receipt
 }
 
+/**
+ * Register a new survey on-chain. V2 no longer stores any per-survey
+ * secret hash — the off-chain `survey-keys` store owns the HMAC key.
+ */
 export async function registerSurvey(
   surveyId: number,
-  secretHash: string,
   points: number,
   maxClaims: number,
   title: string,
 ): Promise<ethers.TransactionReceipt> {
   await assertSufficientBalance()
-  const tx = await contract.registerSurvey(surveyId, secretHash, points, maxClaims, title)
+  const tx = await contract.registerSurvey(surveyId, points, maxClaims, title)
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
   return receipt
 }
 
 export interface SurveyInfoRaw {
-  secretHash: string
   points: number
   maxClaims: bigint
   claimCount: bigint
@@ -246,18 +260,44 @@ export async function deactivateSurvey(surveyId: number): Promise<ethers.Transac
   return receipt
 }
 
+/**
+ * Re-enable a previously deactivated survey. V2-only — V1 had no way
+ * to reverse a `deactivateSurvey` call.
+ */
+export async function reactivateSurvey(surveyId: number): Promise<ethers.TransactionReceipt> {
+  await assertSufficientBalance()
+  const tx = await contract.reactivateSurvey(surveyId)
+  const receipt = await tx.wait()
+  if (!receipt) throw new Error('Transaction receipt is null')
+  return receipt
+}
+
+/**
+ * Reverse a previously awarded claim. Used to correct genuine mistakes
+ * (operator error, accidental double-award via backend bug). V2-only.
+ */
+export async function revokePoints(
+  student: string,
+  surveyId: number,
+): Promise<ethers.TransactionReceipt> {
+  await assertSufficientBalance()
+  const tx = await contract.revokePoints(student, surveyId)
+  const receipt = await tx.wait()
+  if (!receipt) throw new Error('Transaction receipt is null')
+  return receipt
+}
+
 export async function getSurveyInfo(surveyId: number): Promise<SurveyInfoRaw> {
   const result = await withRpcRetry(() => readOnlyContract.getSurveyInfo(surveyId), {
     label: 'getSurveyInfo',
   })
   return {
-    secretHash: result[0],
-    points: Number(result[1]),
-    maxClaims: result[2],
-    claimCount: result[3],
-    active: result[4],
-    registeredAt: result[5],
-    title: result[6],
+    points: Number(result[0]),
+    maxClaims: result[1],
+    claimCount: result[2],
+    active: result[3],
+    registeredAt: result[4],
+    title: result[5],
   }
 }
 

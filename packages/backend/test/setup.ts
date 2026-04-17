@@ -27,6 +27,8 @@ vi.mock('../src/services/blockchain.js', () => ({
   getPointsAwardedEvents: vi.fn(() => Promise.resolve([])),
   getSurveyRegisteredEvents: vi.fn(() => Promise.resolve([])),
   deactivateSurvey: vi.fn(),
+  reactivateSurvey: vi.fn(),
+  revokePoints: vi.fn(),
   markWalletSubmitted: vi.fn(),
   unmarkWalletSubmitted: vi.fn(),
   isWalletSubmitted: vi.fn(),
@@ -46,6 +48,12 @@ vi.mock('../src/services/blockchain.js', () => ({
   queryFilterChunked: vi.fn(),
   validateChainId: vi.fn(() => Promise.resolve()),
 }))
+
+// Survey-keys and nonce-store are NOT mocked globally here. They write
+// to disk and are exercised by their own dedicated unit tests
+// (survey-keys.test.ts, nonce-store.test.ts). Route tests that need a
+// stub (claim.test.ts, surveys.test.ts) install a local vi.mock at the
+// top of the file via vitest's per-file factory hoisting.
 
 // Mock event store with factory pattern (getEventStore returns the mock instance)
 const mockEventStore = {

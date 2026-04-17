@@ -38,10 +38,18 @@ export type ApiResponse<T = unknown> = ApiSuccess<T> | ApiError
 // Claim
 // ---------------------------------------------------------------------------
 
+/**
+ * V2 claim request body. The plaintext `secret` field of the V1 schema
+ * is replaced by `nonce` + `token`, both delivered through the SoSci
+ * goodbye-page URL. `nonce` is a single-use 16-byte URL-safe base64
+ * value; `token` is the HMAC-SHA256 over `v1|<surveyId>|<nonce>` keyed
+ * by the per-survey secret stored on the backend.
+ */
 export interface ClaimRequest {
   walletAddress: string
   surveyId: number
-  secret: string
+  nonce: string
+  token: string
   signature: string
   message: string
 }
@@ -87,6 +95,14 @@ export interface SurveyRegisterResult {
   txHash: string
   explorerUrl: string
   templateDownloadUrl: string
+  /**
+   * V2-only: the HMAC key that backs the survey's claim flow. Returned
+   * once on registration. Admin can re-fetch later via
+   * GET /api/v1/surveys/:id/key (admin-authenticated).
+   */
+  key: string
+  /** ISO-8601 timestamp the key was generated. */
+  keyCreatedAt: string
 }
 
 // ---------------------------------------------------------------------------
