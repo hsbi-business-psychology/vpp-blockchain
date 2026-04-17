@@ -65,18 +65,44 @@ const KNOWN_BASE_FALLBACKS = [
 ]
 
 /**
+ * True when the URL points at a local development chain (Hardhat, Anvil,
+ * Ganache, Geth dev mode). We must NOT mix such URLs with the public Base
+ * mainnet fallbacks because:
+ *   - their chain IDs differ (31337 vs 8453)
+ *   - their state differs (FallbackProvider would race answers and return
+ *     whichever sub-provider replies first, often the WRONG chain)
+ * The integration test suite hits 127.0.0.1:8545; production hits Alchemy
+ * or one of the public Base RPCs.
+ */
+function isLocalRpcUrl(url: string): boolean {
+  try {
+    const host = new URL(url).hostname
+    return host === 'localhost' || host === '127.0.0.1' || host === '::1' || host.endsWith('.local')
+  } catch {
+    return false
+  }
+}
+
+/**
  * Public list of RPC URLs actually in use (operator-configured + dedup'd
  * fallbacks). Exposed so `/api/v1/health/diag` can probe each one and tell
  * the operator which provider is healthy and which is degraded — including
  * the fallback URLs, not only the primary.
+ *
+ * Public Base mainnet fallbacks are appended ONLY when the configured URL(s)
+ * look like real Base mainnet endpoints. A localhost / 127.0.0.1 setup
+ * (Hardhat, integration tests, dev environments) gets the plain configured
+ * URL(s) only — mixing chains via FallbackProvider returns wrong data.
  */
 export function getEffectiveRpcUrls(): string[] {
   const configured = config.rpcUrl
     .split(',')
     .map((u) => u.trim())
     .filter(Boolean)
+  const includeFallbacks = configured.length > 0 && !configured.some(isLocalRpcUrl)
   const seen = new Set<string>()
-  return [...configured, ...KNOWN_BASE_FALLBACKS].filter((u) => {
+  const candidates = includeFallbacks ? [...configured, ...KNOWN_BASE_FALLBACKS] : configured
+  return candidates.filter((u) => {
     if (seen.has(u)) return false
     seen.add(u)
     return true
