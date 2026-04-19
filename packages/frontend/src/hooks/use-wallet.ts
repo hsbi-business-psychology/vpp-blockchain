@@ -73,6 +73,27 @@ export function useWallet() {
     return data
   }, [])
 
+  /**
+   * Generate a new wallet but do NOT persist it yet. Used by the
+   * three-step mnemonic onboarding (info → reveal → verify) so that
+   * abandoning the flow midway never leaves an unverified wallet
+   * stranded in localStorage.
+   */
+  const createDraft = useCallback(() => {
+    return createWalletFn()
+  }, [])
+
+  /**
+   * Persist a previously-drafted wallet to localStorage and surface it
+   * via state. Caller is responsible for guaranteeing that the user
+   * has actually verified their recovery phrase first.
+   */
+  const commitWallet = useCallback((data: WalletData) => {
+    saveWallet(data)
+    setWallet(data)
+    return data
+  }, [])
+
   const importKey = useCallback((privateKey: string) => {
     const data = importWalletFn(privateKey)
     saveWallet(data)
@@ -140,6 +161,8 @@ export function useWallet() {
     isMetaMask: wallet?.type === 'metamask',
     hasMetaMask: hasMetaMaskFn(),
     create,
+    createDraft,
+    commitWallet,
     importKey,
     connectMetaMask,
     remove,

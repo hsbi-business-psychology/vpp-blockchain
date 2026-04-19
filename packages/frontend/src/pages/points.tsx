@@ -15,7 +15,10 @@ import {
   DeleteWalletDialog,
   ImportWalletDialog,
   CreateWalletDialog,
+  MnemonicRevealDialog,
+  MnemonicVerifyDialog,
 } from '@/components/points/wallet-dialogs'
+import { getRandomVerifyIndices, type WalletData } from '@/lib/wallet'
 
 export default function PointsPage() {
   const { t } = useTranslation()
@@ -26,6 +29,8 @@ export default function PointsPage() {
     hasMetaMask,
     loading: walletLoading,
     create,
+    createDraft,
+    commitWallet,
     importKey,
     connectMetaMask,
     remove,
@@ -45,6 +50,13 @@ export default function PointsPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showImportDialog, setShowImportDialog] = useState(false)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
+
+  // Three-step mnemonic onboarding state. The draft wallet lives only in
+  // memory until the user successfully completes the verification step.
+  // If they cancel or close the browser tab, nothing is persisted.
+  const [pendingWallet, setPendingWallet] = useState<WalletData | null>(null)
+  const [verifyIndices, setVerifyIndices] = useState<number[] | null>(null)
+  const [creationStep, setCreationStep] = useState<'idle' | 'reveal' | 'verify'>('idle')
 
   // ── Data fetching ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -77,10 +89,44 @@ export default function PointsPage() {
 
   // ── Wallet actions ─────────────────────────────────────────────────────
   function handleCreateConfirm() {
-    create()
+    // Generate but do NOT persist yet; the wallet is only saved after the
+    // student has successfully retyped 3 random words from the mnemonic.
+    const draft = createDraft()
+    setPendingWallet(draft)
+    setVerifyIndices(getRandomVerifyIndices(3))
     setShowCreateDialog(false)
+    setCreationStep('reveal')
+  }
+
+  function abortCreation() {
+    setPendingWallet(null)
+    setVerifyIndices(null)
+    setCreationStep('idle')
+  }
+
+  function handleRevealContinue() {
+    setCreationStep('verify')
+  }
+
+  function handleVerifySuccess() {
+    if (!pendingWallet) return
+    commitWallet(pendingWallet)
+    setPendingWallet(null)
+    setVerifyIndices(null)
+    setCreationStep('idle')
     toast.success(t('wallet.create.success'))
   }
+
+  function handleVerifyBack() {
+    // Re-pick random indices on every back-trip so a user can't memorize
+    // "always 3, 7 and 11" by trial-and-error if they came in adversarial.
+    setVerifyIndices(getRandomVerifyIndices(3))
+    setCreationStep('reveal')
+  }
+
+  // Legacy direct-create entry point (e.g. tests / non-UI callers).
+  // Kept for backward-compat — no UI surface still uses it.
+  void create
 
   function handleImport(key: string) {
     try {
@@ -205,6 +251,30 @@ export default function PointsPage() {
         onOpenChange={setShowCreateDialog}
         onConfirm={handleCreateConfirm}
       />
+
+      {pendingWallet?.mnemonic && verifyIndices && (
+        <>
+          <MnemonicRevealDialog
+            open={creationStep === 'reveal'}
+            onOpenChange={(open) => {
+              if (!open) abortCreation()
+            }}
+            mnemonic={pendingWallet.mnemonic}
+            mode="create"
+            onContinue={handleRevealContinue}
+          />
+          <MnemonicVerifyDialog
+            open={creationStep === 'verify'}
+            onOpenChange={(open) => {
+              if (!open) abortCreation()
+            }}
+            mnemonic={pendingWallet.mnemonic}
+            verifyIndices={verifyIndices}
+            onSuccess={handleVerifySuccess}
+            onBack={handleVerifyBack}
+          />
+        </>
+      )}
     </div>
   )
 }
