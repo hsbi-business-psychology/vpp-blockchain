@@ -350,3 +350,113 @@ describe('POST /api/v1/claim', () => {
     expect(res.body.error).toBe('CONFIG_ERROR')
   })
 })
+
+describe('GET /api/v1/claim/launch/:surveyId', () => {
+  beforeEach(() => {
+    for (const k of Object.keys(mockKeyStore)) delete mockKeyStore[k as unknown as number]
+    usedNonces.clear()
+    mockKeyStore[1] = TEST_KEY
+    mockKeyStore[42] = TEST_KEY
+  })
+
+  it('redirects (302) to /claim?s=&n=&t= for a registered survey', async () => {
+    const res = await request(app).get('/api/v1/claim/launch/42')
+
+    expect(res.status).toBe(302)
+    const location = res.headers['location'] as string
+    expect(location).toBeDefined()
+    expect(location).toMatch(/\/claim\?s=42&n=[A-Za-z0-9_-]+&t=[A-Za-z0-9_-]+$/)
+  })
+
+  it('produces a token that POST /claim subsequently accepts', async () => {
+    // Round-trip: launch → parse redirect → use the issued (n, t) pair
+    // to POST a real claim. Proves the launcher emits backend-valid
+    // tokens, not just well-shaped strings.
+    vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
+      points: 1,
+      maxClaims: 0n,
+      claimCount: 0n,
+      active: true,
+      registeredAt: 0n,
+      title: 'Test',
+    })
+    vi.mocked(blockchain.hasClaimed).mockResolvedValue(false)
+    vi.mocked(blockchain.awardPoints).mockResolvedValue({
+      hash: '0xabc',
+    } as Awaited<ReturnType<typeof blockchain.awardPoints>>)
+
+    const launchRes = await request(app).get('/api/v1/claim/launch/1')
+    expect(launchRes.status).toBe(302)
+
+    const location = launchRes.headers['location'] as string
+    const url = new URL(location, 'http://localhost')
+    const nonce = url.searchParams.get('n')!
+    const token = url.searchParams.get('t')!
+
+    const { message } = buildClaim(1, nonce)
+    const signature = await TEST_WALLET.signMessage(message)
+
+    const claimRes = await request(app).post('/api/v1/claim').send({
+      walletAddress: TEST_WALLET.address,
+      surveyId: 1,
+      nonce,
+      token,
+      signature,
+      message,
+    })
+
+    expect(claimRes.status).toBe(200)
+    expect(claimRes.body.success).toBe(true)
+  })
+
+  it('issues a fresh nonce on every call (no cached redirect)', async () => {
+    const a = await request(app).get('/api/v1/claim/launch/1')
+    const b = await request(app).get('/api/v1/claim/launch/1')
+
+    expect(a.status).toBe(302)
+    expect(b.status).toBe(302)
+    expect(a.headers['location']).not.toBe(b.headers['location'])
+  })
+
+  it('sets no-store cache headers so CDNs/back-button do not pin a nonce', async () => {
+    const res = await request(app).get('/api/v1/claim/launch/1')
+
+    expect(res.status).toBe(302)
+    expect(res.headers['cache-control']).toContain('no-store')
+  })
+
+  it('returns 404 for a survey with no registered HMAC key', async () => {
+    const res = await request(app).get('/api/v1/claim/launch/9999')
+
+    expect(res.status).toBe(404)
+    expect(res.body.error).toBe('SURVEY_NOT_FOUND')
+  })
+
+  it('returns 400 for a non-numeric survey id', async () => {
+    const res = await request(app).get('/api/v1/claim/launch/abc')
+
+    expect(res.status).toBe(400)
+    expect(res.body.error).toBe('INVALID_SURVEY_ID')
+  })
+
+  it('returns 400 for a zero or negative survey id', async () => {
+    const a = await request(app).get('/api/v1/claim/launch/0')
+    const b = await request(app).get('/api/v1/claim/launch/-1')
+
+    expect(a.status).toBe(400)
+    expect(a.body.error).toBe('INVALID_SURVEY_ID')
+    expect(b.status).toBe(400)
+    expect(b.body.error).toBe('INVALID_SURVEY_ID')
+  })
+
+  it('does NOT leak the survey HMAC key in the redirect URL or response', async () => {
+    const res = await request(app).get('/api/v1/claim/launch/1')
+
+    expect(res.status).toBe(302)
+    const location = res.headers['location'] as string
+    expect(location).not.toContain(TEST_KEY)
+    // res.text is empty for 302 redirects but assert just in case the
+    // framework adds a body in the future.
+    expect(res.text || '').not.toContain(TEST_KEY)
+  })
+})

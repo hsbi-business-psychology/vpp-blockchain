@@ -95,32 +95,37 @@ curl -sS https://vpstunden.hsbi.de/api/v1/surveys/<SURVEY_ID>
 Das ist der **kritische Schritt** — ohne korrektes Endseiten-Snippet
 funktioniert kein Claim.
 
-> **V2.2-Hinweis (April 2026):** Das Endseiten-Snippet ist
-> **engine-spezifisch** — pro Format wird die jeweils sicherste
-> Variante generiert:
+> **V2.3-Hinweis (April 2026):** Das Endseiten-Snippet ist
+> **engine-agnostisch** — beide Formate enthalten exakt das gleiche
+> simple HTML-Fragment: einen `<a href>`-Link auf den Backend-Launcher
+> `GET /api/v1/claim/launch/:surveyId`. Kein PHP, kein `<script>`,
+> kein HMAC-Key in der Survey-Engine.
 >
-> | Format              | Snippet                              | HMAC-Key sichtbar für Studi?       |
-> | ------------------- | ------------------------------------ | ---------------------------------- |
-> | `sosci` (.xml)      | server-side **PHP**                  | **Nein** — bleibt auf SoSci-Server |
-> | `limesurvey` (.lss) | browser-side **JS** (Web Crypto API) | Ja (im Page-Source)                |
+> | Aspekt                                 | V2.3 Launcher-Link           |
+> | -------------------------------------- | ---------------------------- |
+> | HMAC-Key sichtbar für Studi?           | **Nein** — bleibt im Backend |
+> | PHP-Ausführung in Survey-Engine nötig? | Nein                         |
+> | `<script>` in Survey-Engine nötig?     | Nein                         |
+> | Funktioniert in SoSci/LimeSurvey/...?  | Ja, jede HTML-fähige Engine  |
+> | Funktioniert mit aktivem XSS-Filter?   | Ja, `<a href>` survives      |
 >
-> Grund für den Split: SoSci führt PHP in Goodbye-Pages standardmäßig
-> aus, also halten wir den Key dort server-side (strikt sicherer).
-> LimeSurvey 5/6 hat PHP in `surveyls_endtext` aus XSS-Gründen
-> deaktiviert — die alte PHP-Variante hat Studis den HMAC-Key im
-> Klartext-Source angezeigt statt einen Button zu rendern. Für
-> LimeSurvey ist die JS-Variante also der einzig funktionierende
-> Pfad. Beide Snippets erzeugen URLs im gleichen
-> `/claim?s=&n=&t=` Format, die das Backend identisch validiert.
+> Vorgeschichte: V2.2 hatte engine-spezifische Snippets (SoSci-PHP +
+> LimeSurvey-JS). Das war fragil, weil LimeSurvey 5/6 `<script>`
+> via HTMLPurifier strippt — der LimeSurvey-Pfad war komplett
+> defekt, und die JS-Variante hätte ohnehin den HMAC-Key im
+> Page-Source geleakt. V2.3 verschiebt die Token-Generierung
+> ins Backend → ein universelles Snippet für alle Engines, Key
+> bleibt strikt server-side.
 
 1. Frontend → /admin → Tab **"Surveys"** → Survey auswählen → **"Generate Template"**.
    - Format wählen: `sosci` (XML) oder `limesurvey` (.lss).
-2. Backend generiert ein HTML+JS-Snippet, das:
-   - Den Survey-spezifischen HMAC-Key als JS-Konstante enthält
-     (in der Page-Source sichtbar — gleiche Sichtbarkeit wie der
-     alte PHP-Variant; siehe `template.ts` Security-Notes).
-   - Im Browser des Studis einen Nonce + HMAC-Token berechnet.
-   - Eine personalisierte Claim-URL für VPP rendert.
+2. Backend generiert ein **HTML-Snippet ohne Script/PHP**, das:
+   - Einen styled `<a href>`-Button auf
+     `https://vpstunden.hsbi.de/api/v1/claim/launch/<survey_id>` rendert.
+   - Beim Klick erzeugt der Backend-Launcher pro Aufruf einen frischen
+     Nonce + HMAC-Token serverseitig und 302-redirected zur Claim-Page.
+   - Der HMAC-Key liegt nur im Backend-`survey-keys`-Store, nie im
+     Snippet, nie im Page-Source.
 3. **Download** der Datei (.xml oder .lss).
 
 ### Template in die Survey-Engine importieren
@@ -142,13 +147,14 @@ Lehrende:r meldet sich an und importiert die Datei:
 **Test (für beide Engines):**
 
 - Survey aktivieren → Vorschau öffnen → durchklicken bis Endseite.
-- Erwartung: Loading-Text "Link wird vorbereitet…" für ~1 Sekunde,
-  dann blauer Button **"Punkte jetzt einlösen →"** mit funktionierendem
-  Link auf `https://vpstunden.hsbi.de/claim?s=…&n=…&t=…`.
-- Wenn rohe `<script>`-Tags oder JS-Source sichtbar bleibt → die
-  Survey-Engine filtert das `<script>` (LimeSurvey 3.x mit aktivem
-  XSS-Filter). Fix: in den Survey-Settings den XSS-Filter für
-  Endtexte deaktivieren oder auf SoSci wechseln.
+- Erwartung: blauer Button **"Punkte jetzt einlösen →"** sofort sichtbar.
+- Klick auf den Button → Browser geht auf
+  `https://vpstunden.hsbi.de/api/v1/claim/launch/<id>` →
+  Backend antwortet 302 → landet auf `/claim?s=…&n=…&t=…` → Wallet-Sign.
+- Falls der Button gar nicht angezeigt wird → die Survey-Engine
+  hat sogar `<a>`-Tags gestrippt (extrem aggressive XSS-Settings).
+  Workaround: Survey-Engine-Admin in den Endtext-Einstellungen
+  HTML-Tags `<a>` und `<div>` whitelisten.
 
 ### Studi-Wallet-Adresse — wo kommt sie her?
 
@@ -198,15 +204,17 @@ Plus: Notiz in `operators-private.md` ergänzen:
 
 ## Häufige Probleme
 
-| Symptom                                                                         | Ursache                                                                                                                                                                                   | Fix                                                                                                                                |
-| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| "Studi sieht keinen Claim-Link, sondern rohen `<?php` / `<script>` Source-Code" | Survey-Engine rendert das Snippet als Text statt es auszuführen. Symptome: V1-Template (PHP) auf einer LimeSurvey 5/6, oder V2.1-JS-Template auf einer Engine mit aggressivem XSS-Filter. | Template neu generieren (V2.1 erzeugt JS, nicht PHP) und re-importieren. Bei LimeSurvey 3.x: XSS-Filter für Endtexte deaktivieren. |
-| "Studi sieht 'Link wird vorbereitet…' aber Button erscheint nie"                | Web Crypto API blockiert (sehr alter Browser, oder Survey läuft auf `http://` statt `https://` → Web Crypto verweigert HMAC-Operationen ohne Secure Context)                              | Survey auf HTTPS umstellen, oder Studi soll modernen Browser nutzen                                                                |
-| "Studi klickt Claim, sieht 'INVALID_HMAC'"                                      | HMAC-Key im Endseiten-Snippet weicht von `survey-keys.json` ab — z.B. weil Key rotiert wurde, ohne das Template neu zu generieren + zu importieren                                        | Neues Template generieren + in Survey-Engine re-importieren                                                                        |
-| "Studi klickt Claim, sieht 'NONCE_USED'"                                        | Replay-Schutz: dieselbe Survey-Antwort wurde schon mal eingelöst                                                                                                                          | Studi soll Survey neu ausfüllen                                                                                                    |
-| "Studi hat 30 min nichts geclaimt, jetzt INVALID"                               | HMAC-Token-Ablauf (Standard 60 min — siehe `auth.ts`)                                                                                                                                     | Studi soll Survey neu ausfüllen                                                                                                    |
-| "Lehrende:r kann sich nicht im Admin einloggen"                                 | Wallet-Adresse hat keine ADMIN_ROLE (Schritt 2 nicht durchgeführt oder Tx failed)                                                                                                         | Schritt 2 erneut                                                                                                                   |
-| "Keine ETH im Backend für meine Studie"                                         | Wallet-Balance leer                                                                                                                                                                       | `eth-refill.md`                                                                                                                    |
+| Symptom                                                                         | Ursache                                                                                                                                                      | Fix                                                                                  |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| "Studi sieht keinen Claim-Link, sondern rohen `<?php` / `<script>` Source-Code" | Alte V1- oder V2.2-Template auf einer Engine ohne PHP- bzw. ohne Script-Support. V2.3 hat dieses Problem nicht mehr (nur noch `<a href>`).                   | Template via Admin-UI neu generieren (V2.3) und re-importieren.                      |
+| "Loading-Text ‘Link wird vorbereitet…’ bleibt für immer stehen, kein Button"    | Alte V2.2-LimeSurvey-Template — `<script>` wurde von HTMLPurifier gestrippt.                                                                                 | Template via Admin-UI neu generieren (V2.3 hat kein Script mehr) und re-importieren. |
+| "Klick auf Button → 404 von Backend"                                            | Survey hat keinen registrierten HMAC-Key auf der Backend-Seite (Survey wurde z.B. nur on-chain registriert, ohne `POST /api/v1/surveys/:id/key`).            | Im Admin-UI für die Survey **"Generate Key"** klicken → re-test.                     |
+| "Studi sieht 'Link wird vorbereitet…' aber Button erscheint nie"                | Web Crypto API blockiert (sehr alter Browser, oder Survey läuft auf `http://` statt `https://` → Web Crypto verweigert HMAC-Operationen ohne Secure Context) | Survey auf HTTPS umstellen, oder Studi soll modernen Browser nutzen                  |
+| "Studi klickt Claim, sieht 'INVALID_HMAC'"                                      | HMAC-Key im Endseiten-Snippet weicht von `survey-keys.json` ab — z.B. weil Key rotiert wurde, ohne das Template neu zu generieren + zu importieren           | Neues Template generieren + in Survey-Engine re-importieren                          |
+| "Studi klickt Claim, sieht 'NONCE_USED'"                                        | Replay-Schutz: dieselbe Survey-Antwort wurde schon mal eingelöst                                                                                             | Studi soll Survey neu ausfüllen                                                      |
+| "Studi hat 30 min nichts geclaimt, jetzt INVALID"                               | HMAC-Token-Ablauf (Standard 60 min — siehe `auth.ts`)                                                                                                        | Studi soll Survey neu ausfüllen                                                      |
+| "Lehrende:r kann sich nicht im Admin einloggen"                                 | Wallet-Adresse hat keine ADMIN_ROLE (Schritt 2 nicht durchgeführt oder Tx failed)                                                                            | Schritt 2 erneut                                                                     |
+| "Keine ETH im Backend für meine Studie"                                         | Wallet-Balance leer                                                                                                                                          | `eth-refill.md`                                                                      |
 
 ---
 

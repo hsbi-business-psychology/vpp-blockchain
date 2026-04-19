@@ -32,6 +32,7 @@
  *     (wallet, surveyId), so even a successful HMAC + fresh nonce from
  *     a re-issued URL cannot double-award.
  */
+import { randomBytes } from 'node:crypto'
 import { Router, type RequestHandler } from 'express'
 import { z } from 'zod'
 import { ethers } from 'ethers'
@@ -41,12 +42,94 @@ import { throwValidationError } from '../lib/validation.js'
 import { claimLimiter } from '../middleware/rateLimit.js'
 import * as blockchain from '../services/blockchain.js'
 import { getEventStore } from '../services/event-store.js'
-import { isValidNonceShape, isValidTokenShape, verifyToken } from '../services/hmac.js'
+import {
+  buildClaimUrl,
+  isValidNonceShape,
+  isValidTokenShape,
+  verifyToken,
+} from '../services/hmac.js'
 import { isUsed, markUsed } from '../services/nonce-store.js'
 import { getSurveyKey } from '../services/survey-keys.js'
 import type { ClaimResult } from '../types.js'
 
 const router: Router = Router()
+
+/**
+ * @route GET /api/v1/claim/launch/:surveyId
+ *
+ * Engine-agnostic claim entry-point. Designed to be called from a
+ * plain `<a href>` link inside any survey engine (SoSci, LimeSurvey,
+ * Qualtrics, Google Forms, ...) — no script execution, no PHP, no
+ * browser HMAC required.
+ *
+ * Behaviour:
+ *   - Generates a fresh 16-byte nonce server-side.
+ *   - Computes the HMAC token using the per-survey key (which never
+ *     leaves the backend).
+ *   - 302-redirects to `${frontendUrl}/claim?s=&n=&t=` for the wallet
+ *     sign + POST /claim flow.
+ *
+ * Failure model:
+ *   - 400 INVALID_SURVEY_ID  — surveyId not a positive integer
+ *   - 404 SURVEY_NOT_FOUND   — no per-survey key registered
+ *
+ * Security note:
+ *   - The HMAC key is consulted in-memory and never appears in the
+ *     redirect URL or any client-visible payload. This is a strict
+ *     improvement over both the old SoSci-PHP and LimeSurvey-JS
+ *     snippet variants (the latter leaked the key into the page
+ *     source). Replay protection is unchanged: each nonce is single-
+ *     use via the disk-backed nonce store, and the on-chain
+ *     `_claimed[surveyId][wallet]` guard enforces one claim per
+ *     (wallet, survey) regardless of nonce reuse attempts.
+ *   - Anyone with the launcher URL can mint fresh (nonce, token)
+ *     pairs at will, but each pair only entitles the holder to one
+ *     successful POST /claim. The same was already true of the
+ *     SoSci/LimeSurvey snippets — anyone reaching the goodbye page
+ *     could refresh and get fresh nonces — so this does not weaken
+ *     the existing trust model.
+ *   - Rate-limited via `claimLimiter` (500 req/min/IP default) to
+ *     blunt token-mint floods from a single source.
+ */
+router.get('/launch/:surveyId', claimLimiter as RequestHandler, (req, res, next) => {
+  try {
+    const surveyId = Number(req.params.surveyId)
+    if (!Number.isInteger(surveyId) || surveyId <= 0 || surveyId > 1_000_000) {
+      throw new AppError(
+        400,
+        'INVALID_SURVEY_ID',
+        'The claim link is malformed (invalid survey id).',
+      )
+    }
+
+    const surveyKey = getSurveyKey(surveyId)
+    if (!surveyKey) {
+      throw new AppError(
+        404,
+        'SURVEY_NOT_FOUND',
+        'This survey is not registered or has no HMAC key. Contact the survey administrator.',
+      )
+    }
+
+    const nonce = randomBytes(16).toString('base64url')
+    const url = buildClaimUrl({
+      origin: config.frontendUrl,
+      surveyId,
+      nonce,
+      key: surveyKey,
+    })
+
+    // Cache-busting headers: each launch must produce a fresh nonce.
+    // Without these, a CDN or browser back/forward navigation could
+    // serve a cached redirect, which would lead to NONCE_USED on the
+    // second click.
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
+    res.setHeader('Pragma', 'no-cache')
+    res.redirect(302, url)
+  } catch (err) {
+    next(err)
+  }
+})
 
 const claimSchema = z.object({
   walletAddress: z.string().refine(ethers.isAddress, 'Invalid wallet address'),

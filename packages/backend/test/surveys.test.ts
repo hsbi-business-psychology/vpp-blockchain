@@ -231,11 +231,14 @@ describe('POST /api/v1/surveys/:id/template', () => {
     expect(res.headers['content-type']).toContain('application/xml')
     expect(res.headers['content-disposition']).toContain('vpp-survey-1.xml')
     expect(res.text).toContain('surveyProject')
-    expect(res.text).toContain('embedded-key-1')
-    // SoSci variant uses server-side PHP so the HMAC key never reaches
-    // the participant's browser. Assert the PHP scaffolding is present.
-    expect(res.text).toContain("$VPP_KEY_B64   = 'embedded-key-1'")
-    expect(res.text).toContain('hash_hmac')
+    // V2.3 templates ship the engine-agnostic launcher link instead
+    // of an inline HMAC computation. The HMAC key MUST NOT appear in
+    // the rendered template — it is looked up server-side by the
+    // launcher route.
+    expect(res.text).not.toContain('embedded-key-1')
+    expect(res.text).not.toContain('<?php')
+    expect(res.text).not.toContain('hash_hmac')
+    expect(res.text).toContain('/api/v1/claim/launch/1')
     expect(res.text).toContain('Punkte jetzt')
   })
 
@@ -260,7 +263,9 @@ describe('POST /api/v1/surveys/:id/template', () => {
     expect(res.status).toBe(200)
     expect(res.headers['content-disposition']).toContain('vpp-survey-5.xml')
     expect(res.text).toContain('surveyProject')
-    expect(res.text).toContain('survey-5-key')
+    // V2.3 keeps the per-survey HMAC key strictly server-side.
+    expect(res.text).not.toContain('survey-5-key')
+    expect(res.text).toContain('/api/v1/claim/launch/5')
   })
 
   it('should return a LimeSurvey template with format=limesurvey', async () => {
@@ -286,7 +291,10 @@ describe('POST /api/v1/surveys/:id/template', () => {
     expect(res.headers['content-disposition']).toContain('vpp-survey-7.lss')
     expect(res.text).toContain('LimeSurveyDocType')
     expect(res.text).toContain('surveyls_endtext')
-    expect(res.text).toContain('ls-survey-7-key')
+    // V2.3 keeps the per-survey HMAC key strictly server-side.
+    expect(res.text).not.toContain('ls-survey-7-key')
+    expect(res.text).not.toContain('<script>')
+    expect(res.text).toContain('/api/v1/claim/launch/7')
     expect(res.text).toContain('Punkte jetzt')
   })
 
