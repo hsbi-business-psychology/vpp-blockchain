@@ -2,12 +2,15 @@ import { describe, it, expect } from 'vitest'
 import { webcrypto } from 'node:crypto'
 import { generateSoSciTemplate, generateLimeSurveyTemplate } from '../src/services/template.js'
 
-// V2.1 templates ship a self-contained HTML+JS claim button. The JS
-// computes the HMAC-SHA256 token in the participant's browser via the
-// Web Crypto API — no PHP runtime is required on the survey engine.
-// Tests therefore assert on the HTML scaffolding, the embedded
-// constants (survey id, key, frontend origin), and the JS hooks the
-// snippet relies on.
+// V2.2 templates ship engine-specific snippets:
+//   - SoSci      → server-side PHP (HMAC key never reaches the browser)
+//   - LimeSurvey → browser-side HTML+JS via Web Crypto API
+// Both produce URLs in the same `/claim?s=&n=&t=` shape, so the
+// backend HMAC verifier accepts either path. The tests therefore
+// assert on the SoSci-PHP scaffolding *and* on the LimeSurvey-JS
+// scaffolding separately, plus a round-trip cross-check that proves
+// the JS variant produces tokens identical to the canonical Node
+// HMAC-SHA256 path the backend uses.
 
 function extractScript(template: string): string {
   const match = template.match(/<script>([\s\S]*?)<\/script>/)
@@ -15,17 +18,16 @@ function extractScript(template: string): string {
   return match[1]
 }
 
-describe('generateSoSciTemplate', () => {
-  it('embeds the survey id, key, and JS HMAC builder', () => {
+describe('generateSoSciTemplate (PHP variant)', () => {
+  it('embeds the survey id, key, and PHP HMAC builder', () => {
     const xml = generateSoSciTemplate(42, 'vpp-test-key', 2)
 
     expect(xml).toContain('<?xml version="1.0"')
     expect(xml).toContain('surveyProject')
     expect(xml).toContain('VPP Survey 42')
-    expect(xml).toContain('var SURVEY_ID = 42')
-    expect(xml).toContain("var KEY_B64URL = 'vpp-test-key'")
-    expect(xml).toContain("'HMAC'")
-    expect(xml).toContain('SHA-256')
+    expect(xml).toContain('$VPP_SURVEY_ID = 42')
+    expect(xml).toContain("$VPP_KEY_B64   = 'vpp-test-key'")
+    expect(xml).toContain('hash_hmac')
     expect(xml).toContain('Versuchspersonenpunkte')
     expect(xml).toContain('Punkte jetzt einl')
   })
@@ -37,19 +39,17 @@ describe('generateSoSciTemplate', () => {
     expect(xml).not.toContain('Versuchspersonenpunkte')
   })
 
-  it('builds the URL at runtime via crypto.subtle.sign, not pre-computed', () => {
-    // The HMAC key is embedded as a literal but the URL parameters
-    // (s/n/t) are computed at runtime in the browser. Make sure the
-    // template builds the URL with the runtime variables instead of
-    // substituting a fake nonce/token at template-generation time.
+  it('writes the URL via $claim_url with runtime-computed nonce/token', () => {
+    // The HMAC key is a literal but the URL parameters (s/n/t) are
+    // computed at PHP runtime. Make sure the template builds the URL
+    // with the runtime variable instead of substituting a fake
+    // nonce/token at template-generation time.
     const xml = generateSoSciTemplate(5, 'k', 3)
 
-    expect(xml).toContain("'/claim?s='")
-    expect(xml).toContain("'&n='")
-    expect(xml).toContain("'&t='")
-    expect(xml).toContain('encodeURIComponent(nonce)')
-    expect(xml).toContain('encodeURIComponent(token)')
-    expect(xml).toContain(".sign('HMAC'")
+    expect(xml).toContain("'/claim'")
+    expect(xml).toContain("'?s=' . $VPP_SURVEY_ID")
+    expect(xml).toContain("'&n=' . $nonce")
+    expect(xml).toContain("'&t=' . $token")
   })
 
   it('includes the goodbye section', () => {
@@ -59,19 +59,18 @@ describe('generateSoSciTemplate', () => {
     expect(xml).toContain('Vielen Dank')
   })
 
-  it('does not embed any PHP tags', () => {
-    // Older versions used <?php ... ?> which broke on LimeSurvey and
-    // some managed SoSci installs. The browser-side variant must be
-    // free of PHP markers.
-    const xml = generateSoSciTemplate(1, 'k', 1)
+  it('does NOT embed the JS snippet (SoSci variant must stay PHP-only)', () => {
+    // Catches a regression where someone routes SoSci through the JS
+    // builder and unintentionally leaks the HMAC key to participants.
+    const xml = generateSoSciTemplate(1, 'sosci-key', 1)
 
-    expect(xml).not.toContain('<?php')
-    expect(xml).not.toContain('hash_hmac')
-    expect(xml).not.toContain('htmlspecialchars')
+    expect(xml).not.toContain('<script>')
+    expect(xml).not.toContain('crypto.subtle')
+    expect(xml).not.toContain('KEY_B64URL')
   })
 })
 
-describe('generateLimeSurveyTemplate', () => {
+describe('generateLimeSurveyTemplate (JS variant)', () => {
   it('emits valid LimeSurvey survey-structure XML', () => {
     const lss = generateLimeSurveyTemplate(7, 'ls-key', 1)
 
@@ -99,10 +98,22 @@ describe('generateLimeSurveyTemplate', () => {
     expect(lss).toContain('surveyls_endtext')
     expect(lss).toContain('var SURVEY_ID = 42')
     expect(lss).toContain("var KEY_B64URL = 'lime-key'")
-    expect(lss).toContain("'HMAC'")
+    expect(lss).toContain('window.crypto.subtle')
+    expect(lss).toContain(".importKey('raw'")
+    expect(lss).toContain(".sign('HMAC'")
   })
 
-  it('does not embed any PHP tags (would break in LimeSurvey 5/6)', () => {
+  it('builds the URL at runtime via Web Crypto (encodeURIComponent on params)', () => {
+    const lss = generateLimeSurveyTemplate(5, 'k', 3)
+
+    expect(lss).toContain("'/claim?s='")
+    expect(lss).toContain("'&n='")
+    expect(lss).toContain("'&t='")
+    expect(lss).toContain('encodeURIComponent(nonce)')
+    expect(lss).toContain('encodeURIComponent(token)')
+  })
+
+  it('does NOT embed PHP tags (would render as raw text in LimeSurvey 5/6)', () => {
     const lss = generateLimeSurveyTemplate(1, 'k', 1)
 
     expect(lss).not.toContain('<?php')
@@ -151,25 +162,17 @@ describe('generateLimeSurveyTemplate', () => {
   })
 
   it('embedded JS produces a token that the backend HMAC verifier would accept', async () => {
-    // Replays the exact algorithm the snippet runs in the browser
-    // against the same Web Crypto API in Node 20 (node:crypto.webcrypto)
-    // and verifies that the resulting URL parses back to a token that
-    // matches a fresh HMAC-SHA256 over the canonical "v1|<id>|<nonce>"
-    // message. This catches encoding bugs (b64url <-> bytes) before
-    // they reach a student.
+    // Replays the snippet's algorithm in Node 20 (node:crypto.webcrypto)
+    // and cross-checks against crypto.createHmac (the canonical path
+    // the backend uses) to prove that browser-derived tokens land at
+    // exactly the same byte sequence the backend expects. Catches
+    // any encoding bug (b64url <-> bytes) before it reaches a student.
     const surveyId = 7
-    // base64url-encoded 32-byte test key.
     const keyB64 = 'ZBJokSACBoFU10w8Rl67CUnkt3DdEPJfaEh7_hw0H7Y'
     const lss = generateLimeSurveyTemplate(surveyId, keyB64, 1)
     const script = extractScript(lss)
 
-    // Prove the script defines the expected building blocks. We
-    // can't execute the snippet directly (it relies on `document`
-    // and `window`), so the next assertions independently re-implement
-    // the same primitives and check round-trip correctness.
     expect(script).toContain('window.crypto.subtle')
-    expect(script).toContain(".importKey('raw'")
-    expect(script).toContain(".sign('HMAC'")
     expect(script).toContain("'v1|' + SURVEY_ID + '|' + nonce")
 
     function b64urlToBytes(s: string): Uint8Array {
@@ -204,13 +207,31 @@ describe('generateLimeSurveyTemplate', () => {
     )
     const token = bytesToB64url(new Uint8Array(sig))
 
-    // Cross-check via Node's crypto.createHmac to make sure the Web
-    // Crypto path agrees with the same algorithm the backend uses.
     const { createHmac } = await import('node:crypto')
     const expected = createHmac('sha256', Buffer.from(keyBytes))
       .update(`v1|${surveyId}|${nonce}`)
       .digest()
     const expectedB64url = bytesToB64url(new Uint8Array(expected))
     expect(token).toBe(expectedB64url)
+  })
+})
+
+describe('SoSci ↔ LimeSurvey URL-format compatibility', () => {
+  // Both engines need to land on URLs the backend accepts. The PHP
+  // and JS snippets are independent code paths but must produce
+  // identical query-param shapes so a single backend route can serve
+  // both.
+  it('both formats use the same /claim?s=&n=&t= URL skeleton', () => {
+    const xml = generateSoSciTemplate(1, 'k', 1)
+    const lss = generateLimeSurveyTemplate(1, 'k', 1)
+
+    expect(xml).toContain("'/claim'")
+    expect(xml).toContain("'?s='")
+    expect(xml).toContain("'&n='")
+    expect(xml).toContain("'&t='")
+
+    expect(lss).toContain("'/claim?s='")
+    expect(lss).toContain("'&n='")
+    expect(lss).toContain("'&t='")
   })
 })

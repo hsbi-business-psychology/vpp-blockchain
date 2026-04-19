@@ -3,73 +3,147 @@
  *
  * Generates downloadable survey templates for SoSci Survey (.xml) and
  * LimeSurvey (.lss). Each template embeds a styled "claim your points"
- * button.
+ * button on the goodbye / end-text page.
  *
- * V2.1 design — browser-side HMAC (was: server-side PHP):
- *   The goodbye/end-text page no longer relies on the survey engine's
- *   PHP runtime. Instead it ships a self-contained HTML+JS snippet
- *   that uses the browser's Web Crypto API (HMAC-SHA256, supported
- *   since 2014 in every evergreen browser) to derive the one-time
- *   claim URL on the participant's device. Reasons:
- *     1. **LimeSurvey 5/6 disables PHP in end-text** by default for
- *        XSS-hardening, so the previous PHP variant rendered as raw
- *        source code to participants — leaking the HMAC key in plain
- *        sight and making the button non-functional.
- *     2. **SoSci installs sometimes ship without PHP** in goodbye
- *        pages on managed multi-tenant deployments (e.g. some
- *        university hosts).
- *     3. The browser variant works on *both* engines unchanged and
- *        survives future hardening flips.
+ * V2.2 design — engine-specific snippet selection:
  *
- *   Security model is unchanged: the per-survey HMAC key is embedded
- *   in the template (visible to anyone who downloads the .lss/.xml or
- *   inspects the page source — both groups already had it under the
- *   PHP variant via the script tag). Real abuse defence is the
- *   server-side single-use nonce store + the on-chain `_claimed`
- *   guard + `MAX_MESSAGE_AGE_MS` time bound, none of which the
- *   participant can subvert by knowing the key.
+ *   |               | Snippet variant     | HMAC key visible to participant? |
+ *   | ------------- | ------------------- | -------------------------------- |
+ *   | SoSci Survey  | server-side **PHP** | NO — key never leaves SoSci      |
+ *   | LimeSurvey    | browser-side **JS** | yes (in page source)             |
+ *
+ *   Why two variants:
+ *     - SoSci runs PHP in goodbye pages by default, so we can keep the
+ *       HMAC key strictly server-side. Only the rendered claim URL
+ *       reaches the participant. This is the strongest available
+ *       posture for that engine.
+ *     - LimeSurvey 5.x and 6.x disable PHP in `surveyls_endtext` for
+ *       XSS-hardening (rendering raw `<?php` source as text — observed
+ *       on the HSBI deploy 2026-04-19). For LimeSurvey we therefore
+ *       fall back to a self-contained HTML+JS snippet that derives
+ *       the HMAC token in the participant's browser via the Web
+ *       Crypto API. The key is then in the page source; that is an
+ *       accepted trade-off (see "Security note" below).
+ *
+ *   Security note for the JS variant:
+ *     A participant inspecting source can read the HMAC key. Knowing
+ *     the key only helps if they can also forge a fresh server-
+ *     recognised nonce, which they cannot: the backend nonce store
+ *     enforces single-use, the contract enforces one claim per wallet
+ *     per survey via `_claimed[surveyId][wallet]`, and the auth layer
+ *     enforces `MAX_MESSAGE_AGE_MS`. So the worst-case is a participant
+ *     re-using *their own* claim slot, which the on-chain guard
+ *     prevents anyway. Operators who need stronger key-confidentiality
+ *     should use SoSci.
  *
  * Supported formats:
- *   - **SoSci Survey** – project XML (<surveyProject>) with the snippet
- *                        on the goodbye page.
- *   - **LimeSurvey**   – survey structure (.lss) with the snippet in
- *                        the survey end message (surveyls_endtext).
+ *   - **SoSci Survey** – project XML (<surveyProject>) with the PHP
+ *                        snippet on the goodbye page.
+ *   - **LimeSurvey**   – survey structure (.lss) with the JS snippet
+ *                        in the survey end message (surveyls_endtext).
  */
 import { config } from '../config.js'
 
 export type TemplateFormat = 'sosci' | 'limesurvey'
 
 /**
- * Self-contained HTML+JS snippet that renders a personalised claim
- * button by computing the HMAC-SHA256 token in the participant's
- * browser via the Web Crypto API. Embeds:
+ * Server-side PHP snippet that runs on the SoSci Survey backend and
+ * renders a personalised claim button. Embeds:
+ *   - the survey id (numeric)
+ *   - the per-survey HMAC key (base64url) — stays on the SoSci server
+ *   - the public frontend origin (where the claim page lives)
+ *
+ * The participant only ever sees the rendered HTML output (URL +
+ * button). The HMAC key never reaches the browser, which makes this
+ * the strictly safer option whenever the engine supports PHP.
+ *
+ * Failure mode: if SoSci has PHP disabled in goodbye pages on a
+ * specific install, the participant sees raw `<?php` source. In that
+ * case the operator should generate the LimeSurvey-format template
+ * instead and import the JS variant; both variants produce URLs in
+ * the same `/claim?s=&n=&t=` format that the backend accepts.
+ *
+ * Inputs are interpolated as PHP single-quoted string literals.
+ * `surveyKey` is base64url (A-Z a-z 0-9 - _) and `origin` is a
+ * validated URL — neither can contain `'` or `\`, so direct
+ * interpolation is safe.
+ */
+function buildPhpSnippet(surveyId: number, surveyKey: string, points: number): string {
+  const pointLabel = points > 1 ? 'Versuchspersonenpunkte' : 'Versuchspersonenpunkt'
+  const origin = config.frontendUrl
+  return `<?php
+// VPP claim button — generated by VPP backend. Do not edit by hand.
+// Re-download the template from the admin UI to update the embedded
+// HMAC key after a key rotation.
+$VPP_FRONTEND  = '${origin}';
+$VPP_SURVEY_ID = ${surveyId};
+$VPP_KEY_B64   = '${surveyKey}';
+$VPP_POINTS    = ${points};
+
+// 16 random bytes -> URL-safe base64 (no padding) -> nonce.
+if (function_exists('random_bytes')) {
+    $nonce_raw = random_bytes(16);
+} else {
+    $nonce_raw = openssl_random_pseudo_bytes(16);
+}
+$nonce = rtrim(strtr(base64_encode($nonce_raw), '+/', '-_'), '=');
+
+// HMAC-SHA256 of the canonical message "v1|<surveyId>|<nonce>".
+$key_raw = base64_decode(strtr($VPP_KEY_B64, '-_', '+/'));
+$mac_raw = hash_hmac('sha256', 'v1|' . $VPP_SURVEY_ID . '|' . $nonce, $key_raw, true);
+$token = rtrim(strtr(base64_encode($mac_raw), '+/', '-_'), '=');
+
+$claim_url = $VPP_FRONTEND . '/claim'
+    . '?s=' . $VPP_SURVEY_ID
+    . '&n=' . $nonce
+    . '&t=' . $token;
+?>
+<div style="max-width:480px;margin:2rem auto;text-align:center;font-family:system-ui,-apple-system,sans-serif;">
+  <div style="font-size:2.5rem;margin-bottom:0.5rem;">&#10003;</div>
+  <h2 style="margin:0 0 0.5rem;font-size:1.35rem;color:#111;">Vielen Dank f&#252;r deine Teilnahme!</h2>
+  <p style="margin:0.75rem 0;color:#555;font-size:0.95rem;">
+    Du erh&#228;ltst <strong><?php echo $VPP_POINTS; ?> ${pointLabel}</strong> f&#252;r diese Umfrage.
+    Klicke auf den Button, um deine Punkte einzul&#246;sen.
+  </p>
+  <a href="<?php echo htmlspecialchars($claim_url, ENT_QUOTES, 'UTF-8'); ?>"
+     style="display:inline-block;margin:1rem 0;padding:0.7rem 2rem;background:#2563eb;color:#fff;text-decoration:none;border-radius:0.5rem;font-weight:600;font-size:1rem;">
+    Punkte jetzt einl&#246;sen &#8594;
+  </a>
+  <p style="margin-top:1.5rem;color:#888;font-size:0.8rem;">
+    Der Link ist nur einmal g&#252;ltig. Bitte gib ihn nicht weiter.
+  </p>
+</div>
+`
+}
+
+/**
+ * Self-contained HTML+JS snippet for engines that do not execute PHP
+ * in their end-text (LimeSurvey 5.x / 6.x). Computes the HMAC-SHA256
+ * token in the participant's browser via the Web Crypto API.
+ *
+ * Embeds:
  *   - the survey id (numeric, hard-coded)
- *   - the per-survey HMAC key (base64url, hard-coded)
+ *   - the per-survey HMAC key (base64url, hard-coded — visible in
+ *     page source; see module-level security note)
  *   - the public frontend origin (where the claim page lives)
  *
  * Compatibility:
- *   - Works on SoSci Survey (goodbye text) and LimeSurvey
- *     (surveyls_endtext) without any engine-specific config flags.
  *   - Web Crypto API: Chrome 37+, Firefox 34+, Safari 11+, Edge 12+.
  *     A graceful error message is shown on browsers that lack it.
+ *   - Requires Secure Context (https://) — Web Crypto silently
+ *     refuses to operate on plain http:// pages. The snippet handles
+ *     that by failing into the visible error block.
  *
  * Layout:
  *   - Initial state: "Link wird vorbereitet..." (loading text).
  *   - On success: button with the personalised claim URL.
  *   - On failure: red error message with the exception text.
  *
- * Security notes:
- *   - The HMAC key is in the page source. This is identical to the
- *     previous PHP variant's threat model: anyone who can view the
- *     end-text source already had the key (the PHP rendered it on
- *     LimeSurvey too, because PHP execution was disabled). Knowing
- *     the key only matters if the attacker can also forge a fresh
- *     server-recognised nonce, which the backend's single-use
- *     nonce store prevents.
- *   - encodeURIComponent on nonce/token defends against any
- *     future encoding change that introduces URL-special chars.
+ * Inputs are interpolated as JS single-quoted string literals;
+ * `surveyKey` is base64url and `origin` is a validated URL — neither
+ * can contain `'` or `\`, so direct interpolation is safe.
  */
-function buildClaimSnippet(surveyId: number, surveyKey: string, points: number): string {
+function buildJsSnippet(surveyId: number, surveyKey: string, points: number): string {
   const pointLabel = points > 1 ? 'Versuchspersonenpunkte' : 'Versuchspersonenpunkt'
   const origin = config.frontendUrl
   // The HMAC key is a base64url string (A-Z a-z 0-9 - _) that cannot
@@ -169,14 +243,14 @@ function buildClaimSnippet(surveyId: number, surveyKey: string, points: number):
 
 /**
  * Generates a SoSci Survey project XML that can be imported directly.
- * The goodbye page contains a self-contained HTML+JS snippet that
- * renders a one-time claim URL per participant (see buildClaimSnippet).
+ * The goodbye page contains the **PHP** snippet — the HMAC key stays
+ * server-side on the SoSci host and is never sent to the participant.
  *
  * Import: SoSci Admin > Project > Import (project file).
  */
 export function generateSoSciTemplate(surveyId: number, surveyKey: string, points: number): string {
   const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19)
-  const goodbyePhp = buildClaimSnippet(surveyId, surveyKey, points)
+  const goodbyePhp = buildPhpSnippet(surveyId, surveyKey, points)
 
   return `<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE surveyProject SYSTEM "doctype.survey.dtd">
@@ -213,21 +287,25 @@ export function generateSoSciTemplate(surveyId: number, surveyKey: string, point
 
 /**
  * Generates a LimeSurvey Survey Structure (.lss) that can be imported
- * via "Create survey > Import". The HTML+JS snippet is embedded in
- * the survey end message (surveyls_endtext) and runs entirely in the
+ * via "Create survey > Import". The **JS** snippet is embedded in the
+ * survey end message (surveyls_endtext) and runs entirely in the
  * participant's browser — no PHP, no admin toggles required.
  *
- * Tested against LimeSurvey 5.x and 6.x (both render the snippet as
- * HTML+JS by default in surveyls_endtext). Older LimeSurvey 3.x
- * installs may need the survey-level "XSS-Filter" disabled for the
- * inline <script> tag to survive the import.
+ * LimeSurvey-specific reasoning: LimeSurvey 5.x / 6.x disables PHP
+ * execution in surveyls_endtext for XSS hardening, so the SoSci-style
+ * server-side variant would render as raw `<?php` source to
+ * participants (and leak the embedded HMAC key in plain sight). The
+ * JS variant sidesteps both problems.
+ *
+ * Older LimeSurvey 3.x installs may need the survey-level "XSS-Filter"
+ * disabled for the inline `<script>` tag to survive the import.
  */
 export function generateLimeSurveyTemplate(
   surveyId: number,
   surveyKey: string,
   points: number,
 ): string {
-  const claimHtml = buildClaimSnippet(surveyId, surveyKey, points)
+  const claimHtml = buildJsSnippet(surveyId, surveyKey, points)
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <document>

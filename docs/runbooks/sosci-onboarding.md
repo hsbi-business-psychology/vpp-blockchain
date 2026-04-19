@@ -95,13 +95,23 @@ curl -sS https://vpstunden.hsbi.de/api/v1/surveys/<SURVEY_ID>
 Das ist der **kritische Schritt** — ohne korrektes Endseiten-Snippet
 funktioniert kein Claim.
 
-> **V2.1-Hinweis (April 2026):** Das Endseiten-Snippet läuft jetzt
-> als **Browser-JavaScript** (Web Crypto API), nicht mehr als PHP.
-> Grund: LimeSurvey 5/6 hat PHP in `surveyls_endtext` aus
-> XSS-Härtungs-Gründen deaktiviert — der alte PHP-Variante hat
-> Studis den HMAC-Key im Klartext-Source angezeigt statt einen
-> Button zu rendern. Der JS-Variant funktioniert auf SoSci und
-> LimeSurvey gleich, ohne Engine-Konfig-Toggles.
+> **V2.2-Hinweis (April 2026):** Das Endseiten-Snippet ist
+> **engine-spezifisch** — pro Format wird die jeweils sicherste
+> Variante generiert:
+>
+> | Format              | Snippet                              | HMAC-Key sichtbar für Studi?       |
+> | ------------------- | ------------------------------------ | ---------------------------------- |
+> | `sosci` (.xml)      | server-side **PHP**                  | **Nein** — bleibt auf SoSci-Server |
+> | `limesurvey` (.lss) | browser-side **JS** (Web Crypto API) | Ja (im Page-Source)                |
+>
+> Grund für den Split: SoSci führt PHP in Goodbye-Pages standardmäßig
+> aus, also halten wir den Key dort server-side (strikt sicherer).
+> LimeSurvey 5/6 hat PHP in `surveyls_endtext` aus XSS-Gründen
+> deaktiviert — die alte PHP-Variante hat Studis den HMAC-Key im
+> Klartext-Source angezeigt statt einen Button zu rendern. Für
+> LimeSurvey ist die JS-Variante also der einzig funktionierende
+> Pfad. Beide Snippets erzeugen URLs im gleichen
+> `/claim?s=&n=&t=` Format, die das Backend identisch validiert.
 
 1. Frontend → /admin → Tab **"Surveys"** → Survey auswählen → **"Generate Template"**.
    - Format wählen: `sosci` (XML) oder `limesurvey` (.lss).

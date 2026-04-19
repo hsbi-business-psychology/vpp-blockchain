@@ -232,8 +232,10 @@ describe('POST /api/v1/surveys/:id/template', () => {
     expect(res.headers['content-disposition']).toContain('vpp-survey-1.xml')
     expect(res.text).toContain('surveyProject')
     expect(res.text).toContain('embedded-key-1')
-    // V2.1 templates run HMAC client-side via Web Crypto, no PHP.
-    expect(res.text).toContain("KEY_B64URL = 'embedded-key-1'")
+    // SoSci variant uses server-side PHP so the HMAC key never reaches
+    // the participant's browser. Assert the PHP scaffolding is present.
+    expect(res.text).toContain("$VPP_KEY_B64   = 'embedded-key-1'")
+    expect(res.text).toContain('hash_hmac')
     expect(res.text).toContain('Punkte jetzt')
   })
 
