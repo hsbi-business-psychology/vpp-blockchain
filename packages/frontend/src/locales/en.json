@@ -208,6 +208,16 @@
         "copyWarning": "The clipboard will be cleared automatically in 60 seconds. Paste the phrase directly into your password manager now.",
         "copyFailed": "Clipboard not available – please write the words down by hand.",
         "continueButton": "I've safely written down all 12 words"
+      },
+      "verify": {
+        "title": "Confirm recovery phrase",
+        "description": "Please type three words from your recovery phrase so we know you've saved it safely.",
+        "wordLabel": "Word #{{n}}",
+        "wordPlaceholder": "Enter word",
+        "confirmButton": "Confirm",
+        "backButton": "Back to phrase",
+        "errorIncorrect": "One of the words is incorrect.",
+        "errorHint": "Take another look at your recovery phrase – you can try as many times as you need."
       }
     }
   },

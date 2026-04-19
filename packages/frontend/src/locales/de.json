@@ -208,6 +208,16 @@
         "copyWarning": "Die Zwischenablage wird in 60 Sekunden automatisch geleert. Füge die Phrase jetzt direkt in deinen Passwortmanager ein.",
         "copyFailed": "Zwischenablage nicht verfügbar – bitte schreibe die Wörter ab.",
         "continueButton": "Ich habe alle 12 Wörter gesichert"
+      },
+      "verify": {
+        "title": "Recovery-Phrase bestätigen",
+        "description": "Bitte tippe drei Wörter aus deiner Recovery-Phrase ab, damit wir wissen, dass du sie sicher gespeichert hast.",
+        "wordLabel": "Wort Nr. {{n}}",
+        "wordPlaceholder": "Wort eingeben",
+        "confirmButton": "Bestätigen",
+        "backButton": "Zurück zur Phrase",
+        "errorIncorrect": "Eines der Wörter ist nicht korrekt.",
+        "errorHint": "Schau noch einmal bei deiner Recovery-Phrase nach – du kannst es beliebig oft erneut versuchen."
       }
     }
   },

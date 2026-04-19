@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { isValidPrivateKey } from '@/lib/wallet'
+import { BIP39_WORDLIST, isValidPrivateKey, normalizeMnemonic } from '@/lib/wallet'
 import { toast } from 'sonner'
 
 // ---------------------------------------------------------------------------
@@ -533,6 +533,134 @@ export function MnemonicRevealDialog({
               {t('common.close', 'Schließen')}
             </Button>
           )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Mnemonic Verify Dialog
+//
+// Mandatory step right after Reveal: ask the user to type three words from
+// fixed positions (e.g. #3, #7, #11) so that we know they actually wrote
+// the phrase down rather than skipping past the warning.
+//
+// * Unlimited retries — getting locked out of your own brand-new wallet is
+//   worse than having to look at the phrase a second time.
+// * BIP-39 autocomplete via <datalist> with all 2048 words.
+// * Wrong answer → toast + back-to-reveal button.
+// ---------------------------------------------------------------------------
+
+interface MnemonicVerifyDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  mnemonic: string
+  /** 0-indexed positions inside the 12-word phrase that must be re-typed. */
+  verifyIndices: number[]
+  onSuccess: () => void
+  onBack: () => void
+}
+
+export function MnemonicVerifyDialog({
+  open,
+  onOpenChange,
+  mnemonic,
+  verifyIndices,
+  onSuccess,
+  onBack,
+}: MnemonicVerifyDialogProps) {
+  const { t } = useTranslation()
+  const wordlistId = 'vpp-bip39-wordlist'
+  const sourceWords = useMemo(() => mnemonic.trim().split(/\s+/), [mnemonic])
+  const [inputs, setInputs] = useState<Record<number, string>>({})
+
+  useEffect(() => {
+    if (!open) setInputs({})
+  }, [open])
+
+  function handleChange(index: number, value: string) {
+    setInputs((prev) => ({ ...prev, [index]: value }))
+  }
+
+  function handleConfirm() {
+    const wrong = verifyIndices.filter((idx) => {
+      const expected = sourceWords[idx]
+      const got = normalizeMnemonic(inputs[idx] ?? '')
+      return got !== expected
+    })
+    if (wrong.length > 0) {
+      toast.error(t('wallet.mnemonic.verify.errorIncorrect'), {
+        description: t('wallet.mnemonic.verify.errorHint'),
+      })
+      return
+    }
+    onSuccess()
+    setInputs({})
+  }
+
+  function handleBack() {
+    setInputs({})
+    onBack()
+  }
+
+  const allFilled = verifyIndices.every((idx) => (inputs[idx] ?? '').trim().length > 0)
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <div className="mb-2 flex size-12 items-center justify-center rounded-lg bg-primary/10">
+            <ShieldAlert className="size-6 text-primary" />
+          </div>
+          <DialogTitle>{t('wallet.mnemonic.verify.title')}</DialogTitle>
+          <DialogDescription>{t('wallet.mnemonic.verify.description')}</DialogDescription>
+        </DialogHeader>
+
+        <datalist id={wordlistId}>
+          {BIP39_WORDLIST.map((w) => (
+            <option key={w} value={w} />
+          ))}
+        </datalist>
+
+        <div className="space-y-3">
+          {verifyIndices.map((idx) => (
+            <div key={idx} className="space-y-1">
+              <label
+                htmlFor={`mnemonic-verify-${idx}`}
+                className="text-xs font-medium text-muted-foreground"
+              >
+                {t('wallet.mnemonic.verify.wordLabel', { n: idx + 1 })}
+              </label>
+              <Input
+                id={`mnemonic-verify-${idx}`}
+                value={inputs[idx] ?? ''}
+                onChange={(e) => handleChange(idx, e.target.value.toLowerCase())}
+                placeholder={t('wallet.mnemonic.verify.wordPlaceholder')}
+                list={wordlistId}
+                autoComplete="off"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                className="font-mono"
+                inputMode="text"
+              />
+            </div>
+          ))}
+        </div>
+
+        <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
+          <Button type="button" variant="outline" onClick={handleBack} className="w-full sm:w-auto">
+            {t('wallet.mnemonic.verify.backButton')}
+          </Button>
+          <Button
+            type="button"
+            onClick={handleConfirm}
+            disabled={!allFilled}
+            className="w-full sm:w-auto"
+          >
+            {t('wallet.mnemonic.verify.confirmButton')}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
