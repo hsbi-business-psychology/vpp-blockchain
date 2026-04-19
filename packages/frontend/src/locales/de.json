@@ -190,7 +190,16 @@
     },
     "mnemonic": {
       "help": {
-        "label": "Anleitung & FAQ zur Recovery-Phrase öffnen"
+        "label": "Anleitung & FAQ zur Recovery-Phrase öffnen",
+        "cardTitle": "Du bist dir unsicher? Hier alles in Ruhe erklärt",
+        "cardDescription": "Was eine Recovery-Phrase ist, wo du sie aufbewahrst, wie du sie in MetaMask importierst – Schritt für Schritt mit FAQ. Öffnet in einem neuen Tab, dein aktueller Fortschritt bleibt erhalten."
+      },
+      "explainer": {
+        "title": "Kurz erklärt: Was ist eine Recovery-Phrase?",
+        "body": "Statt eines unleserlichen langen Schlüssels bekommst du gleich eine Liste aus 12 zufälligen englischen Wörtern – die sogenannte Recovery-Phrase oder Seed Phrase. Diese 12 Wörter sind dein einziger Generalschlüssel: Wenn du dein Handy verlierst oder den Browser-Cache löschst, kannst du dein Wallet damit jederzeit wiederherstellen – auf einem neuen Gerät oder direkt in MetaMask. Ohne sie sind deine Punkte verloren – wir können sie dir nicht zurückgeben.",
+        "bullet1": "Bewahre die 12 Wörter sicher auf (Passwort-Manager oder Papier).",
+        "bullet2": "Niemals fotografieren, in Chats kopieren oder weitergeben.",
+        "bullet3": "Funktioniert mit MetaMask, Trust, Coinbase und allen Standard-Wallets."
       },
       "reveal": {
         "title": "Deine Recovery-Phrase",

@@ -27,22 +27,32 @@ import { BIP39_WORDLIST, isValidMnemonic, isValidPrivateKey, normalizeMnemonic }
 import { toast } from 'sonner'
 
 // ---------------------------------------------------------------------------
-// Recovery-phrase help link (renders an external link to docs/wallet-recovery)
+// Recovery-phrase help link
+//
+// Two visual variants — both link to the in-app /docs/wallet-recovery
+// article (default in a new tab so opening it from inside an active
+// dialog does not tear down the in-flight onboarding flow):
+//
+//   * <MnemonicHelpLink />  – compact inline link, used inside the
+//                             wallet-card settings.
+//   * <MnemonicHelpCard />  – full-width discoverable card, used inside
+//                             every mnemonic-related dialog so students
+//                             actually notice the docs link on mobile.
 // ---------------------------------------------------------------------------
+
+const HELP_HREF = '/docs/wallet-recovery'
 
 export function MnemonicHelpLink({
   className = '',
   newTab = true,
 }: {
   className?: string
-  /** When the link is shown inside a dialog, opening in a new tab keeps the
-   * current onboarding/import flow intact (the dialog is not torn down). */
   newTab?: boolean
 }) {
   const { t } = useTranslation()
   return (
     <Link
-      to="/docs/wallet-recovery"
+      to={HELP_HREF}
       target={newTab ? '_blank' : undefined}
       rel={newTab ? 'noopener noreferrer' : undefined}
       className={
@@ -52,6 +62,31 @@ export function MnemonicHelpLink({
     >
       <BookOpen className="size-3.5" aria-hidden="true" />
       {t('wallet.mnemonic.help.label')}
+    </Link>
+  )
+}
+
+export function MnemonicHelpCard({ className = '' }: { className?: string }) {
+  const { t } = useTranslation()
+  return (
+    <Link
+      to={HELP_HREF}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={
+        'group flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 text-left transition-colors hover:border-primary/40 hover:bg-primary/10 ' +
+        className
+      }
+    >
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 group-hover:bg-primary/20">
+        <BookOpen className="size-4 text-primary" aria-hidden="true" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-primary">{t('wallet.mnemonic.help.cardTitle')}</p>
+        <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+          {t('wallet.mnemonic.help.cardDescription')}
+        </p>
+      </div>
     </Link>
   )
 }
@@ -298,18 +333,16 @@ export function ImportWalletDialog({
             </TabsList>
 
             <TabsContent value="mnemonic" className="space-y-3">
-              <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-                <p className="text-xs text-muted-foreground sm:max-w-md">
-                  {t('wallet.mnemonic.import.description')}
-                </p>
-                <MnemonicHelpLink className="text-xs" />
-              </div>
+              <p className="text-xs text-muted-foreground">
+                {t('wallet.mnemonic.import.description')}
+              </p>
+              <MnemonicHelpCard />
               <datalist id={WORDLIST_DATALIST_ID}>
                 {BIP39_WORDLIST.map((w) => (
                   <option key={w} value={w} />
                 ))}
               </datalist>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {words.map((word, idx) => (
                   <div key={idx} className="flex items-center gap-1.5">
                     <span className="w-5 shrink-0 text-xs font-mono text-muted-foreground">
@@ -430,6 +463,30 @@ export function CreateWalletDialog({ open, onOpenChange, onConfirm }: CreateDial
         </div>
 
         <div className="max-h-[60vh] overflow-y-auto px-6 py-5">
+          <div className="mb-5 rounded-lg border border-primary/20 bg-primary/5 p-4">
+            <p className="text-sm font-semibold text-primary">
+              {t('wallet.mnemonic.explainer.title')}
+            </p>
+            <p className="mt-1.5 text-sm leading-relaxed text-foreground/90">
+              {t('wallet.mnemonic.explainer.body')}
+            </p>
+            <ul className="mt-3 space-y-1.5 text-xs text-muted-foreground">
+              {[
+                t('wallet.mnemonic.explainer.bullet1'),
+                t('wallet.mnemonic.explainer.bullet2'),
+                t('wallet.mnemonic.explainer.bullet3'),
+              ].map((b) => (
+                <li key={b} className="flex items-start gap-2">
+                  <span className="mt-1 size-1.5 shrink-0 rounded-full bg-primary/60" />
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-3">
+              <MnemonicHelpLink className="text-xs" />
+            </div>
+          </div>
+
           <div className="space-y-5">
             {[
               {
@@ -482,23 +539,25 @@ export function CreateWalletDialog({ open, onOpenChange, onConfirm }: CreateDial
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <MnemonicHelpLink />
-          <div className="flex items-center justify-end gap-3">
-            <Button variant="outline" onClick={() => handleOpenChange(false)}>
-              {t('common.cancel')}
-            </Button>
-            <Button
-              disabled={!checks.every(Boolean)}
-              onClick={() => {
-                onConfirm()
-                setChecks([false, false, false])
-              }}
-            >
-              <Wallet className="mr-1.5 size-4" />
-              {t('wallet.create.dialogConfirm')}
-            </Button>
-          </div>
+        <div className="flex flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-end">
+          <Button
+            variant="outline"
+            onClick={() => handleOpenChange(false)}
+            className="w-full sm:w-auto"
+          >
+            {t('common.cancel')}
+          </Button>
+          <Button
+            disabled={!checks.every(Boolean)}
+            onClick={() => {
+              onConfirm()
+              setChecks([false, false, false])
+            }}
+            className="w-full sm:w-auto"
+          >
+            <Wallet className="mr-1.5 size-4" />
+            {t('wallet.create.dialogConfirm')}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -665,7 +724,7 @@ export function MnemonicRevealDialog({
         </div>
 
         <div
-          className="mnemonic-grid grid grid-cols-3 gap-2 print:hidden"
+          className="mnemonic-grid grid grid-cols-2 gap-2 print:hidden sm:grid-cols-3"
           style={{ userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties}
         >
           {words.map((word, i) => {
@@ -706,14 +765,13 @@ export function MnemonicRevealDialog({
           })}
         </div>
 
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-muted-foreground">
-            {showAll
-              ? t('wallet.mnemonic.reveal.autoHideAll')
-              : t('wallet.mnemonic.reveal.autoHideSingle')}
-          </p>
-          <MnemonicHelpLink className="text-xs" />
-        </div>
+        <p className="text-xs text-muted-foreground">
+          {showAll
+            ? t('wallet.mnemonic.reveal.autoHideAll')
+            : t('wallet.mnemonic.reveal.autoHideSingle')}
+        </p>
+
+        <MnemonicHelpCard />
 
         <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
           <Button

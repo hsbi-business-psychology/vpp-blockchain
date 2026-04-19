@@ -273,10 +273,10 @@ export function WalletCard({
                     {t('wallet.mnemonic.settings.holdButton')}
                   </span>
                 </button>
-                <div className="mt-1 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-xs text-muted-foreground">
-                    {t('wallet.mnemonic.settings.holdHint')}
-                  </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t('wallet.mnemonic.settings.holdHint')}
+                </p>
+                <div className="mt-1.5">
                   <MnemonicHelpLink className="text-xs" newTab={false} />
                 </div>
               </div>

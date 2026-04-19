@@ -190,7 +190,16 @@
     },
     "mnemonic": {
       "help": {
-        "label": "Open recovery-phrase guide & FAQ"
+        "label": "Open recovery-phrase guide & FAQ",
+        "cardTitle": "Not sure what this means? Read the full guide",
+        "cardDescription": "What a recovery phrase is, where to store it, how to import it into MetaMask — step by step with FAQ. Opens in a new tab so your current progress stays intact."
+      },
+      "explainer": {
+        "title": "In short: what is a recovery phrase?",
+        "body": "Instead of an unreadable long key, you get a list of 12 random English words — the so-called recovery phrase or seed phrase. These 12 words are your one and only master key: if you lose your phone or wipe your browser cache, you can restore your wallet at any time on a new device or directly in MetaMask. Without them, your points are gone — we cannot recover them for you.",
+        "bullet1": "Store the 12 words safely (password manager or on paper).",
+        "bullet2": "Never take a photo of them, paste them into chats or share them.",
+        "bullet3": "Works with MetaMask, Trust, Coinbase and all standard wallets."
       },
       "reveal": {
         "title": "Your recovery phrase",
