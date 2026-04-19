@@ -189,6 +189,10 @@
       "warning": "Make sure to back up your private key first!"
     },
     "mnemonic": {
+      "help": {
+        "label": "Open recovery-phrase guide & FAQ",
+        "url": "https://github.com/hsbi-business-psychology/vpp-blockchain/blob/main/docs/wallet-recovery.en.md"
+      },
       "reveal": {
         "title": "Your recovery phrase",
         "description": "These 12 words are the master key to your wallet. Write them down in the exact order shown and keep them somewhere safe.",

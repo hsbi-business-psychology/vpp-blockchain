@@ -189,6 +189,10 @@
       "warning": "Sichere vorher unbedingt deinen Private Key!"
     },
     "mnemonic": {
+      "help": {
+        "label": "Anleitung & FAQ zur Recovery-Phrase öffnen",
+        "url": "https://github.com/hsbi-business-psychology/vpp-blockchain/blob/main/docs/wallet-recovery.de.md"
+      },
       "reveal": {
         "title": "Deine Recovery-Phrase",
         "description": "Diese 12 Wörter sind dein Generalschlüssel. Schreibe sie in der angezeigten Reihenfolge auf und bewahre sie sicher auf.",

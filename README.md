@@ -153,6 +153,7 @@ Comprehensive documentation is available in the [`docs/`](docs/) directory:
 - [Deployment](docs/deployment.md) — Production deployment guide
 - [Security](docs/security.md) — Security architecture and threat model
 - [For Universities](docs/for-universities.md) — Adoption guide for other institutions
+- [Wallet Recovery](docs/wallet-recovery.en.md) ([Deutsch](docs/wallet-recovery.de.md)) — Student-facing guide for the BIP-39 recovery phrase, MetaMask import, FAQ
 - [Operations Runbooks](docs/runbooks/README.md) — Provider-agnostic playbooks (deploy, recovery, key rotation, incident response)
 - [Architecture Decision Records](docs/adr/README.md) — Long-form rationale for major design decisions
 - [Audit Findings (V2)](docs/audit/v2/) — Full security audit, master-finding deduplication, go/no-go synthesis

@@ -1,6 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Copy, Eye, EyeOff, KeyRound, ShieldAlert, Trash2, Upload, Wallet } from 'lucide-react'
+import {
+  BookOpen,
+  Copy,
+  Eye,
+  EyeOff,
+  KeyRound,
+  ShieldAlert,
+  Trash2,
+  Upload,
+  Wallet,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -14,6 +24,28 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BIP39_WORDLIST, isValidMnemonic, isValidPrivateKey, normalizeMnemonic } from '@/lib/wallet'
 import { toast } from 'sonner'
+
+// ---------------------------------------------------------------------------
+// Recovery-phrase help link (renders an external link to docs/wallet-recovery)
+// ---------------------------------------------------------------------------
+
+export function MnemonicHelpLink({ className = '' }: { className?: string }) {
+  const { t } = useTranslation()
+  return (
+    <a
+      href={t('wallet.mnemonic.help.url')}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={
+        'inline-flex items-center gap-1.5 text-sm text-primary underline-offset-4 hover:underline ' +
+        className
+      }
+    >
+      <BookOpen className="size-3.5" aria-hidden="true" />
+      {t('wallet.mnemonic.help.label')}
+    </a>
+  )
+}
 
 // ---------------------------------------------------------------------------
 // Reveal Private Key Dialog
@@ -257,9 +289,12 @@ export function ImportWalletDialog({
             </TabsList>
 
             <TabsContent value="mnemonic" className="space-y-3">
-              <p className="text-xs text-muted-foreground">
-                {t('wallet.mnemonic.import.description')}
-              </p>
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                <p className="text-xs text-muted-foreground sm:max-w-md">
+                  {t('wallet.mnemonic.import.description')}
+                </p>
+                <MnemonicHelpLink className="text-xs" />
+              </div>
               <datalist id={WORDLIST_DATALIST_ID}>
                 {BIP39_WORDLIST.map((w) => (
                   <option key={w} value={w} />
@@ -438,20 +473,23 @@ export function CreateWalletDialog({ open, onOpenChange, onConfirm }: CreateDial
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 border-t border-border px-6 py-4">
-          <Button variant="outline" onClick={() => handleOpenChange(false)}>
-            {t('common.cancel')}
-          </Button>
-          <Button
-            disabled={!checks.every(Boolean)}
-            onClick={() => {
-              onConfirm()
-              setChecks([false, false, false])
-            }}
-          >
-            <Wallet className="mr-1.5 size-4" />
-            {t('wallet.create.dialogConfirm')}
-          </Button>
+        <div className="flex flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <MnemonicHelpLink />
+          <div className="flex items-center justify-end gap-3">
+            <Button variant="outline" onClick={() => handleOpenChange(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              disabled={!checks.every(Boolean)}
+              onClick={() => {
+                onConfirm()
+                setChecks([false, false, false])
+              }}
+            >
+              <Wallet className="mr-1.5 size-4" />
+              {t('wallet.create.dialogConfirm')}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
@@ -659,11 +697,14 @@ export function MnemonicRevealDialog({
           })}
         </div>
 
-        <p className="text-xs text-muted-foreground">
-          {showAll
-            ? t('wallet.mnemonic.reveal.autoHideAll')
-            : t('wallet.mnemonic.reveal.autoHideSingle')}
-        </p>
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-muted-foreground">
+            {showAll
+              ? t('wallet.mnemonic.reveal.autoHideAll')
+              : t('wallet.mnemonic.reveal.autoHideSingle')}
+          </p>
+          <MnemonicHelpLink className="text-xs" />
+        </div>
 
         <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
           <Button

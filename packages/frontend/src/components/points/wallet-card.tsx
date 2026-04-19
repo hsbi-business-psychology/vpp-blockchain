@@ -20,7 +20,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { MnemonicRevealDialog } from './wallet-dialogs'
+import { MnemonicHelpLink, MnemonicRevealDialog } from './wallet-dialogs'
 
 interface WalletCardProps {
   address: string
@@ -273,16 +273,20 @@ export function WalletCard({
                     {t('wallet.mnemonic.settings.holdButton')}
                   </span>
                 </button>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {t('wallet.mnemonic.settings.holdHint')}
-                </p>
+                <div className="mt-1 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs text-muted-foreground">
+                    {t('wallet.mnemonic.settings.holdHint')}
+                  </p>
+                  <MnemonicHelpLink className="text-xs" />
+                </div>
               </div>
             )}
 
             {/* Legacy hint for wallets without mnemonic */}
             {!isMetaMask && !mnemonic && (
-              <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
-                {t('wallet.mnemonic.settings.legacyHint')}
+              <div className="space-y-2 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+                <p>{t('wallet.mnemonic.settings.legacyHint')}</p>
+                <MnemonicHelpLink className="text-xs" />
               </div>
             )}
 
