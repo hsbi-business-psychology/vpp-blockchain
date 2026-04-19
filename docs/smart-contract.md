@@ -19,13 +19,26 @@ The `SurveyPointsV2` contract is the core on-chain component of VPP. It manages 
 
 ## Roles
 
-| Role          | Constant             | Purpose                                                              |
-| ------------- | -------------------- | -------------------------------------------------------------------- |
-| Default Admin | `DEFAULT_ADMIN_ROLE` | Bootstrap-only role; renounced by the deployer right after migration |
-| Admin         | `ADMIN_ROLE`         | Surveys, admin/minter management, contract upgrades                  |
-| Minter        | `MINTER_ROLE`        | Calls `awardPoints` and `revokePoints` (assigned to the backend)     |
+| Role          | Constant             | Purpose                                                                                             |
+| ------------- | -------------------- | --------------------------------------------------------------------------------------------------- |
+| Default Admin | `DEFAULT_ADMIN_ROLE` | Authorises UUPS upgrades (`_authorizeUpgrade`); held by the cold `TARGET_ADMIN` only                |
+| Admin         | `ADMIN_ROLE`         | Surveys, admin/minter management, mark/revoke (held by lecturer wallets **and** the backend signer) |
+| Minter        | `MINTER_ROLE`        | Calls `awardPoints` (assigned to the backend wallet)                                                |
 
-`ADMIN_ROLE` is its own role admin (`_setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE)`); the same applies to `MINTER_ROLE`. The deployer renounces `DEFAULT_ADMIN_ROLE` and `ADMIN_ROLE` at the end of `scripts/deploy-v2.ts` so the only privileged accounts after cutover are the production `TARGET_ADMIN` (Hochschule wallet, single-key today, multi-sig planned) and the migrated V1 admins.
+`ADMIN_ROLE` is its own role admin (`_setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE)`); the same applies to `MINTER_ROLE`. The deployer renounces `DEFAULT_ADMIN_ROLE` and `ADMIN_ROLE` at the end of `scripts/deploy-v2.ts`. After cutover the privileged accounts are: the production `TARGET_ADMIN` (Hochschule wallet, single-key today, multi-sig planned), the migrated lecturer admins, and the backend signer (holds `MINTER_ROLE` + `ADMIN_ROLE`).
+
+### Why the backend signer holds `ADMIN_ROLE`
+
+The backend is a stateless relayer. Admins sign an EIP-191 message in the frontend; the backend verifies the signature off-chain (`middleware/auth.ts`) and submits the transaction with the single funded backend wallet. Every admin-gated function (`addAdmin`, `removeAdmin`, `deactivateSurvey`, `reactivateSurvey`, `revokePoints`, `markWalletSubmitted`, `unmarkWalletSubmitted`) is `onlyRole(ADMIN_ROLE)` and `msg.sender` is the backend signer — therefore the backend wallet must hold `ADMIN_ROLE`. This is granted explicitly in `scripts/deploy-v2.ts` step 5.
+
+The trade-off is that a backend-key compromise lets the attacker exercise `ADMIN_ROLE` directly. Mitigations:
+
+- **Upgrade authority is segregated.** `DEFAULT_ADMIN_ROLE` lives only on the cold `TARGET_ADMIN` wallet; the minter cannot push a malicious implementation.
+- **HMAC keys are off-chain.** `data/survey-keys.json` is unreachable from any on-chain attack — minted points still require a valid HMAC token.
+- **`_adminCount` enforces `LastAdmin()`.** The attacker cannot lock out every admin, so the legitimate admin can always revoke the compromised minter via BaseScan and rotate the backend key without a redeploy.
+- **Recovery is one BaseScan transaction.** `revokeRole(ADMIN_ROLE, oldMinter)` + `revokeRole(MINTER_ROLE, oldMinter)` from the cold admin wallet, then update `MINTER_PRIVATE_KEY` in Plesk and `grantRole(…)` for the new wallet.
+
+See ADR 0004 for the full discussion.
 
 The contract enforces an **`_adminCount` invariant**: `removeAdmin` and `renounceRole(ADMIN_ROLE, …)` revert with `LastAdmin()` if they would leave zero `ADMIN_ROLE` holders. Combined with the frontend hiding the minter-wallet "remove" button, this makes admin lockout impossible from any normal flow.
 

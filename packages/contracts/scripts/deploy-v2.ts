@@ -64,11 +64,35 @@
  *                            comma-separated list of addresses that
  *                            must NOT receive ADMIN_ROLE on V2 even if
  *                            they had ADMIN_ROLE on V1. Use this to
- *                            strip legacy over-privileged accounts
- *                            during cutover. MINTER_ADDRESS is ALWAYS
- *                            excluded automatically (least-privilege —
- *                            the backend signer never needs admin
- *                            rights).
+ *                            strip legacy accounts during cutover.
+ *                            MINTER_ADDRESS is granted ADMIN_ROLE in
+ *                            step 5 by design — see "Backend signer
+ *                            holds ADMIN_ROLE" below.
+ *
+ * Backend signer holds ADMIN_ROLE (architectural decision):
+ *   The backend is a stateless relayer. Admins authenticate themselves
+ *   in the frontend by signing an EIP-191 message; the backend
+ *   verifies the signature off-chain (see middleware/auth.ts) and
+ *   then submits the actual on-chain transaction with the single
+ *   funded backend wallet (MINTER). For routes like /admin/add,
+ *   /admin/remove, /surveys/:id/deactivate, /surveys/:id/revoke,
+ *   /wallets/:addr/mark, the on-chain msg.sender is therefore the
+ *   minter — and SurveyPointsV2 enforces onlyRole(ADMIN_ROLE) on
+ *   each of those functions. Granting ADMIN_ROLE to the minter is
+ *   what makes this relayer pattern work end-to-end.
+ *
+ *   Trade-off: a minter-key compromise lets the attacker do anything
+ *   ADMIN_ROLE allows (add/remove admins, deactivate surveys, revoke
+ *   claim points, mark wallets as submitted). The mitigations are:
+ *     - DEFAULT_ADMIN_ROLE (the upgrade authority) stays with
+ *       ADMIN_ADDRESS (Hochschule wallet), not the minter.
+ *     - The HMAC keys live off-chain (data/survey-keys.json) and
+ *       are unreachable from any on-chain attack.
+ *     - _adminCount enforces LastAdmin(): the attacker cannot lock
+ *       out every admin, so the legitimate admin can always revoke
+ *       the compromised minter and rotate the key.
+ *   Documented in docs/adr/0004-... ("Backend signer holds
+ *   ADMIN_ROLE — accepted trade-off").
  *   SKIP_VERIFY            – set to "true" to skip BaseScan verification.
  *
  * Idempotency:
@@ -277,9 +301,8 @@ async function main() {
     manualAdminsRaw.length > 0 ? manualAdminsRaw.map((a) => ethers.getAddress(a)) : null
 
   // Addresses that must NOT receive ADMIN_ROLE on V2 even when they had
-  // it on V1. The MINTER_ADDRESS is added unconditionally so a
-  // historically over-privileged minter wallet gets downgraded to
-  // MINTER_ROLE-only during the cutover.
+  // it on V1. The minter is intentionally NOT in this list — it gets
+  // ADMIN_ROLE in step 5 because the backend is a relayer (see header).
   const manualExcludes = (process.env.EXCLUDE_FROM_ADMIN_MIGRATION || '')
     .split(',')
     .map((s) => s.trim())
@@ -290,7 +313,7 @@ async function main() {
     }
   }
   const adminMigrationExcludes = new Set<string>(
-    [minterAddress, ...manualExcludes].map((a) => ethers.getAddress(a).toLowerCase()),
+    manualExcludes.map((a) => ethers.getAddress(a).toLowerCase()),
   )
 
   const deployerIsTargetAdmin = deployer.address.toLowerCase() === adminAddress.toLowerCase()
@@ -301,10 +324,9 @@ async function main() {
   console.log(`  Target admin: ${adminAddress}${deployerIsTargetAdmin ? ' (= deployer)' : ''}`)
   console.log(`  Minter:      ${minterAddress}`)
   if (adminMigrationExcludes.size > 0) {
-    console.log(`  Admin-migration excludes:`)
+    console.log(`  Admin-migration excludes (manual):`)
     for (const e of adminMigrationExcludes) {
-      const reason = e === minterAddress.toLowerCase() ? ' (minter — least privilege)' : ''
-      console.log(`    - ${ethers.getAddress(e)}${reason}`)
+      console.log(`    - ${ethers.getAddress(e)}`)
     }
   }
   console.log(
@@ -389,8 +411,7 @@ async function main() {
         continue
       }
       if (adminMigrationExcludes.has(admin.toLowerCase())) {
-        const reason = admin.toLowerCase() === minterAddress.toLowerCase() ? 'minter' : 'manual'
-        console.log(`   - ${admin} SKIPPED (${reason} — not migrated)`)
+        console.log(`   - ${admin} SKIPPED (EXCLUDE_FROM_ADMIN_MIGRATION)`)
         continue
       }
       const tx = await v2Migrator.addAdmin(admin)
@@ -466,6 +487,19 @@ async function main() {
       await (await v2.revokeRole(MINTER_ROLE, deployer.address)).wait()
       console.log(`   MINTER_ROLE revoked from deployer ✔`)
     }
+  }
+
+  // Grant ADMIN_ROLE to the backend signer. Required for the relayer
+  // pattern: the backend submits all admin-gated TXs (addAdmin,
+  // removeAdmin, deactivateSurvey, revokePoints, markWalletSubmitted)
+  // on behalf of admins who authenticated with an EIP-191 signature
+  // off-chain. See the script header for the full trade-off.
+  console.log('\n→ Granting ADMIN_ROLE to backend signer (relayer pattern) ...')
+  if (!(await v2.hasRole(ADMIN_ROLE_HASH, minterAddress))) {
+    await (await v2.addAdmin(minterAddress)).wait()
+    console.log(`   ADMIN_ROLE → ${minterAddress} ✔`)
+  } else {
+    console.log(`   ${minterAddress} already ADMIN ✔`)
   }
 
   if (!deployerIsTargetAdmin && !keepDeployerAdmin) {

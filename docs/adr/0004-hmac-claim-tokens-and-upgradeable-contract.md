@@ -126,11 +126,43 @@ the same forever.
 - **Per-survey key isolation.** Compromising one key compromises
   exactly one survey's pool. Operators can `POST /:id/key/rotate`
   to mint a fresh key without touching anything else.
-- **No new admin keys for upgrades.** The deployer renounces all
-  roles after cutover; only `TARGET_ADMIN` (and any holders the
-  admin grants) can call `_authorizeUpgrade`. Multi-sig migration
-  is documented in `v2-migration-runbook.md` for when we exit the
-  research phase.
+- **Upgrade authority stays with the cold admin.** The deployer
+  renounces `DEFAULT_ADMIN_ROLE` and `ADMIN_ROLE` after cutover;
+  only `TARGET_ADMIN` (the Hochschule wallet, single-key today,
+  multi-sig planned in `v2-migration-runbook.md`) can call
+  `_authorizeUpgrade`. The backend signer never sees this role.
+- **Backend signer holds `ADMIN_ROLE` (deliberate trade-off).**
+  Every admin-gated function on the contract — `addAdmin`,
+  `removeAdmin`, `deactivateSurvey`, `reactivateSurvey`,
+  `revokePoints`, `markWalletSubmitted`, `unmarkWalletSubmitted`
+  — is `onlyRole(ADMIN_ROLE)`. The backend is a stateless
+  relayer: admins authenticate themselves in the frontend by
+  signing an EIP-191 message; the backend verifies the signature
+  off-chain (see `middleware/auth.ts`) and submits the actual
+  transaction with the single funded backend wallet. For the
+  relayer pattern to work end-to-end, that backend wallet — the
+  one holding `MINTER_ROLE` — also has to hold `ADMIN_ROLE`.
+  This is granted explicitly in step 5 of `scripts/deploy-v2.ts`
+  and re-asserted in `scripts/finish-cutover.ts`. The trade-off:
+  a backend-key compromise lets the attacker do anything
+  `ADMIN_ROLE` permits (add/remove admins, deactivate surveys,
+  revoke claim points, mark wallets as submitted). Mitigations:
+  - `DEFAULT_ADMIN_ROLE` (the upgrade authority) is **not**
+    delegated to the minter — an attacker cannot push a
+    malicious implementation.
+  - The HMAC keys live off-chain in `data/survey-keys.json`
+    and are unreachable from any on-chain attack — minted
+    points still require a valid token.
+  - `_adminCount` enforces `LastAdmin()`: the attacker cannot
+    lock out every admin, so the legitimate admin can always
+    revoke the compromised minter via BaseScan and rotate the
+    backend key without redeploying.
+    Multi-sig at the `DEFAULT_ADMIN` layer (see
+    `v2-migration-runbook.md`) raises the recovery floor further
+    once we exit the research phase. The alternative — a separate
+    admin signer that the lecturer would have to fund and rotate
+    — was rejected as operationally untenable for a project that
+    must run unattended for 2–3 years on a Plesk shared host.
 
 ### Operations
 

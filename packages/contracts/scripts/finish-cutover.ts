@@ -11,7 +11,9 @@
  *   V2_PROXY=0x…            (required)
  *   V1_CONTRACT_ADDRESS=0x… (required if V1 deactivation still pending)
  *   V1_ACTIVE_SURVEYS="1,4,5" (optional override; otherwise enumerated)
- *   V1_ADMINS="0x…,0x…"      (required for admin migration — verified via isAdmin)
+ *   V1_ADMINS="0x…,0x…"      (required for admin migration — verified via isAdmin;
+ *                            the minter is included like any other admin since
+ *                            the backend relayer needs ADMIN_ROLE — see deploy-v2.ts)
  *   ADMIN_ADDRESS=0x…        (defaults to deployer)
  *   MINTER_ADDRESS=0x…       (defaults to deployer — typically set)
  *   KEEP_DEPLOYER_ADMIN=true (default false)
@@ -90,8 +92,10 @@ async function main() {
   const MINTER_ROLE = await v2.MINTER_ROLE()
 
   // -------------------------------------------------------------
-  // Step 1: migrate V1 admins — skip minter (least privilege) and
-  //         anyone already holding ADMIN_ROLE on V2.
+  // Step 1: migrate V1 admins — skip anyone already holding
+  //         ADMIN_ROLE on V2. The minter is migrated like any
+  //         other admin; it needs ADMIN_ROLE for the relayer
+  //         pattern (see deploy-v2.ts header for the trade-off).
   // -------------------------------------------------------------
   if (v1AdminsRaw.length > 0 && v1Address) {
     console.log('\n→ Migrating ADMIN_ROLE holders ...')
@@ -102,10 +106,6 @@ async function main() {
         continue
       }
       const addr = ethers.getAddress(raw)
-      if (addr.toLowerCase() === minterAddress.toLowerCase()) {
-        console.log(`   - ${addr} SKIPPED (= minter, least privilege)`)
-        continue
-      }
       if (addr.toLowerCase() === deployer.address.toLowerCase()) {
         console.log(`   - ${addr} (= deployer, already has ADMIN_ROLE)`)
         continue
@@ -184,6 +184,18 @@ async function main() {
     }
   }
 
+  // Backend signer must also hold ADMIN_ROLE — the backend is a
+  // relayer and submits all admin-gated TXs (addAdmin, removeAdmin,
+  // deactivateSurvey, revokePoints, markWalletSubmitted). See
+  // deploy-v2.ts header for the full trade-off discussion.
+  console.log('\n→ Ensuring backend signer holds ADMIN_ROLE (relayer pattern) ...')
+  if (!(await v2.hasRole(ADMIN_ROLE, minterAddress))) {
+    await (await v2.addAdmin(minterAddress)).wait()
+    console.log(`   ADMIN_ROLE → ${minterAddress} ✔`)
+  } else {
+    console.log(`   ${minterAddress} already ADMIN ✔`)
+  }
+
   if (!deployerIsTargetAdmin && !keepDeployerAdmin) {
     console.log('\n→ Renouncing deployer admin rights ...')
     if (await v2.hasRole(ADMIN_ROLE, deployer.address)) {
@@ -214,12 +226,7 @@ async function main() {
   for (const raw of v1AdminsRaw) {
     if (!ethers.isAddress(raw)) continue
     const addr = ethers.getAddress(raw)
-    if (
-      addr.toLowerCase() === deployer.address.toLowerCase() ||
-      addr.toLowerCase() === minterAddress.toLowerCase()
-    ) {
-      continue
-    }
+    if (addr.toLowerCase() === deployer.address.toLowerCase()) continue
     console.log(`Migrated admin ${addr}`)
     console.log(`  ADMIN: ${await v2.hasRole(ADMIN_ROLE, addr)}`)
   }

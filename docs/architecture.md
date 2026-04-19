@@ -284,6 +284,8 @@ This keeps Plesk deployment trivial (no DB container, no migrations) and the sys
 
 Students should not need to hold ETH or pay gas fees. The backend wallet (`MINTER_ROLE`) pays all transaction costs. Students sign messages locally (free) and the backend submits the actual transaction. The HMAC verification step also happens on the relayer, not in the contract — this keeps `awardPoints` cheap (no `keccak256` of a secret) and lets us rotate keys without touching the chain.
 
+The same relayer pattern carries admin actions: lecturers sign an EIP-191 message in the frontend, the backend verifies the signature off-chain, and the backend wallet submits the on-chain TX. Because every admin-gated function is `onlyRole(ADMIN_ROLE)` and `msg.sender` is the backend signer, the backend wallet holds **both** `MINTER_ROLE` and `ADMIN_ROLE`. The cold `TARGET_ADMIN` wallet keeps `DEFAULT_ADMIN_ROLE` (the upgrade authority) so a backend-key compromise can never push a malicious implementation, and `_adminCount`'s `LastAdmin()` invariant guarantees the legitimate admin can always revoke a compromised minter via BaseScan. See `docs/smart-contract.md` and ADR 0004 for the full trade-off.
+
 ## Cost Model
 
 | Operation                         | Estimated Gas | USD Cost (Base, 2026) |
