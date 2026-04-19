@@ -452,8 +452,8 @@ export function CreateWalletDialog({ open, onOpenChange, onConfirm }: CreateDial
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-2xl gap-0 p-0">
-        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+      <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-border px-6 py-4">
           <div>
             <DialogTitle className="text-lg">{t('wallet.create.dialogTitle')}</DialogTitle>
             <DialogDescription className="mt-0.5">
@@ -462,7 +462,7 @@ export function CreateWalletDialog({ open, onOpenChange, onConfirm }: CreateDial
           </div>
         </div>
 
-        <div className="max-h-[60vh] overflow-y-auto px-6 py-5">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-5">
           <div className="mb-5 rounded-lg border border-primary/20 bg-primary/5 p-4">
             <p className="text-sm font-semibold text-primary">
               {t('wallet.mnemonic.explainer.title')}
@@ -539,7 +539,7 @@ export function CreateWalletDialog({ open, onOpenChange, onConfirm }: CreateDial
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-end">
+        <div className="flex shrink-0 flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-end">
           <Button
             variant="outline"
             onClick={() => handleOpenChange(false)}
