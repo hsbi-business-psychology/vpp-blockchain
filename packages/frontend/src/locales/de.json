@@ -659,12 +659,16 @@
         "legal": "Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (nutzungsvertragliche Zwecke) und Art. 6 Abs. 1 lit. f DSGVO (IT-Sicherheit)."
       },
       "processors": {
-        "title": "Externe Dienste und Empfänger",
-        "intro": "Für den Betrieb des Dienstes binden wir folgende externe Dienste ein:",
+        "title": "Eingebundene Dienste und Empfänger",
+        "intro": "Für den Betrieb des Dienstes binden wir folgende Dienste ein:",
         "items": [
           {
-            "name": "SoSci Survey",
-            "desc": "Die Umfragen werden auf SoSci Survey durchgeführt. Nach Abschluss einer Umfrage werden Sie auf unsere Claim-Seite weitergeleitet; dabei werden eine Survey-ID, ein Einmal-Token und ein zufälliger Nonce übergeben. Inhaltliche Umfrageantworten werden uns nicht übermittelt. Anbieter: SoSci Survey GmbH, München."
+            "name": "LimeSurvey (DVZ-Survey, HSBI-intern)",
+            "desc": "Die Umfragen werden auf der von der Hochschule Bielefeld selbst betriebenen LimeSurvey-Instanz „DVZ-Survey“ durchgeführt. Nach Abschluss einer Umfrage werden Sie auf unsere Claim-Seite weitergeleitet; dabei werden eine Survey-ID, ein Einmal-Token und ein zufälliger Nonce übergeben. Inhaltliche Umfrageantworten werden uns nicht übermittelt. Betreiber: Datenverarbeitungszentrum (DVZ) der Hochschule Bielefeld."
+          },
+          {
+            "name": "SoSci Survey (optionaler Fallback)",
+            "desc": "Als alternative Umfrageplattform unterstützen wir auch SoSci Survey. Übermittelt werden – analog zu LimeSurvey – ausschließlich Survey-ID, Einmal-Token und Nonce. Anbieter: SoSci Survey GmbH, München."
           },
           {
             "name": "Base- bzw. Ethereum-RPC-Anbieter",

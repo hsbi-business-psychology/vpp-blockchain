@@ -659,12 +659,16 @@
         "legal": "Legal basis: Art. 6(1)(b) GDPR (contractual purposes) and Art. 6(1)(f) GDPR (IT security)."
       },
       "processors": {
-        "title": "External Services and Recipients",
-        "intro": "We use the following external services to operate this site:",
+        "title": "Integrated Services and Recipients",
+        "intro": "We integrate the following services to operate this site:",
         "items": [
           {
-            "name": "SoSci Survey",
-            "desc": "Surveys are conducted on SoSci Survey. After completing a survey you are redirected to our claim page, passing along a survey ID, a one-time token, and a random nonce. The content of your survey answers is not transmitted to us. Provider: SoSci Survey GmbH, Munich."
+            "name": "LimeSurvey (DVZ-Survey, HSBI-internal)",
+            "desc": "Surveys are conducted on Hochschule Bielefeld's self-hosted LimeSurvey instance \"DVZ-Survey\". After completing a survey you are redirected to our claim page, passing along a survey ID, a one-time token, and a random nonce. The content of your survey answers is not transmitted to us. Operator: Datenverarbeitungszentrum (DVZ), Hochschule Bielefeld."
+          },
+          {
+            "name": "SoSci Survey (optional fallback)",
+            "desc": "As an alternative survey platform we also support SoSci Survey. Only the survey ID, the one-time token, and the nonce are transmitted – mirroring the LimeSurvey integration. Provider: SoSci Survey GmbH, Munich."
           },
           {
             "name": "Base / Ethereum RPC providers",
