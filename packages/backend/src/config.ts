@@ -155,19 +155,28 @@ export const config = {
 
   /**
    * Minimum minter wallet balance (ETH) before write paths refuse new
-   * transactions and return 503 INSUFFICIENT_FUNDS. Default 0.005 ETH ≈
-   * 30 awardPoints transactions of head room at typical Base gas prices.
+   * transactions and return 503 INSUFFICIENT_FUNDS.
    *
-   * The previous hard-coded value (50_000 × 1e6 wei = 0.00000005 ETH)
-   * was 16 000× too low and effectively a no-op (audit F2.4) — by the
-   * time the check would trip, ethers would already have bubbled up an
-   * INSUFFICIENT_FUNDS from the provider. Bumping this to ~30 Tx of
-   * runway lets the backend short-circuit early with a clean 503 and
-   * gives the operator one full class run worth of warning.
+   * **Default 0.002 ETH — sized for Base mainnet**, where typical
+   * baseFee is 0.01-0.1 gwei and one `awardPoints` tx costs about
+   * 0.000015 ETH at typical prices, or 0.0003 ETH at our 2-gwei
+   * MAX_FEE_PER_GAS_GWEI hard cap (worst case during a sequencer
+   * spike). 0.002 ETH therefore gives the operator:
+   *   - ~6 tx of runway at the absolute worst-case gas cap, OR
+   *   - ~133 tx of runway at typical Base gas
+   * before the backend short-circuits with a clean 503.
    *
-   * Also gates the balance-monitor warn threshold (5× this value).
+   * Original audit fix (F2.4) bumped from a broken 0.00000005 ETH
+   * value to 0.005 ETH; that was sized for Ethereum mainnet pricing
+   * and turned out to be needlessly conservative for Base — it
+   * forced operators to keep ~$11 idle just to clear the floor.
+   * Lowered to 0.002 ETH as a Base-native default. Operators on a
+   * more expensive L1 (mainnet, OP) should override via env.
+   *
+   * Also gates the balance-monitor warn threshold (5× this value =
+   * 0.01 ETH default warn point).
    */
-  minBalanceEth: optional('MIN_BALANCE_ETH', '0.005'),
+  minBalanceEth: optional('MIN_BALANCE_ETH', '0.002'),
 
   /**
    * Interval (ms) for the boot-time balance monitor. Default 1h. Set to
