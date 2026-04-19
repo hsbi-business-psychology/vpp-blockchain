@@ -87,8 +87,11 @@ vi.mock('ethers', () => ({
   ethers: {
     JsonRpcProvider: vi.fn(() => ({})),
     Contract: vi.fn(() => ({})),
-    Wallet: { createRandom: vi.fn() },
+    Wallet: { createRandom: vi.fn(), fromPhrase: vi.fn() },
+    Mnemonic: { isValidMnemonic: vi.fn(() => false) },
+    LangEn: { wordlist: vi.fn(() => ({ getWord: (i: number) => `word${i}` })) },
     isAddress: vi.fn(() => true),
+    wordlists: { en: { getWord: (i: number) => `word${i}` } },
   },
 }))
 
