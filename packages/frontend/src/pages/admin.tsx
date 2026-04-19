@@ -38,6 +38,12 @@ export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false)
   const [authLoading, setAuthLoading] = useState(false)
   const [loggedOut, setLoggedOut] = useState(false)
+  // True after the admin rejected/cancelled the MetaMask sign popup. Acts
+  // as a one-shot guard for the auto-auth effect — without it, every
+  // re-render after a rejection re-opens the popup, locking the admin out
+  // of the tab. Reset to false when the admin clicks "Sign again". See
+  // audit F5.2 / M9.
+  const [authFailed, setAuthFailed] = useState(false)
   const [authCredentials, setAuthCredentials] = useState<{
     signature: string
     message: string
@@ -81,9 +87,30 @@ export default function AdminPage() {
   }, [wallet, checkIsAdmin])
 
   // ── Auth ───────────────────────────────────────────────────────────────
+  // Treat any error from the wallet `sign()` call that mentions "user",
+  // "deny", "reject" or matches the EIP-1193 4001 code as a deliberate
+  // user cancellation. We must NOT auto-retry in that case (see audit
+  // F5.2). Anything else (network, malformed message, signer not ready)
+  // is surfaced as an actionable retry — the gate UI lets the admin
+  // re-trigger the popup explicitly.
+  function isUserRejectedSignError(err: unknown): boolean {
+    if (!err) return false
+    if (typeof err === 'object') {
+      const e = err as { code?: number | string; message?: string }
+      if (e.code === 4001 || e.code === 'ACTION_REJECTED') return true
+      const msg = (e.message ?? '').toLowerCase()
+      if (msg.includes('user denied')) return true
+      if (msg.includes('user rejected')) return true
+      if (msg.includes('rejected by user')) return true
+      if (msg.includes('cancelled') || msg.includes('canceled')) return true
+    }
+    return false
+  }
+
   const handleAuth = useCallback(async () => {
     if (!wallet) return
     setAuthLoading(true)
+    setAuthFailed(false)
     try {
       const timestamp = Math.floor(Date.now() / 1000)
       const message = `Admin login ${wallet.address} at ${timestamp}`
@@ -91,17 +118,28 @@ export default function AdminPage() {
       setAuthCredentials({ signature, message })
       setAuthenticated(true)
     } catch (err) {
-      toast.error(err instanceof ApiRequestError ? err.message : t('common.error'))
+      // Either user rejection or any other failure: latch authFailed to
+      // stop the auto-auth effect from re-firing on the next re-render.
+      // The gate UI hands the user back control via a "Retry" button.
+      setAuthFailed(true)
+      if (!isUserRejectedSignError(err)) {
+        toast.error(err instanceof ApiRequestError ? err.message : t('common.error'))
+      }
     } finally {
       setAuthLoading(false)
     }
   }, [wallet, sign, t])
 
+  const handleRetryAuth = useCallback(() => {
+    setAuthFailed(false)
+    void handleAuth()
+  }, [handleAuth])
+
   useEffect(() => {
-    if (adminCheck === 'admin' && !authenticated && !authLoading && !loggedOut) {
+    if (adminCheck === 'admin' && !authenticated && !authLoading && !loggedOut && !authFailed) {
       handleAuth()
     }
-  }, [adminCheck, authenticated, authLoading, loggedOut, handleAuth])
+  }, [adminCheck, authenticated, authLoading, loggedOut, authFailed, handleAuth])
 
   // ── Surveys ────────────────────────────────────────────────────────────
   const fetchSurveys = useCallback(async () => {
@@ -286,6 +324,8 @@ export default function AdminPage() {
         adminCheck={adminCheck}
         authenticated={authenticated}
         walletAddress={wallet?.address}
+        authFailed={authFailed}
+        onRetry={handleRetryAuth}
       />
     )
   }

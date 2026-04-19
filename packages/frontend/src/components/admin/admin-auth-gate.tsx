@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
-import { ShieldCheck, ShieldX, Loader2 } from 'lucide-react'
+import { ShieldCheck, ShieldX, ShieldAlert, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
@@ -11,6 +11,14 @@ interface AdminAuthGateProps {
   adminCheck: AdminCheckState
   authenticated: boolean
   walletAddress?: string
+  /**
+   * True after the admin rejected/cancelled the wallet-sign popup. When
+   * set, the gate must show an explicit "Sign again" button instead of
+   * the spinner — otherwise the auto-auth effect would silently re-open
+   * the popup and lock the user out (audit F5.2 / M9).
+   */
+  authFailed?: boolean
+  onRetry?: () => void
 }
 
 /**
@@ -23,6 +31,8 @@ export function AdminAuthGate({
   adminCheck,
   authenticated,
   walletAddress,
+  authFailed = false,
+  onRetry,
 }: AdminAuthGateProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -86,6 +96,34 @@ export function AdminAuthGate({
   }
 
   if (!authenticated) {
+    if (authFailed) {
+      return (
+        <div className="space-y-6">
+          <h1 className="text-2xl font-bold">{t('admin.title')}</h1>
+          <Card className="mx-auto max-w-lg">
+            <CardContent className="flex flex-col items-center gap-5 py-8 text-center">
+              <div className="flex size-14 items-center justify-center rounded-full bg-amber-500/10">
+                <ShieldAlert className="size-7 text-amber-500" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-lg font-semibold">{t('admin.auth.rejected.title')}</h2>
+                <p className="text-base text-muted-foreground">
+                  {t('admin.auth.rejected.description')}
+                </p>
+              </div>
+              <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-center">
+                <Button onClick={onRetry} disabled={!onRetry}>
+                  {t('admin.auth.rejected.retry')}
+                </Button>
+                <Button variant="outline" onClick={() => navigate('/')}>
+                  {t('admin.accessDenied.back')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )
+    }
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">{t('admin.title')}</h1>

@@ -279,7 +279,12 @@
     "auth": {
       "title": "Admin Authentication",
       "description": "Sign a message with your admin wallet to access the dashboard.",
-      "button": "Sign In"
+      "button": "Sign In",
+      "rejected": {
+        "title": "Signature cancelled",
+        "description": "The signature was rejected or cancelled in your wallet. You can try again or return to the home page.",
+        "retry": "Sign again"
+      }
     },
     "accessDenied": {
       "title": "Access Denied",
