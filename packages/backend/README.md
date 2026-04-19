@@ -66,28 +66,28 @@ pnpm --filter @vpp/backend test
 
 ### Environment Variables
 
-| Variable                     | Required | Default                        | Description                                                    |
-| ---------------------------- | -------- | ------------------------------ | -------------------------------------------------------------- |
-| `PORT`                       | No       | `3000`                         | Server port                                                    |
-| `RPC_URL`                    | **Yes**  | —                              | Base RPC endpoint                                              |
-| `CONTRACT_ADDRESS`           | **Yes**  | —                              | Deployed SurveyPoints contract address                         |
-| `MINTER_PRIVATE_KEY`         | **Yes**  | —                              | Private key of the backend wallet (MINTER_ROLE)                |
-| `CONTRACT_DEPLOY_BLOCK`      | No       | `0`                            | Block number of contract deploy (speeds up event queries)      |
-| `EXPECTED_CHAIN_ID`          | No       | —                              | If set, validates RPC chain ID at startup (e.g. `84532`)       |
-| `EXPLORER_BASE_URL`          | No       | `https://sepolia.basescan.org` | Block explorer URL for transaction links                       |
-| `FRONTEND_URL`               | No       | `http://localhost:5173`        | Frontend URL for CORS                                          |
-| `LOG_LEVEL`                  | No       | `info`                         | Pino log level (`fatal`/`error`/`warn`/`info`/`debug`/`trace`) |
-| `TRUST_PROXY`                | No       | `false`                        | Express trust proxy setting for reverse proxies                |
-| `MAX_MESSAGE_AGE_MS`         | No       | `300000`                       | Max age (ms) for signed claim/admin messages                   |
-| `SYNC_INTERVAL_MS`           | No       | `60000`                        | Event store sync interval (ms)                                 |
-| `CACHE_TTL_MS`               | No       | `30000`                        | Survey cache TTL (ms)                                          |
-| `CHUNK_SIZE`                 | No       | `9000`                         | Block range per RPC query chunk                                |
-| `CLAIM_RATE_LIMIT_WINDOW_MS` | No       | `60000`                        | Claim rate limit window (ms)                                   |
-| `CLAIM_RATE_LIMIT_MAX`       | No       | `5`                            | Max claims per window                                          |
-| `API_RATE_LIMIT_WINDOW_MS`   | No       | `60000`                        | API rate limit window (ms)                                     |
-| `API_RATE_LIMIT_MAX`         | No       | `100`                          | Max API requests per window                                    |
-| `RATE_LIMIT_STORE`           | No       | `memory`                       | Rate limit backend (`memory` or `redis`)                       |
-| `REDIS_URL`                  | No       | —                              | Redis URL (required when `RATE_LIMIT_STORE=redis`)             |
+| Variable                     | Required | Default                        | Description                                                                                 |
+| ---------------------------- | -------- | ------------------------------ | ------------------------------------------------------------------------------------------- |
+| `PORT`                       | No       | `3000`                         | Server port                                                                                 |
+| `RPC_URL`                    | **Yes**  | —                              | Base RPC endpoint                                                                           |
+| `CONTRACT_ADDRESS`           | **Yes**  | —                              | Deployed SurveyPoints contract address                                                      |
+| `MINTER_PRIVATE_KEY`         | **Yes**  | —                              | Private key of the backend wallet (MINTER_ROLE)                                             |
+| `CONTRACT_DEPLOY_BLOCK`      | No       | `0`                            | Block number of contract deploy (speeds up event queries)                                   |
+| `EXPECTED_CHAIN_ID`          | No       | —                              | If set, validates RPC chain ID at startup (e.g. `84532`)                                    |
+| `EXPLORER_BASE_URL`          | No       | `https://sepolia.basescan.org` | Block explorer URL for transaction links                                                    |
+| `FRONTEND_URL`               | No       | `http://localhost:5173`        | Frontend URL for CORS                                                                       |
+| `LOG_LEVEL`                  | No       | `info`                         | Pino log level (`fatal`/`error`/`warn`/`info`/`debug`/`trace`)                              |
+| `TRUST_PROXY`                | No       | `false`                        | Express trust proxy setting for reverse proxies                                             |
+| `MAX_MESSAGE_AGE_MS`         | No       | `60000`                        | Max age (ms) for signed claim/admin messages (60 s; raise carefully — widens replay window) |
+| `SYNC_INTERVAL_MS`           | No       | `60000`                        | Event store sync interval (ms)                                                              |
+| `CACHE_TTL_MS`               | No       | `30000`                        | Survey cache TTL (ms)                                                                       |
+| `CHUNK_SIZE`                 | No       | `9000`                         | Block range per RPC query chunk                                                             |
+| `CLAIM_RATE_LIMIT_WINDOW_MS` | No       | `60000`                        | Claim rate limit window (ms)                                                                |
+| `CLAIM_RATE_LIMIT_MAX`       | No       | `5`                            | Max claims per window                                                                       |
+| `API_RATE_LIMIT_WINDOW_MS`   | No       | `60000`                        | API rate limit window (ms)                                                                  |
+| `API_RATE_LIMIT_MAX`         | No       | `100`                          | Max API requests per window                                                                 |
+| `RATE_LIMIT_STORE`           | No       | `memory`                       | Rate limit backend (`memory` or `redis`)                                                    |
+| `REDIS_URL`                  | No       | —                              | Redis URL (required when `RATE_LIMIT_STORE=redis`)                                          |
 
 ## Docker
 

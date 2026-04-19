@@ -55,10 +55,11 @@ async function requireAdmin(req: Request, res: Response, next: NextFunction): Pr
   }
   const ageMs = Date.now() - timestamp * 1000
   if (ageMs > config.maxMessageAgeMs) {
+    const ageSeconds = Math.round(config.maxMessageAgeMs / 1000)
     res.status(400).json({
       success: false,
       error: 'EXPIRED_MESSAGE',
-      message: 'Your admin signature has expired (older than 5 minutes). Please sign again.',
+      message: `Your admin signature has expired (older than ${ageSeconds} s). Please sign again.`,
     })
     return
   }

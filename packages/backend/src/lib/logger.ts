@@ -4,7 +4,7 @@ import pino from 'pino'
 // accidentally passes the entire `req` / `body` / `err` object to the logger.
 //
 // Threat model: a Plesk-tenant operator with read access to our log files
-// must not see admin signatures (replay window 5 min — see audit M2 / F6.4),
+// must not see admin signatures (replay window 60 s — see audit M2 / F6.4),
 // nor HMAC claim tokens / nonces, nor the live MINTER_PRIVATE_KEY when ethers
 // includes the rejected value in its INVALID_ARGUMENT errors (M13 / F2.5).
 //

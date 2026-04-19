@@ -91,8 +91,20 @@ export const config = {
 
   logLevel: optional('LOG_LEVEL', 'info'),
 
-  /** Maximum age (in ms) of a signed claim message before it is rejected. */
-  maxMessageAgeMs: parseInt(optional('MAX_MESSAGE_AGE_MS', '300000'), 10),
+  /**
+   * Maximum age (in ms) of a signed claim or admin message before it is
+   * rejected.
+   *
+   * Default: 60_000 ms (60 s). This was lowered from 300_000 ms (5 min) as
+   * part of audit M2 mitigation: the value defines how long an attacker who
+   * intercepts a signed message has to replay it against a different
+   * backend instance (or before the server-side nonce store has flushed).
+   * 60 s is comfortable for a clock-synced participant clicking "Sign &
+   * Submit" in the wallet popup, but too short for a manual MITM relay.
+   *
+   * Audit ref: F6.11, M2-Mitigation, AUDIT-LOG.md.
+   */
+  maxMessageAgeMs: parseInt(optional('MAX_MESSAGE_AGE_MS', '60000'), 10),
 
   /** Interval (in ms) between event store sync cycles. */
   syncIntervalMs: parseInt(optional('SYNC_INTERVAL_MS', '60000'), 10),

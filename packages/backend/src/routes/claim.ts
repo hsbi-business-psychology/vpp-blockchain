@@ -94,10 +94,11 @@ router.post('/', claimLimiter as RequestHandler, async (req, res, next) => {
     }
     const messageAge = Date.now() - timestamp * 1000
     if (messageAge > config.maxMessageAgeMs) {
+      const ageSeconds = Math.round(config.maxMessageAgeMs / 1000)
       throw new AppError(
         400,
         'EXPIRED_MESSAGE',
-        'Your signature has expired (older than 5 minutes). Please reload the page and sign again.',
+        `Your signature has expired (older than ${ageSeconds} s). Please reload the page and sign again.`,
       )
     }
     if (messageAge < -60_000) {
