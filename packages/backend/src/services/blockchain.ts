@@ -212,24 +212,68 @@ export const MIN_BALANCE_WEI = ethers.parseEther(config.minBalanceEth)
 export const WARN_BALANCE_WEI = MIN_BALANCE_WEI * 5n
 
 /**
- * Hard fee cap applied to every state-changing transaction (audit F2.3
- * / M12). Without this, ethers v6's default `getFeeData()` policy
- * (`maxFeePerGas = 2 × baseFee + tip`) lets a Base mainnet fee spike
- * (NFT mint wave, sequencer backlog, MEV storm) burn the entire
- * minter wallet inside a handful of transactions. With the cap, a Tx
- * submitted during a spike simply waits in the mempool until baseFee
- * drops back below the ceiling — students see a delay, not a silent
- * INSUFFICIENT_FUNDS wave for the rest of the class.
+ * Hard fee caps applied as upper bounds to every state-changing
+ * transaction (audit F2.3 / M12). Without these, ethers v6's default
+ * `getFeeData()` policy lets a Base mainnet fee spike (NFT mint wave,
+ * sequencer backlog) burn the minter wallet inside a handful of
+ * transactions. With the caps, a Tx submitted during a spike simply
+ * waits in the mempool until baseFee drops back below the ceiling.
  *
- * Both knobs are config-driven (`MAX_FEE_PER_GAS_GWEI`,
- * `MAX_PRIORITY_FEE_PER_GAS_GWEI`) so an operator on a congested
- * network or L1 can lift the cap without a code change.
+ * Both knobs are config-driven so operators on a congested network
+ * or on L1 can lift the cap without a code change.
  */
 export const MAX_FEE_PER_GAS_WEI = ethers.parseUnits(config.maxFeePerGasGwei, 'gwei')
 export const MAX_PRIORITY_FEE_PER_GAS_WEI = ethers.parseUnits(
   config.maxPriorityFeePerGasGwei,
   'gwei',
 )
+
+/**
+ * Builds per-transaction EIP-1559 fee overrides.
+ *
+ * Reads the provider's current `getFeeData()` and computes:
+ *
+ *   priority = min(provider.maxPriorityFeePerGas, MAX_PRIORITY_FEE)
+ *   baseFee  = (provider.maxFeePerGas − provider.maxPriorityFeePerGas) / 2
+ *   maxFee   = min(2 × baseFee + priority, MAX_FEE_PER_GAS)
+ *
+ * On Base, baseFee is typically 0.005-0.05 gwei and the sequencer is
+ * single-operator (priority tip is anti-spam, not bid-for-blockspace),
+ * so a healthy run lands at ~0.005-0.015 gwei effective gas price —
+ * one `awardPoints` Tx costs $0.001-0.005 instead of the $0.15
+ * the previous static-override path produced. During a congestion
+ * spike the static caps still apply, so wallet-drain protection
+ * (audit F2.3 / M12) is preserved.
+ *
+ * The returned object always satisfies `maxFeePerGas >= maxPriorityFeePerGas`
+ * which ethers v6 requires.
+ */
+export async function buildTxOverrides(): Promise<ethers.Overrides> {
+  const feeData = await withRpcRetry(() => provider.getFeeData(), { label: 'getFeeData' })
+
+  let priority = feeData.maxPriorityFeePerGas ?? MAX_PRIORITY_FEE_PER_GAS_WEI
+  if (priority < 0n) priority = 0n
+  if (priority > MAX_PRIORITY_FEE_PER_GAS_WEI) priority = MAX_PRIORITY_FEE_PER_GAS_WEI
+
+  const providerMaxFee = feeData.maxFeePerGas ?? 0n
+  const providerTip = feeData.maxPriorityFeePerGas ?? 0n
+  const baseFee = providerMaxFee > providerTip ? (providerMaxFee - providerTip) / 2n : 0n
+
+  let maxFee = baseFee * 2n + priority
+  if (maxFee > MAX_FEE_PER_GAS_WEI) maxFee = MAX_FEE_PER_GAS_WEI
+  if (maxFee < priority) maxFee = priority
+
+  return { maxFeePerGas: maxFee, maxPriorityFeePerGas: priority }
+}
+
+/**
+ * Static worst-case fee overrides — used only by code paths that need
+ * a synchronous override and accept paying the absolute ceiling. New
+ * code should call `buildTxOverrides()` instead, which is dynamic and
+ * costs ~30× less in normal operation.
+ *
+ * @deprecated Prefer `buildTxOverrides()` for cost efficiency.
+ */
 export const TX_OVERRIDES: ethers.Overrides = {
   maxFeePerGas: MAX_FEE_PER_GAS_WEI,
   maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS_WEI,
@@ -265,7 +309,7 @@ export async function awardPoints(
   surveyId: number,
 ): Promise<ethers.TransactionReceipt> {
   await assertSufficientBalance()
-  const tx = await contract.awardPoints(student, surveyId, TX_OVERRIDES)
+  const tx = await contract.awardPoints(student, surveyId, await buildTxOverrides())
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
   return receipt
@@ -282,7 +326,13 @@ export async function registerSurvey(
   title: string,
 ): Promise<ethers.TransactionReceipt> {
   await assertSufficientBalance()
-  const tx = await contract.registerSurvey(surveyId, points, maxClaims, title, TX_OVERRIDES)
+  const tx = await contract.registerSurvey(
+    surveyId,
+    points,
+    maxClaims,
+    title,
+    await buildTxOverrides(),
+  )
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
   return receipt
@@ -299,7 +349,7 @@ export interface SurveyInfoRaw {
 
 export async function deactivateSurvey(surveyId: number): Promise<ethers.TransactionReceipt> {
   await assertSufficientBalance()
-  const tx = await contract.deactivateSurvey(surveyId, TX_OVERRIDES)
+  const tx = await contract.deactivateSurvey(surveyId, await buildTxOverrides())
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
   return receipt
@@ -311,7 +361,7 @@ export async function deactivateSurvey(surveyId: number): Promise<ethers.Transac
  */
 export async function reactivateSurvey(surveyId: number): Promise<ethers.TransactionReceipt> {
   await assertSufficientBalance()
-  const tx = await contract.reactivateSurvey(surveyId, TX_OVERRIDES)
+  const tx = await contract.reactivateSurvey(surveyId, await buildTxOverrides())
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
   return receipt
@@ -326,7 +376,7 @@ export async function revokePoints(
   surveyId: number,
 ): Promise<ethers.TransactionReceipt> {
   await assertSufficientBalance()
-  const tx = await contract.revokePoints(student, surveyId, TX_OVERRIDES)
+  const tx = await contract.revokePoints(student, surveyId, await buildTxOverrides())
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
   return receipt
@@ -434,7 +484,7 @@ export async function isAdmin(address: string): Promise<boolean> {
 
 export async function addAdmin(address: string): Promise<ethers.TransactionReceipt> {
   await assertSufficientBalance()
-  const tx = await contract.addAdmin(address, TX_OVERRIDES)
+  const tx = await contract.addAdmin(address, await buildTxOverrides())
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
   return receipt
@@ -442,7 +492,7 @@ export async function addAdmin(address: string): Promise<ethers.TransactionRecei
 
 export async function removeAdmin(address: string): Promise<ethers.TransactionReceipt> {
   await assertSufficientBalance()
-  const tx = await contract.removeAdmin(address, TX_OVERRIDES)
+  const tx = await contract.removeAdmin(address, await buildTxOverrides())
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
   return receipt
@@ -452,7 +502,7 @@ export async function markWalletSubmitted(
   walletAddress: string,
 ): Promise<ethers.TransactionReceipt> {
   await assertSufficientBalance()
-  const tx = await contract.markWalletSubmitted(walletAddress, TX_OVERRIDES)
+  const tx = await contract.markWalletSubmitted(walletAddress, await buildTxOverrides())
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
   return receipt
@@ -462,7 +512,7 @@ export async function unmarkWalletSubmitted(
   walletAddress: string,
 ): Promise<ethers.TransactionReceipt> {
   await assertSufficientBalance()
-  const tx = await contract.unmarkWalletSubmitted(walletAddress, TX_OVERRIDES)
+  const tx = await contract.unmarkWalletSubmitted(walletAddress, await buildTxOverrides())
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
   return receipt

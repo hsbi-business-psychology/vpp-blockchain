@@ -209,9 +209,24 @@ export const config = {
   maxFeePerGasGwei: optional('MAX_FEE_PER_GAS_GWEI', '2'),
 
   /**
-   * Hard cap on `maxPriorityFeePerGas` (gwei). Base typically requires
-   * < 0.01 gwei; 0.5 gwei is generous head room without inviting
-   * priority-fee bidding wars during congestion.
+   * Hard cap on `maxPriorityFeePerGas` (gwei).
+   *
+   * Base's sequencer is single-operator and orders by FCFS — priority
+   * tip is essentially anti-spam, not bid-for-block-space. Coinbase
+   * Wallet defaults to 0.001 gwei tip on Base; most production wallets
+   * use < 0.01 gwei.
+   *
+   * The default of 0.01 gwei is the *ceiling*, not the value the
+   * backend always pays: `buildTxOverrides()` reads the provider's
+   * fee suggestion via `getFeeData()` and clips it to this ceiling.
+   * On a healthy network with normal RPC behaviour, effective tip is
+   * 0.001-0.005 gwei, putting one `awardPoints` Tx at $0.001-0.005
+   * (Base baseFee ≈ 0.005 gwei × 130k gas + tip).
+   *
+   * The previous default of 0.5 gwei was a static override applied as
+   * the actual tip, causing every transaction to overpay by ~50×
+   * regardless of network state — visible in BaseScan as effective
+   * gas prices around 0.5 gwei when baseFee was 0.005 gwei.
    */
-  maxPriorityFeePerGasGwei: optional('MAX_PRIORITY_FEE_PER_GAS_GWEI', '0.5'),
+  maxPriorityFeePerGasGwei: optional('MAX_PRIORITY_FEE_PER_GAS_GWEI', '0.01'),
 } as const
