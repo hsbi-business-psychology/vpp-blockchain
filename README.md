@@ -153,6 +153,9 @@ Comprehensive documentation is available in the [`docs/`](docs/) directory:
 - [Deployment](docs/deployment.md) — Production deployment guide
 - [Security](docs/security.md) — Security architecture and threat model
 - [For Universities](docs/for-universities.md) — Adoption guide for other institutions
+- [Operations Runbooks](docs/runbooks/README.md) — Provider-agnostic playbooks (deploy, recovery, key rotation, incident response)
+- [Architecture Decision Records](docs/adr/README.md) — Long-form rationale for major design decisions
+- [Audit Findings (V2)](docs/audit/v2/) — Full security audit, master-finding deduplication, go/no-go synthesis
 
 ## Integration Options
 
@@ -194,6 +197,26 @@ VPP runs on Base L2, where transaction costs are minimal:
 | Read points          | Free           |
 
 A single $10 deposit covers thousands of claims across multiple semesters.
+
+## CI / CD & Branch Protection
+
+The repository ships two GitHub Actions workflows:
+
+| Workflow                       | Trigger                         | Purpose                                                                     |
+| ------------------------------ | ------------------------------- | --------------------------------------------------------------------------- |
+| `.github/workflows/ci.yml`     | every push, every pull request  | Lint, type-check, contracts/backend/frontend tests, secret scan             |
+| `.github/workflows/deploy.yml` | push to `main`, manual dispatch | Build + deploy to the configured hosting provider, post-deploy health check |
+
+**Recommended branch protection on `main`** (set once after forking):
+
+- Require pull requests before merging
+- Require ≥ 1 approving review (Owner / Maintainer)
+- Require status check `CI` to pass
+- Restrict who can push to `main` to repository owners only
+- Require conversation resolution before merging
+- Disallow force pushes and branch deletion
+
+The exact `gh` CLI commands and the GitHub UI walkthrough live in [`CONTRIBUTING.md`](CONTRIBUTING.md#branch-protection-required-for-production-instances). A pre-flight script is provided at [`scripts/setup-branch-protection.sh`](scripts/setup-branch-protection.sh).
 
 ## Contributing
 

@@ -11,6 +11,7 @@ Thank you for your interest in contributing! This guide will help you get starte
 - [Pull Requests](#pull-requests)
 - [Code Style](#code-style)
 - [Reporting Issues](#reporting-issues)
+- [Branch Protection (required for production instances)](#branch-protection-required-for-production-instances)
 
 ## Code of Conduct
 
@@ -150,6 +151,57 @@ vpp-blockchain/
 ├── docs/             # Project documentation
 └── .github/          # CI workflows and templates
 ```
+
+## Branch Protection (required for production instances)
+
+Any fork that runs in production (i.e. accepts real student claims) **must** lock down the `main` branch so unreviewed code cannot reach the deploy pipeline. The reference instance enforces:
+
+| Setting                          | Value                                                                                                              |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Required status checks           | `CI` must pass; strict (head must be up to date)                                                                   |
+| Required pull request reviews    | 1 approving review; stale reviews dismissed on new push                                                            |
+| Required conversation resolution | yes                                                                                                                |
+| Required linear history          | yes (no merge commits — squash or rebase)                                                                          |
+| Allow force pushes               | no                                                                                                                 |
+| Allow deletions                  | no                                                                                                                 |
+| Enforce on admins                | **no** for solo-maintainer instances (admin may bypass for hotfix); set to **yes** as soon as 2+ maintainers exist |
+
+### One-shot setup via gh CLI
+
+After forking, run from inside your clone:
+
+```bash
+gh auth login              # if not already authenticated
+bash scripts/setup-branch-protection.sh main
+```
+
+The script applies the policy table above via the GitHub REST API. It is idempotent — re-running updates the protection rule in place.
+
+### Manual setup via GitHub UI
+
+1. Repository → **Settings → Branches**
+2. **Add branch protection rule**, branch name pattern `main`
+3. Tick:
+   - ☑ Require a pull request before merging → **Required approving reviews: 1**
+   - ☑ Dismiss stale pull request approvals when new commits are pushed
+   - ☑ Require status checks to pass before merging → search & add `CI`
+   - ☑ Require branches to be up to date before merging
+   - ☑ Require conversation resolution before merging
+   - ☑ Require linear history
+   - ☐ Do not allow bypassing the above settings (leave unchecked for solo maintainer; check it once a co-maintainer joins)
+   - ☐ Allow force pushes
+   - ☐ Allow deletions
+4. Save
+
+### What this means in practice
+
+| Actor                        | Can push directly to `main`?                                                          |
+| ---------------------------- | ------------------------------------------------------------------------------------- |
+| External contributor (forks) | No — must open PR, get review, pass CI                                                |
+| Maintainer (write access)    | No — must open PR, get review, pass CI                                                |
+| Repo admin / Owner           | Yes (when bypass is allowed) — recommended only for hotfixes; prefer PR even as admin |
+
+CI is currently the only required status check. If you add new workflows that should also be blocking (e.g. coverage gates, e2e), add them to `required_status_checks.contexts` in `scripts/setup-branch-protection.sh` and re-run.
 
 ## Questions?
 
