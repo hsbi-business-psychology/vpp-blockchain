@@ -83,9 +83,9 @@ pnpm --filter @vpp/backend test
 | `CACHE_TTL_MS`               | No       | `30000`                        | Survey cache TTL (ms)                                                                       |
 | `CHUNK_SIZE`                 | No       | `9000`                         | Block range per RPC query chunk                                                             |
 | `CLAIM_RATE_LIMIT_WINDOW_MS` | No       | `60000`                        | Claim rate limit window (ms)                                                                |
-| `CLAIM_RATE_LIMIT_MAX`       | No       | `5`                            | Max claims per window                                                                       |
+| `CLAIM_RATE_LIMIT_MAX`       | No       | `100`                          | Max claim requests per IP per window (raise to ~200 for classes >50 students behind NAT)    |
 | `API_RATE_LIMIT_WINDOW_MS`   | No       | `60000`                        | API rate limit window (ms)                                                                  |
-| `API_RATE_LIMIT_MAX`         | No       | `100`                          | Max API requests per window                                                                 |
+| `API_RATE_LIMIT_MAX`         | No       | `600`                          | Max API requests per IP per window (admin dashboards poll frequently)                       |
 | `RATE_LIMIT_STORE`           | No       | `memory`                       | Rate limit backend (`memory` or `redis`)                                                    |
 | `REDIS_URL`                  | No       | —                              | Redis URL (required when `RATE_LIMIT_STORE=redis`)                                          |
 
