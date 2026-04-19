@@ -289,21 +289,12 @@ export function deleteWallet(): void {
   localStorage.removeItem(STORAGE_KEY)
 }
 
-export function downloadKeyFile(data: WalletData): void {
-  const content = JSON.stringify(
-    {
-      address: data.address,
-      privateKey: data.privateKey,
-      note: 'Keep this file secure. Never share your private key.',
-    },
-    null,
-    2,
-  )
-  const blob = new Blob([content], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `vpp-wallet-${data.address.slice(0, 8)}.json`
-  a.click()
-  URL.revokeObjectURL(url)
-}
+// `downloadKeyFile()` was removed in the BIP-39 mnemonic rollout.
+// Reason: a JSON file containing a plaintext private key was the worst
+// possible "backup" format — easy to leak via cloud sync, attachments
+// or screenshots, and impossible to actually re-import into MetaMask
+// without a developer-friendly UI. Recovery now goes exclusively
+// through the 12-word phrase, which is auditable, portable across
+// every BIP-39 wallet, and survives losing the file or the device.
+//
+// This addresses audit item M7 (Klartext-PK-Export ohne Keystore-V3).

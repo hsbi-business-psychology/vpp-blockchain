@@ -29,7 +29,6 @@ vi.mock('@/lib/wallet', async (importOriginal) => {
     saveWallet: vi.fn(),
     loadWallet: vi.fn<() => WalletData | null>(() => null),
     deleteWallet: vi.fn(),
-    downloadKeyFile: vi.fn(),
     hasMetaMask: vi.fn<() => boolean>(() => false),
   }
 })

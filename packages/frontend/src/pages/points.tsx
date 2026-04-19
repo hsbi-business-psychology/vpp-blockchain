@@ -35,7 +35,6 @@ export default function PointsPage() {
     importMnemonic,
     connectMetaMask,
     remove,
-    downloadKey,
   } = useWallet()
   const { isWalletSubmitted: checkSubmitted } = useBlockchain()
   const { getPointsData } = useApi()
@@ -215,7 +214,6 @@ export default function PointsPage() {
             keyRevealed={keyRevealed}
             onRevealRequest={() => setShowRevealDialog(true)}
             onHideKey={() => setKeyRevealed(false)}
-            onDownloadKey={downloadKey}
             onImportRequest={() => setShowImportDialog(true)}
             onDeleteRequest={() => setShowDeleteDialog(true)}
             onDisconnect={handleDisconnect}

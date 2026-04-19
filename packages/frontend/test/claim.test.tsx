@@ -16,7 +16,6 @@ const mockWalletReturn = {
   connectMetaMask: vi.fn(),
   remove: vi.fn(),
   sign: vi.fn<(msg: string) => Promise<string>>().mockResolvedValue('0xSig'),
-  downloadKey: vi.fn(),
 }
 
 const mockApiReturn = {

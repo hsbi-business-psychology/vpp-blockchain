@@ -25,7 +25,6 @@ import {
   deleteWallet as deleteWalletFn,
   signMessage as signMessageFn,
   signMessageMetaMask as signMessageMetaMaskFn,
-  downloadKeyFile as downloadKeyFileFn,
   hasMetaMask as hasMetaMaskFn,
 } from '@/lib/wallet'
 
@@ -162,11 +161,6 @@ export function useWallet() {
     [wallet],
   )
 
-  const downloadKey = useCallback(() => {
-    if (!wallet || wallet.type === 'metamask') return
-    downloadKeyFileFn(wallet)
-  }, [wallet])
-
   return {
     wallet,
     loading,
@@ -181,6 +175,5 @@ export function useWallet() {
     connectMetaMask,
     remove,
     sign,
-    downloadKey,
   }
 }

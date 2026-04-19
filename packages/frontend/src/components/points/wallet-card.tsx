@@ -6,7 +6,6 @@ import {
   Check,
   Eye,
   EyeOff,
-  Download,
   KeyRound,
   Trash2,
   Upload,
@@ -30,7 +29,6 @@ interface WalletCardProps {
   mnemonic?: string
   isMetaMask: boolean
   onRevealRequest: () => void
-  onDownloadKey: () => void
   onImportRequest: () => void
   onDeleteRequest: () => void
   onDisconnect: () => void
@@ -46,7 +44,6 @@ export function WalletCard({
   mnemonic,
   isMetaMask,
   onRevealRequest,
-  onDownloadKey,
   onImportRequest,
   onDeleteRequest,
   onDisconnect,
@@ -295,10 +292,6 @@ export function WalletCard({
             <div className="flex flex-wrap gap-2">
               {!isMetaMask && (
                 <>
-                  <Button variant="outline" size="sm" onClick={onDownloadKey}>
-                    <Download className="mr-1.5 size-3.5" aria-hidden="true" />
-                    {t('wallet.info.downloadKey')}
-                  </Button>
                   <Button variant="outline" size="sm" onClick={onImportRequest}>
                     <Upload className="mr-1.5 size-3.5" aria-hidden="true" />
                     {t('wallet.import.importAnother')}

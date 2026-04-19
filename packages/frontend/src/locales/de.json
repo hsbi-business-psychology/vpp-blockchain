@@ -162,7 +162,6 @@
       "privateKey": "Private Key",
       "showKey": "Private Key anzeigen",
       "hideKey": "Private Key verbergen",
-      "downloadKey": "Key-Datei herunterladen",
       "warning": "Teile deinen Private Key niemals mit anderen. Bewahre ihn sicher auf!",
       "privateKeyTip": "Informationen zum Private Key"
     },

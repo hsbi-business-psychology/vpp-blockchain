@@ -27,7 +27,6 @@ vi.mock('@/hooks/use-wallet', () => ({
     connectMetaMask: vi.fn(),
     remove: vi.fn(),
     sign: vi.fn(),
-    downloadKey: vi.fn(),
   }),
 }))
 
