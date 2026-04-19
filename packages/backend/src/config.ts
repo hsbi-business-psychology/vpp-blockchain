@@ -121,4 +121,30 @@ export const config = {
    * Leave unset to skip validation.
    */
   expectedChainId: process.env.EXPECTED_CHAIN_ID || undefined,
+
+  /**
+   * Minimum minter wallet balance (ETH) before write paths refuse new
+   * transactions and return 503 INSUFFICIENT_FUNDS. Default 0.005 ETH ≈
+   * 30 awardPoints transactions of head room at typical Base gas prices.
+   *
+   * The previous hard-coded value (50_000 × 1e6 wei = 0.00000005 ETH)
+   * was 16 000× too low and effectively a no-op (audit F2.4) — by the
+   * time the check would trip, ethers would already have bubbled up an
+   * INSUFFICIENT_FUNDS from the provider. Bumping this to ~30 Tx of
+   * runway lets the backend short-circuit early with a clean 503 and
+   * gives the operator one full class run worth of warning.
+   *
+   * Also gates the balance-monitor warn threshold (5× this value).
+   */
+  minBalanceEth: optional('MIN_BALANCE_ETH', '0.005'),
+
+  /**
+   * Interval (ms) for the boot-time balance monitor. Default 1h. Set to
+   * 0 to disable (e.g. for unit tests). The monitor logs a structured
+   * `MINTER_BALANCE_LOW` line at warn level when balance drops below
+   * 5× minBalanceEth so that a Plesk cron / UptimeRobot keyword check
+   * can pick it up without us shipping a paging stack. See
+   * docs/runbooks/eth-refill.md for the operator-side wiring.
+   */
+  balanceMonitorIntervalMs: parseInt(optional('BALANCE_MONITOR_INTERVAL_MS', '3600000'), 10),
 } as const

@@ -189,7 +189,27 @@ const readOnlyContract = new ethers.Contract(config.contractAddress, abi, provid
 // above for why this is split off from `readOnlyContract`.
 const eventReadOnlyContract = new ethers.Contract(config.contractAddress, abi, eventProvider)
 
-const MIN_BALANCE_WEI = 50_000n * 1_000_000n // ~50k gas units at 1 Mwei/gas
+/**
+ * Hard-stop threshold: write paths refuse new transactions when balance
+ * drops below this. Sized for ~30 awardPoints transactions at typical
+ * Base gas prices (~80 000 gas × ~10 gwei ≈ 0.000 8 ETH per Tx → 30 ×
+ * Tx ≈ 0.024 ETH; leaving a 5× margin gives ~0.005 ETH as the floor).
+ *
+ * The previous default of 50 000 × 1e6 wei (≈ 0.00000005 ETH) was 16
+ * 000× too low — see audit F2.4. Operators can override via
+ * `MIN_BALANCE_ETH`; everything below 0.001 ETH is essentially "service
+ * is broken in <5 Tx" and should not be configured in production.
+ */
+export const MIN_BALANCE_WEI = ethers.parseEther(config.minBalanceEth)
+
+/**
+ * Soft warn threshold: structured `MINTER_BALANCE_LOW` log line at warn
+ * level (picked up by Plesk cron + UptimeRobot keyword check) when
+ * balance drops below this. 5× the hard floor gives operators ~150 Tx
+ * (typically several full class runs) to schedule a refill before the
+ * service starts returning 503s. See `services/balance-monitor.ts`.
+ */
+export const WARN_BALANCE_WEI = MIN_BALANCE_WEI * 5n
 
 /**
  * Throws a descriptive error if the minter wallet balance is too low
@@ -202,8 +222,9 @@ async function assertSufficientBalance(): Promise<void> {
   })
   if (balance < MIN_BALANCE_WEI) {
     const err = new Error(
-      `Minter wallet balance too low: ${ethers.formatEther(balance)} ETH. ` +
-        'Top up the wallet to resume operations.',
+      `Minter wallet balance too low: ${ethers.formatEther(balance)} ETH ` +
+        `(threshold ${ethers.formatEther(MIN_BALANCE_WEI)} ETH). ` +
+        'Top up the wallet to resume operations — see docs/runbooks/eth-refill.md.',
     )
     ;(err as unknown as Record<string, unknown>).code = 'INSUFFICIENT_FUNDS'
     throw err

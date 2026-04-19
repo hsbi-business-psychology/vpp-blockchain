@@ -1,3 +1,4 @@
+import { ethers } from 'ethers'
 import { vi } from 'vitest'
 
 // Prevent server from starting during tests
@@ -14,10 +15,15 @@ process.env.MINTER_PRIVATE_KEY =
   '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
 process.env.EXPLORER_BASE_URL = 'https://sepolia.basescan.org'
 process.env.FRONTEND_URL = 'http://localhost:5173'
+// Disable the periodic balance check during tests; individual specs may
+// import the helper directly when they want to assert on its output.
+process.env.BALANCE_MONITOR_INTERVAL_MS = '0'
 
 // Mock the blockchain service globally
 // Using vi.fn(() => ...) so restoreAllMocks() keeps the factory defaults
 vi.mock('../src/services/blockchain.js', () => ({
+  MIN_BALANCE_WEI: ethers.parseEther('0.005'),
+  WARN_BALANCE_WEI: ethers.parseEther('0.025'),
   awardPoints: vi.fn(),
   registerSurvey: vi.fn(),
   getSurveyInfo: vi.fn(),

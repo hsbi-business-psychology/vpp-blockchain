@@ -29,6 +29,7 @@ import { errorHandler } from './middleware/errorHandler.js'
 import { createApiRouter } from './routes/index.js'
 import { getEventStore } from './services/event-store.js'
 import { validateChainId } from './services/blockchain.js'
+import { startBalanceMonitor } from './services/balance-monitor.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -133,6 +134,11 @@ if (process.env.NODE_ENV !== 'test') {
     logger.error({ err }, 'Event store initial sync failed (will retry periodically)')
   })
 
+  // Polls the minter wallet balance and emits a structured
+  // MINTER_BALANCE_LOW warn line for the operator-side cron / UptimeRobot
+  // keyword check. See services/balance-monitor.ts and audit F2.4.
+  const stopBalanceMonitor = startBalanceMonitor()
+
   async function shutdown(signal: string) {
     logger.info({ signal }, 'Shutting down gracefully...')
 
@@ -142,6 +148,8 @@ if (process.env.NODE_ENV !== 'test') {
 
     eventStore.stop()
     logger.info('Event store stopped')
+
+    stopBalanceMonitor()
 
     setTimeout(() => {
       logger.error('Graceful shutdown timed out — forcing exit')

@@ -27,7 +27,15 @@ router.get('/', requireAdminHandler, async (_req, res, next) => {
     const costPerRegistration = ethers.formatEther(AVG_GAS_PER_REGISTER * gasPrice)
 
     const balanceEth = ethers.formatEther(balance)
+    // Two thresholds: `lowBalance` is the legacy heuristic (less than ~100
+    // claim Tx of head room at the current gas price) and matches the
+    // existing admin UI banner. `belowWarn` / `belowMin` map to the
+    // explicit operator-configurable hard/soft thresholds set up in
+    // services/blockchain.ts (audit F2.4) so an external runbook /
+    // monitor can read the same numbers the backend uses.
     const lowBalance = balance < AVG_GAS_PER_CLAIM * gasPrice * 100n
+    const belowWarn = balance < blockchain.WARN_BALANCE_WEI
+    const belowMin = balance < blockchain.MIN_BALANCE_WEI
 
     res.json({
       success: true,
@@ -35,6 +43,10 @@ router.get('/', requireAdminHandler, async (_req, res, next) => {
         minterAddress: blockchain.getMinterAddress(),
         balance: balanceEth,
         lowBalance,
+        belowWarn,
+        belowMin,
+        warnThresholdEth: ethers.formatEther(blockchain.WARN_BALANCE_WEI),
+        minThresholdEth: ethers.formatEther(blockchain.MIN_BALANCE_WEI),
         gasPrice: ethers.formatUnits(gasPrice, 'gwei'),
         estimates: {
           claimsRemaining: estimatedClaimsRemaining,
