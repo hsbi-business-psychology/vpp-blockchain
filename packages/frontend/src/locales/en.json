@@ -188,6 +188,27 @@
       "title": "Switch Wallet",
       "description": "Replace your current wallet with an imported one. Your current wallet will be removed.",
       "warning": "Make sure to back up your private key first!"
+    },
+    "mnemonic": {
+      "reveal": {
+        "title": "Your recovery phrase",
+        "description": "These 12 words are the master key to your wallet. Write them down in the exact order shown and keep them somewhere safe.",
+        "safetyTitle": "Before you continue",
+        "safetyText": "Make sure nobody can see your screen. Never take a photo, never paste them into a chat or e-mail, never share them — not even with the lecturer or support.",
+        "modeSingle": "Safe mode: only one word is visible at a time.",
+        "modeAll": "Full reveal: all 12 words are visible (only do this in a private setting).",
+        "toggleAll": "Show all",
+        "toggleSingle": "Show one at a time",
+        "wordHidden": "Word {{n}}, hidden – tap to reveal",
+        "wordVisible": "Word {{n}}: {{word}}",
+        "autoHideSingle": "Tap a word to reveal it for 30 seconds. Switching tabs immediately re-hides all words.",
+        "autoHideAll": "Switching tabs immediately re-hides all words.",
+        "copyAllButton": "Copy all 12 words",
+        "copied": "Recovery phrase copied to clipboard.",
+        "copyWarning": "The clipboard will be cleared automatically in 60 seconds. Paste the phrase directly into your password manager now.",
+        "copyFailed": "Clipboard not available – please write the words down by hand.",
+        "continueButton": "I've safely written down all 12 words"
+      }
     }
   },
   "claim": {

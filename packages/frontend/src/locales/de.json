@@ -188,6 +188,27 @@
       "title": "Wallet wechseln",
       "description": "Ersetze dein aktuelles Wallet durch ein importiertes. Dein bisheriges Wallet wird dabei entfernt.",
       "warning": "Sichere vorher unbedingt deinen Private Key!"
+    },
+    "mnemonic": {
+      "reveal": {
+        "title": "Deine Recovery-Phrase",
+        "description": "Diese 12 Wörter sind dein Generalschlüssel. Schreibe sie in der angezeigten Reihenfolge auf und bewahre sie sicher auf.",
+        "safetyTitle": "Bevor du fortfährst",
+        "safetyText": "Stelle sicher, dass niemand auf deinen Bildschirm schauen kann. Niemals fotografieren, niemals in Chats oder E-Mails kopieren, niemals weitergeben – auch nicht an Lehrende oder den Support.",
+        "modeSingle": "Sicherheits-Modus: Du siehst immer nur ein Wort.",
+        "modeAll": "Vollanzeige: Alle 12 Wörter sichtbar (nur in privater Umgebung).",
+        "toggleAll": "Alle anzeigen",
+        "toggleSingle": "Wieder nur eins anzeigen",
+        "wordHidden": "Wort {{n}}, verdeckt – tippen zum Anzeigen",
+        "wordVisible": "Wort {{n}}: {{word}}",
+        "autoHideSingle": "Tipp ein Wort an, um es 30 Sekunden anzuzeigen. Bei Tabwechsel werden alle Wörter sofort wieder ausgeblendet.",
+        "autoHideAll": "Bei Tabwechsel werden alle Wörter sofort wieder ausgeblendet.",
+        "copyAllButton": "Alle 12 Wörter kopieren",
+        "copied": "Recovery-Phrase in Zwischenablage kopiert.",
+        "copyWarning": "Die Zwischenablage wird in 60 Sekunden automatisch geleert. Füge die Phrase jetzt direkt in deinen Passwortmanager ein.",
+        "copyFailed": "Zwischenablage nicht verfügbar – bitte schreibe die Wörter ab.",
+        "continueButton": "Ich habe alle 12 Wörter gesichert"
+      }
     }
   },
   "claim": {

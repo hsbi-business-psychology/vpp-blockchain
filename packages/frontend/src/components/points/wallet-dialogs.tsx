@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Eye, Trash2, Upload, ShieldAlert, Wallet } from 'lucide-react'
+import { Copy, Eye, EyeOff, KeyRound, ShieldAlert, Trash2, Upload, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -302,6 +302,238 @@ export function CreateWalletDialog({ open, onOpenChange, onConfirm }: CreateDial
             {t('wallet.create.dialogConfirm')}
           </Button>
         </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Mnemonic Reveal Dialog
+//
+// Hardenings:
+// * Default mode reveals exactly one word at a time (shoulder-surf safe).
+// * Toggle to "show all" for users alone in a private setting.
+// * Tab switch (visibilitychange) re-blurs every word immediately.
+// * Each open word auto-hides after 30 s.
+// * `user-select: none` + `print:hidden` to make accidental copy/print harder.
+// * Optional "copy whole phrase" with 60 s auto-clear of the clipboard.
+// ---------------------------------------------------------------------------
+
+const REVEAL_AUTO_HIDE_MS = 30_000
+const CLIPBOARD_AUTO_CLEAR_MS = 60_000
+
+interface MnemonicRevealDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  mnemonic: string
+  /** `create` shows the "I've saved my phrase" continue button; `view` shows just "Close". */
+  mode?: 'create' | 'view'
+  /** Fired when the user confirms they've written the phrase down (create mode). */
+  onContinue?: () => void
+}
+
+export function MnemonicRevealDialog({
+  open,
+  onOpenChange,
+  mnemonic,
+  mode = 'create',
+  onContinue,
+}: MnemonicRevealDialogProps) {
+  const { t } = useTranslation()
+  const words = useMemo(() => mnemonic.trim().split(/\s+/), [mnemonic])
+
+  const [showAll, setShowAll] = useState(false)
+  const [revealedSingle, setRevealedSingle] = useState<number | null>(null)
+  // Per-word auto-hide timer in single-reveal mode.
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Clipboard auto-clear timer for the "copy all" button.
+  const clipboardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const clearHideTimer = useCallback(() => {
+    if (hideTimerRef.current) {
+      clearTimeout(hideTimerRef.current)
+      hideTimerRef.current = null
+    }
+  }, [])
+
+  // Reset state every time the dialog opens or closes.
+  useEffect(() => {
+    if (!open) {
+      setShowAll(false)
+      setRevealedSingle(null)
+      clearHideTimer()
+    }
+  }, [open, clearHideTimer])
+
+  // Re-blur on tab switch / window blur — protects against background-tab
+  // screenshots and against the user briefly looking away.
+  useEffect(() => {
+    if (!open) return
+    function handleVisibility() {
+      if (document.visibilityState === 'hidden') {
+        setShowAll(false)
+        setRevealedSingle(null)
+        clearHideTimer()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    window.addEventListener('blur', handleVisibility)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility)
+      window.removeEventListener('blur', handleVisibility)
+    }
+  }, [open, clearHideTimer])
+
+  // Auto-hide a single revealed word after the timeout.
+  useEffect(() => {
+    clearHideTimer()
+    if (revealedSingle === null || showAll) return
+    hideTimerRef.current = setTimeout(() => {
+      setRevealedSingle(null)
+    }, REVEAL_AUTO_HIDE_MS)
+    return clearHideTimer
+  }, [revealedSingle, showAll, clearHideTimer])
+
+  function handleWordClick(index: number) {
+    if (showAll) return
+    setRevealedSingle((prev) => (prev === index ? null : index))
+  }
+
+  function handleToggleShowAll() {
+    setShowAll((prev) => !prev)
+    setRevealedSingle(null)
+  }
+
+  async function handleCopyAll() {
+    try {
+      await navigator.clipboard.writeText(mnemonic)
+      toast.success(t('wallet.mnemonic.reveal.copied'), {
+        description: t('wallet.mnemonic.reveal.copyWarning'),
+      })
+      // Best-effort auto-clear: only succeeds if the document still has
+      // clipboard permissions when the timer fires; otherwise silently no-ops.
+      if (clipboardTimerRef.current) clearTimeout(clipboardTimerRef.current)
+      clipboardTimerRef.current = setTimeout(() => {
+        navigator.clipboard.writeText('').catch(() => {})
+      }, CLIPBOARD_AUTO_CLEAR_MS)
+    } catch {
+      toast.error(t('wallet.mnemonic.reveal.copyFailed'))
+    }
+  }
+
+  function handleOpenChange(next: boolean) {
+    onOpenChange(next)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
+          <div className="mb-2 flex size-12 items-center justify-center rounded-lg bg-primary/10">
+            <KeyRound className="size-6 text-primary" />
+          </div>
+          <DialogTitle>{t('wallet.mnemonic.reveal.title')}</DialogTitle>
+          <DialogDescription>{t('wallet.mnemonic.reveal.description')}</DialogDescription>
+        </DialogHeader>
+
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-700 dark:text-amber-300">
+          <p className="font-medium">{t('wallet.mnemonic.reveal.safetyTitle')}</p>
+          <p className="mt-1 text-xs leading-relaxed">{t('wallet.mnemonic.reveal.safetyText')}</p>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">
+            {showAll ? t('wallet.mnemonic.reveal.modeAll') : t('wallet.mnemonic.reveal.modeSingle')}
+          </p>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleToggleShowAll}
+            className="h-7 text-xs"
+          >
+            {showAll ? (
+              <>
+                <EyeOff className="mr-1.5 size-3.5" />
+                {t('wallet.mnemonic.reveal.toggleSingle')}
+              </>
+            ) : (
+              <>
+                <Eye className="mr-1.5 size-3.5" />
+                {t('wallet.mnemonic.reveal.toggleAll')}
+              </>
+            )}
+          </Button>
+        </div>
+
+        <div
+          className="mnemonic-grid grid grid-cols-3 gap-2 print:hidden"
+          style={{ userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties}
+        >
+          {words.map((word, i) => {
+            const visible = showAll || revealedSingle === i
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => handleWordClick(i)}
+                className={`group flex items-center gap-2 rounded-md border px-3 py-2 text-left text-sm transition-colors ${
+                  visible
+                    ? 'border-primary/40 bg-primary/5'
+                    : 'border-border bg-muted/40 hover:bg-muted/70'
+                }`}
+                aria-label={
+                  visible
+                    ? t('wallet.mnemonic.reveal.wordVisible', {
+                        n: i + 1,
+                        word,
+                      })
+                    : t('wallet.mnemonic.reveal.wordHidden', { n: i + 1 })
+                }
+              >
+                <span className="w-5 shrink-0 select-none text-xs font-mono text-muted-foreground">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span
+                  className={`flex-1 font-mono ${
+                    visible
+                      ? ''
+                      : 'select-none text-transparent [text-shadow:_0_0_8px_rgba(0,0,0,0.6)]'
+                  }`}
+                >
+                  {visible ? word : '••••••'}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          {showAll
+            ? t('wallet.mnemonic.reveal.autoHideAll')
+            : t('wallet.mnemonic.reveal.autoHideSingle')}
+        </p>
+
+        <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleCopyAll}
+            className="w-full sm:w-auto"
+          >
+            <Copy className="mr-1.5 size-4" />
+            {t('wallet.mnemonic.reveal.copyAllButton')}
+          </Button>
+          {mode === 'create' ? (
+            <Button type="button" onClick={() => onContinue?.()} className="w-full sm:w-auto">
+              {t('wallet.mnemonic.reveal.continueButton')}
+            </Button>
+          ) : (
+            <Button type="button" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
+              {t('common.close', 'Schließen')}
+            </Button>
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
