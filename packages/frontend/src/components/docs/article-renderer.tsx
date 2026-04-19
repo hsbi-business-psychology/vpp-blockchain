@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Info, AlertTriangle, Lightbulb, CheckCircle2 } from 'lucide-react'
+import { Info, AlertTriangle, Lightbulb, CheckCircle2, ShieldCheck, ShieldX } from 'lucide-react'
 import { getArticle } from '@/lib/docs-articles'
 import { DocsDiagram } from './diagrams'
 
@@ -33,7 +33,24 @@ interface DiagramSection {
   caption?: string
 }
 
-type ArticleSection = TextSection | StepsSection | CalloutSection | ListSection | DiagramSection
+interface CardsSection {
+  type: 'cards'
+  heading?: string
+  columns?: 2 | 3
+  cards: Array<{
+    variant?: 'do' | 'dont' | 'info'
+    title: string
+    items: string[]
+  }>
+}
+
+type ArticleSection =
+  | TextSection
+  | StepsSection
+  | CalloutSection
+  | ListSection
+  | DiagramSection
+  | CardsSection
 
 const calloutStyles = {
   info: { icon: Info, bg: 'bg-primary/5', border: 'border-primary/20', text: 'text-primary' },
@@ -126,6 +143,63 @@ function RenderSection({ section, index }: { section: ArticleSection; index: num
           )}
         </div>
       )
+
+    case 'cards': {
+      const cardStyles = {
+        do: {
+          border: 'border-emerald-500/30',
+          bg: 'bg-emerald-500/5',
+          text: 'text-emerald-700 dark:text-emerald-300',
+          icon: ShieldCheck,
+          dot: 'bg-emerald-500/70',
+        },
+        dont: {
+          border: 'border-red-500/30',
+          bg: 'bg-red-500/5',
+          text: 'text-red-600 dark:text-red-400',
+          icon: ShieldX,
+          dot: 'bg-red-500/70',
+        },
+        info: {
+          border: 'border-primary/20',
+          bg: 'bg-primary/5',
+          text: 'text-primary',
+          icon: Info,
+          dot: 'bg-primary/60',
+        },
+      } as const
+      const colsClass = section.columns === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'
+      return (
+        <div key={index}>
+          {section.heading && <h2 className="mb-3 text-xl font-semibold">{section.heading}</h2>}
+          <div className={`grid grid-cols-1 gap-3 ${colsClass}`}>
+            {section.cards.map((card, i) => {
+              const style = cardStyles[card.variant ?? 'info']
+              const Icon = style.icon
+              return (
+                <div key={i} className={`rounded-lg border ${style.border} ${style.bg} p-4`}>
+                  <div className={`mb-2 flex items-center gap-2 ${style.text}`}>
+                    <Icon className="size-4 shrink-0" />
+                    <h3 className="text-sm font-semibold">{card.title}</h3>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {card.items.map((item, j) => (
+                      <li
+                        key={j}
+                        className="flex gap-2 text-[13px] leading-relaxed text-muted-foreground"
+                      >
+                        <span className={`mt-1.5 size-1.5 shrink-0 rounded-full ${style.dot}`} />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )
+    }
 
     default:
       return null

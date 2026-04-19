@@ -205,12 +205,73 @@ function SmartContractDiagram() {
   )
 }
 
+function RecoveryPhraseDiagram() {
+  const { t } = useTranslation()
+  // Two static placeholder words just for visualisation — never derived
+  // from a real phrase. Position 1 and 12 are shown to make the "12-word"
+  // structure obvious without listing every word.
+  const sample = ['witch', 'collapse', '…', 'least']
+  return (
+    <div className="rounded-lg border border-border bg-card p-4 md:p-6">
+      <h3 className="mb-4 text-center text-sm font-semibold">
+        {t('docs.diagrams.recoveryPhrase')}
+      </h3>
+      <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-wrap justify-center gap-1.5">
+          {sample.map((w, i) => {
+            const number = i === 0 ? 1 : i === 1 ? 2 : i === 2 ? '…' : 12
+            return (
+              <div
+                key={i}
+                className="flex items-center gap-1.5 rounded-md border border-primary/20 bg-primary/5 px-2 py-1"
+              >
+                <span className="font-mono text-[10px] text-muted-foreground">{number}</span>
+                <span className="font-mono text-xs text-primary">{w}</span>
+              </div>
+            )
+          })}
+        </div>
+        <div className="flex flex-col items-center">
+          <div className="h-4 w-px bg-border" />
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            {t('docs.diagrams.recoveryDerives')}
+          </span>
+          <div className="h-4 w-px bg-border" />
+        </div>
+        <div className="flex w-full max-w-xs items-center justify-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
+          <KeyRound className="size-4 text-amber-500" />
+          <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
+            {t('docs.diagrams.recoveryMasterKey')}
+          </span>
+        </div>
+        <div className="flex flex-col items-center">
+          <div className="h-4 w-px bg-border" />
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            {t('docs.diagrams.recoveryWorksIn')}
+          </span>
+          <div className="h-4 w-px bg-border" />
+        </div>
+        <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4">
+          <DiagramBox icon={Wallet} label="VPP" color="primary" />
+          <DiagramBox icon={Wallet} label="MetaMask" color="amber" />
+          <DiagramBox icon={Wallet} label="Trust" color="sky" />
+          <DiagramBox icon={Wallet} label="Coinbase" color="emerald" />
+        </div>
+      </div>
+      <p className="mt-3 text-center text-[11px] text-muted-foreground">
+        {t('docs.diagrams.recoveryCaption')}
+      </p>
+    </div>
+  )
+}
+
 const DIAGRAMS: Record<string, React.FC> = {
   'claim-flow': ClaimFlowDiagram,
   'blockchain-chain': BlockchainChainDiagram,
   'public-private-key': PublicPrivateKeyDiagram,
   'layer-2': Layer2Diagram,
   'smart-contract': SmartContractDiagram,
+  'recovery-phrase': RecoveryPhraseDiagram,
 }
 
 export function DocsDiagram({ diagramId }: { diagramId: string }) {

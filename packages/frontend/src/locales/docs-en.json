@@ -35,7 +35,12 @@
       "rollup": "Data is bundled",
       "smartContract": "SurveyPoints Smart Contract",
       "surveys": "Surveys",
-      "points": "Points"
+      "points": "Points",
+      "recoveryPhrase": "12 words = one wallet, everywhere",
+      "recoveryDerives": "mathematically yields",
+      "recoveryMasterKey": "Your master key",
+      "recoveryWorksIn": "works in",
+      "recoveryCaption": "The same 12 words unlock the same wallet — in our app and in every major wallet."
     },
     "articles": {
       "getting-started": {
@@ -133,7 +138,10 @@
             "heading": "What is a Wallet?",
             "content": "A wallet is your digital keychain in the blockchain network. It consists of two parts:\n\n1. The Public Key -- your address, comparable to an email address. You can safely share it.\n\n2. The Private Key -- your password. Whoever has the private key controls the wallet and all points stored in it.\n\nYou have three ways to use a wallet: Create a browser wallet directly on the website, connect MetaMask (encrypted key management), or import an existing private key."
           },
-          { "type": "diagram", "diagramId": "public-private-key" },
+          {
+            "type": "diagram",
+            "diagramId": "public-private-key"
+          },
           {
             "type": "text",
             "heading": "How Does the Cryptography Work?",
@@ -164,129 +172,107 @@
       },
       "wallet-recovery": {
         "title": "Recovery phrase and wallet recovery",
-        "description": "What the 12-word phrase is, where to store it, and how to restore your wallet on a new device or in MetaMask -- explained from scratch.",
+        "description": "What the 12-word phrase is, where to keep it, and how to recover your wallet anytime.",
         "sections": [
           {
             "type": "text",
-            "heading": "What is a seed phrase?",
-            "content": "When you create a new browser wallet in the VPP system, the application generates 12 random English words. These 12 words are called seed phrase, recovery phrase, or in the standard BIP-39 phrase.\n\nWhy words? Behind your wallet there's a very long random number (256 bits). Nobody can memorise such a number or copy it down without errors. So years ago the industry agreed on a list of 2048 English words. Your random number gets translated into 12 of these words -- in a very specific order. Those 12 words can be turned back into the same number and therefore your full wallet (address + private key) at any time.\n\nThe list of 2048 words is public -- it is no secret which words exist. The secret is only the order of your personal 12 words."
+            "heading": "What is a recovery phrase?",
+            "content": "When you create a new browser wallet, we show you 12 random English words — the so-called recovery phrase (also seed phrase or BIP-39 phrase). These 12 words are your master key: from them your full wallet, including its address, can be derived at any time, on any device and in every standard wallet app."
           },
           {
-            "type": "callout",
-            "variant": "info",
-            "content": "Example (a phrase could look like this -- DO NOT use it!): \"witch collapse practice feed shame open despair creek road again ice least\"."
-          },
-          {
-            "type": "text",
-            "heading": "Why is this better than a private key?",
-            "content": "Technically, the recovery phrase and the private key are equally secure -- they encode the same wallet. In practice the phrase is much more pleasant for humans:\n\n- 12 real words are easier to write down than 64 hex characters.\n- Typos are caught immediately because the phrase has a built-in checksum (the last word verifies the previous eleven).\n- Every reputable wallet (MetaMask, Trust, Coinbase, Rabby, Ledger, Trezor) understands the same phrase. You are not locked into our website.\n- It fits into any password manager without anyone having a file with your key sitting on a cloud drive."
-          },
-          {
-            "type": "list",
-            "heading": "Where do I store the 12 words safely?",
-            "items": [
-              "In your password manager: Bitwarden, 1Password, KeePassXC, Apple Keychain or Google Password Manager. Create a new entry called \"VPP recovery phrase\" and paste the 12 words there.",
-              "Additionally on paper: Write the 12 words with a pen on a sheet of paper (numbered 1-12) and keep it with your important documents -- e.g., the passport drawer, your bank folder, or at your parents' place.",
-              "Mind the order: Word 1 is not the same as word 7. Note the numbers.",
-              "Make two copies in different locations in case one breaks or gets lost."
-            ]
-          },
-          {
-            "type": "list",
-            "heading": "What you must NEVER do with the phrase",
-            "items": [
-              "Don't take a photo of the screen or the paper. Smartphones automatically sync photos to iCloud or Google Photos -- your phrase ends up on a third-party server.",
-              "Don't paste it into WhatsApp, Telegram, Discord, e-mail, Slack, Microsoft Teams or similar chats. These apps store messages unencrypted on their servers.",
-              "Don't keep it in a file called \"phrase.txt\" on the desktop or in iCloud Drive / OneDrive / Google Drive.",
-              "Never share it with lecturers, tutors, IT support, or the VPP system. We will NEVER ask for your phrase.",
-              "Don't enter it into any third-party website or tool that has nothing to do with MetaMask or the VPP frontend."
-            ]
+            "type": "diagram",
+            "diagramId": "recovery-phrase"
           },
           {
             "type": "callout",
             "variant": "warning",
-            "content": "Whoever knows the 12 words has full control over your wallet. Treat the phrase like the master password of your online banking."
+            "content": "Anyone who knows these 12 words controls your wallet completely. Treat them like the master password of your online banking — nobody from HSBI will ever ask you for them."
           },
           {
-            "type": "steps",
-            "heading": "Restore the wallet in the VPP frontend",
-            "steps": [
+            "type": "cards",
+            "heading": "How to store the phrase safely",
+            "columns": 2,
+            "cards": [
               {
-                "title": "Open the wallet area",
-                "text": "Go to the \"My Points\" page. If no wallet is active, you'll see the three setup options."
+                "variant": "do",
+                "title": "Do this",
+                "items": [
+                  "Store it in a password manager (Bitwarden, 1Password, Apple Keychain, Google Password Manager).",
+                  "Also write it on paper — numbered 1 to 12 — and keep it in a fixed safe place.",
+                  "Keep the exact word order."
+                ]
               },
               {
-                "title": "Choose \"Import wallet\"",
-                "text": "Click \"Import wallet\" and switch to the \"Recovery phrase (12 words)\" tab."
-              },
-              {
-                "title": "Type the 12 words",
-                "text": "Type the words in the original order. As you type, the browser autosuggests matching BIP-39 words. You can also paste all 12 words at once from your password manager (\"Paste from clipboard\")."
-              },
-              {
-                "title": "Confirm import",
-                "text": "Click \"Import\". The same wallet address as before appears -- including all points you've ever claimed."
+                "variant": "dont",
+                "title": "Never do this",
+                "items": [
+                  "No screenshots — photos auto-sync to iCloud / Google Photos.",
+                  "Never paste it into WhatsApp, email, Discord or cloud storage.",
+                  "Never give it to lecturers, tutors or IT support."
+                ]
               }
             ]
           },
           {
             "type": "steps",
-            "heading": "Import the wallet into MetaMask (browser or mobile)",
+            "heading": "Restore your wallet in the VPP frontend",
+            "steps": [
+              {
+                "title": "Open \"Import wallet\"",
+                "text": "On the \"My Points\" page, click \"Import wallet\" and switch to the \"Recovery phrase\" tab."
+              },
+              {
+                "title": "Paste the 12 words",
+                "text": "Paste the words from your password manager (\"Paste from clipboard\") or type them in. As you type, the browser suggests matching BIP-39 words."
+              },
+              {
+                "title": "Confirm",
+                "text": "Click \"Import\". The same wallet address with all your previous points reappears immediately."
+              }
+            ]
+          },
+          {
+            "type": "steps",
+            "heading": "Import your wallet into MetaMask",
             "steps": [
               {
                 "title": "Install MetaMask",
-                "text": "If you don't have it yet: open metamask.io and install the browser extension or mobile app. MetaMask is the best-known wallet app and is free."
+                "text": "On metamask.io install the browser extension or mobile app (free of charge)."
               },
               {
-                "title": "Import an existing wallet",
-                "text": "On first launch choose \"Import an existing wallet\"."
-              },
-              {
-                "title": "Set a passcode",
-                "text": "MetaMask asks for a passcode (at least 8 characters). This passcode encrypts your phrase inside the MetaMask vault -- it is NOT your phrase."
+                "title": "Choose \"Import existing wallet\"",
+                "text": "On first launch, pick \"Import an existing wallet\" and set a passcode."
               },
               {
                 "title": "Enter the recovery phrase",
-                "text": "In the \"Secret Recovery Phrase\" step type the 12 words in the same order you wrote them down in the VPP system."
+                "text": "Type the 12 words into the \"Secret Recovery Phrase\" step in the same order."
               },
               {
                 "title": "Switch network to Base",
-                "text": "MetaMask starts on Ethereum Mainnet. Switch the network at the top to \"Base\". If Base is not in the list, open basescan.org once and MetaMask will offer to add the network automatically."
-              },
-              {
-                "title": "Compare the address",
-                "text": "MetaMask now shows the same address under Account 1 as you had in the VPP frontend. If not, check that \"Account 1\" is really selected -- the VPP system uses the standard derivation path, which corresponds to MetaMask's Account 1."
+                "text": "In the network menu at the top, pick \"Base\". If it isn't listed yet: open basescan.org once — MetaMask will offer to add it automatically. Account 1 will then show the same address as in the VPP system."
               }
             ]
           },
           {
             "type": "callout",
             "variant": "info",
-            "content": "You don't have to choose between our browser wallet and MetaMask. You can use the same phrase in both at the same time -- mathematically it is the same wallet."
-          },
-          {
-            "type": "text",
-            "heading": "Common problems and what to do",
-            "content": "Below the typical questions students ask us -- and what you can concretely do about each."
+            "content": "You can use the same phrase in the VPP frontend and in MetaMask in parallel — mathematically it is the same wallet."
           },
           {
             "type": "list",
-            "heading": "FAQ",
+            "heading": "Common questions",
             "items": [
-              "\"I cleared my browser cache and the wallet is gone.\" -- As long as you have the 12 words, no problem. Import them via \"Import wallet\" and everything is back.",
-              "\"I lost the 12 words and have no backup.\" -- The points you've already claimed are unfortunately lost. They remain on the blockchain under your old address, but nobody can move them anymore. Create a new wallet, secure the new phrase properly, and ask to have new points credited to the new address for future surveys.",
-              "\"I type the phrase but it says 'phrase invalid'.\" -- That is almost always a typo. Watch out for similar words like \"use\" and \"used\", \"flat\" and \"flag\". The phrase has a checksum, so a single wrong character is enough to fail it. Also double-check the order.",
-              "\"Can someone read my phrase out of the browser?\" -- In theory yes: an attacker with access to your account on the computer can read the browser storage (localStorage). Therefore you must NOT use the VPP wallet on a foreign or shared computer (internet café, family PC without your own login). On your personal laptop or in the campus pool the risk is very low, as long as you don't install shady browser extensions.",
-              "\"Why can't I download the private key as a file anymore?\" -- A .json file with the plaintext key ends up too easily in cloud backups, e-mail attachments or the downloads folder. The 12-word phrase serves the same purpose but is much friendlier for humans to manage and fits into any password manager.",
-              "\"My phone broke -- what happens to my points?\" -- The points are tied to your wallet address, not to the phone. As long as you have the 12 words, you can restore the wallet on any new device. Without the phrase: see above.",
-              "\"I have an older wallet without a 12-word phrase. What now?\" -- You can keep using it, nothing is lost. The wallet area shows a hint that no phrase is available. You have two options: import the private key into MetaMask if needed (\"Import account\" -> \"Private key\"), or create a new wallet with phrase and claim future points to it. Both addresses can coexist.",
-              "\"Someone is asking me for my recovery phrase, claims to be from HSBI support.\" -- That is a scam attempt. NOBODY at HSBI -- not lecturers, not IT, not support -- ever asks for your phrase. Don't share it, block the person, and report the incident if needed."
+              "\"Cleared my browser cache, wallet is gone.\" — As long as you still have the 12 words, just re-import them via \"Import wallet\".",
+              "\"Phrase invalid.\" — Almost always a typo. Watch out for similar words (\"use\" vs. \"used\", \"flat\" vs. \"flag\") and the order. The phrase has a checksum, a single wrong letter triggers the error.",
+              "\"Phone broke — are my points lost?\" — No. Points belong to your wallet address, not to the device. With the 12 words you can restore the wallet on any new device.",
+              "\"Lost the phrase, no backup.\" — Points already claimed are unfortunately gone. Create a new wallet, back the new phrase up properly, and claim new surveys to the new address.",
+              "\"Older wallet without a phrase.\" — Still usable. You can import the private key into MetaMask (\"Import account\" → \"Private key\") if needed."
             ]
           },
           {
             "type": "callout",
             "variant": "success",
-            "content": "Once you have safely stored the 12 words, you have the exact same security and comfort level as a professional crypto user with MetaMask. There is nothing \"higher\" we could give you -- you're on the standard used by hundreds of millions of wallets worldwide."
+            "content": "With your 12 words backed up safely you are on the very same standard hundreds of millions of wallets worldwide use — there is no higher level of security possible."
           }
         ]
       },
@@ -421,7 +407,10 @@
             "heading": "Role Concept",
             "content": "The VPP system uses two roles that are stored directly in the smart contract on the blockchain:\n\nADMIN_ROLE: Can register and deactivate surveys, add/remove other admins, and mark student submissions.\n\nMINTER_ROLE: Can award points. This role is assigned to the backend wallet that processes transactions for students."
           },
-          { "type": "diagram", "diagramId": "smart-contract" },
+          {
+            "type": "diagram",
+            "diagramId": "smart-contract"
+          },
           {
             "type": "text",
             "heading": "Admin Management",
@@ -477,7 +466,10 @@
             "heading": "The Basic Idea",
             "content": "A blockchain is a digital ledger maintained by many computers simultaneously. Instead of a central database controlled by a single company, the blockchain is operated by a network.\n\nWhat makes it special: Once data is stored, it cannot be changed or deleted. Everyone can verify the entries, but no one can retroactively manipulate them."
           },
-          { "type": "diagram", "diagramId": "blockchain-chain" },
+          {
+            "type": "diagram",
+            "diagramId": "blockchain-chain"
+          },
           {
             "type": "text",
             "heading": "How Does It Work?",
@@ -509,7 +501,10 @@
             "heading": "Hashing",
             "content": "A hash is a digital fingerprint. A hash function takes any data and produces a fixed-length string. Key properties:\n\n-- Same input always produces the same hash\n-- Even the smallest changes produce a completely different hash\n-- The original data cannot be reconstructed from the hash\n\nExample: The word \"Hello\" produces hash 0x1c8a... -- change it to \"Hello!\" and it becomes 0x9f3b... (completely different).\n\nIn VPP, hashing protects the survey secret. Only the hash is stored on the blockchain, not the secret itself."
           },
-          { "type": "diagram", "diagramId": "public-private-key" },
+          {
+            "type": "diagram",
+            "diagramId": "public-private-key"
+          },
           {
             "type": "text",
             "heading": "Digital Signatures",
@@ -531,7 +526,10 @@
             "heading": "What is a Smart Contract?",
             "content": "A smart contract is a program that runs on the blockchain. It executes automatically, cannot be modified, and is visible to everyone. Think of it like a vending machine: When the right conditions are met, it performs the programmed action.\n\nSmart contracts are written in the Solidity programming language and deployed on the Ethereum blockchain (or Layer 2 networks like Base)."
           },
-          { "type": "diagram", "diagramId": "smart-contract" },
+          {
+            "type": "diagram",
+            "diagramId": "smart-contract"
+          },
           {
             "type": "text",
             "heading": "The SurveyPoints Contract",
@@ -564,7 +562,10 @@
             "heading": "Ethereum and the Scaling Problem",
             "content": "Ethereum is the most well-known blockchain for smart contracts. However, transactions on Ethereum are expensive (often several dollars) and slow (up to 15 seconds). For a system like VPP with many small transactions, this would be impractical and too costly."
           },
-          { "type": "diagram", "diagramId": "layer-2" },
+          {
+            "type": "diagram",
+            "diagramId": "layer-2"
+          },
           {
             "type": "text",
             "heading": "What is a Layer 2?",
@@ -694,7 +695,11 @@
         "title": "Frequently Asked Questions",
         "description": "Answers to the most important questions about VPP Blockchain.",
         "sections": [
-          { "type": "text", "heading": "General", "content": "" },
+          {
+            "type": "text",
+            "heading": "General",
+            "content": ""
+          },
           {
             "type": "list",
             "heading": "Do I have to pay anything?",
