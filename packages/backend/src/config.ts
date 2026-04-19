@@ -22,6 +22,37 @@ function optional(key: string, fallback: string): string {
   return process.env[key] || fallback
 }
 
+/**
+ * Validate that a string looks like a 32-byte (64-hex) Ethereum private key.
+ *
+ * Throws a generic error message that does **not** include the value itself,
+ * because in the past (see audit M1 / probe.mjs) we have leaked the live
+ * minter PK by letting ethers.js bubble the failing value up through the
+ * unhandled-error envelope. Pino redact already covers `err.value` /
+ * `err.argument`, but defense in depth: we also catch malformed keys here
+ * before they ever reach `new Wallet(...)`.
+ *
+ * Accepts both `0x`-prefixed and bare hex.
+ */
+export function validatePrivateKey(key: string, name: string): string {
+  const trimmed = key.trim()
+  const hex = trimmed.startsWith('0x') || trimmed.startsWith('0X') ? trimmed.slice(2) : trimmed
+  if (hex.length !== 64) {
+    throw new Error(
+      `Invalid ${name}: expected a 32-byte hex string (64 hex characters, optional 0x prefix); got length ${hex.length}.`,
+    )
+  }
+  if (!/^[0-9a-fA-F]+$/.test(hex)) {
+    throw new Error(
+      `Invalid ${name}: contains non-hex characters. Expected 64 hex characters (0-9, a-f, A-F).`,
+    )
+  }
+  if (/^0+$/.test(hex)) {
+    throw new Error(`Invalid ${name}: zero key is not a valid Ethereum private key.`)
+  }
+  return `0x${hex.toLowerCase()}`
+}
+
 export const config = {
   port: parseInt(optional('PORT', '3000'), 10),
 
@@ -36,7 +67,7 @@ export const config = {
    */
   eventRpcUrl: process.env.EVENT_RPC_URL || undefined,
   contractAddress: required('CONTRACT_ADDRESS'),
-  minterPrivateKey: required('MINTER_PRIVATE_KEY'),
+  minterPrivateKey: validatePrivateKey(required('MINTER_PRIVATE_KEY'), 'MINTER_PRIVATE_KEY'),
 
   contractDeployBlock: parseInt(optional('CONTRACT_DEPLOY_BLOCK', '0'), 10),
 
