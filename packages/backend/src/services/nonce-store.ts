@@ -23,9 +23,10 @@
  *   trivially small. We do not prune; replay protection only works
  *   if every consumed nonce is remembered forever.
  */
-import { readFileSync, writeFileSync, mkdirSync, existsSync, renameSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { atomicWriteJson } from '../lib/atomic-write.js'
 import { logger } from '../lib/logger.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -84,16 +85,11 @@ function load(): CacheState {
 }
 
 function save(state: CacheState): void {
-  if (!existsSync(DATA_DIR)) {
-    mkdirSync(DATA_DIR, { recursive: true })
-  }
   const file: NonceFile = {
     schemaVersion: 1,
     used: Array.from(state.set).sort(),
   }
-  const tmp = NONCES_PATH + '.tmp'
-  writeFileSync(tmp, JSON.stringify(file, null, 2))
-  renameSync(tmp, NONCES_PATH)
+  atomicWriteJson(NONCES_PATH, file)
 }
 
 export function isUsed(surveyId: number, nonce: string): boolean {

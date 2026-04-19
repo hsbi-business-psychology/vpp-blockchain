@@ -25,10 +25,11 @@
  *   in copy/paste examples without escaping. 256 bits is overkill for
  *   HMAC-SHA256 but cheap and future-proof.
  */
-import { readFileSync, writeFileSync, mkdirSync, existsSync, renameSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { randomBytes } from 'node:crypto'
+import { atomicWriteJson } from '../lib/atomic-write.js'
 import { logger } from '../lib/logger.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -90,12 +91,7 @@ function load(): SurveyKeyFile {
 }
 
 function save(file: SurveyKeyFile): void {
-  if (!existsSync(DATA_DIR)) {
-    mkdirSync(DATA_DIR, { recursive: true })
-  }
-  const tmp = KEYS_PATH + '.tmp'
-  writeFileSync(tmp, JSON.stringify(file, null, 2))
-  renameSync(tmp, KEYS_PATH)
+  atomicWriteJson(KEYS_PATH, file)
 }
 
 function toKey(surveyId: number): string {

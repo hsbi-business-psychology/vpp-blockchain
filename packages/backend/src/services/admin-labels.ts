@@ -14,10 +14,11 @@
  * Keys are normalized to EIP-55 checksum addresses to keep lookups
  * stable regardless of input casing.
  */
-import { readFileSync, writeFileSync, mkdirSync, existsSync, renameSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ethers } from 'ethers'
+import { atomicWriteJson } from '../lib/atomic-write.js'
 import { logger } from '../lib/logger.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -67,12 +68,7 @@ function load(): LabelMap {
 }
 
 function save(map: LabelMap): void {
-  if (!existsSync(DATA_DIR)) {
-    mkdirSync(DATA_DIR, { recursive: true })
-  }
-  const tmp = LABELS_PATH + '.tmp'
-  writeFileSync(tmp, JSON.stringify(map, null, 2))
-  renameSync(tmp, LABELS_PATH)
+  atomicWriteJson(LABELS_PATH, map)
 }
 
 export function getLabel(address: string): string | null {
