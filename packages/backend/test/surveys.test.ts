@@ -232,7 +232,8 @@ describe('POST /api/v1/surveys/:id/template', () => {
     expect(res.headers['content-disposition']).toContain('vpp-survey-1.xml')
     expect(res.text).toContain('surveyProject')
     expect(res.text).toContain('embedded-key-1')
-    expect(res.text).toContain('hash_hmac')
+    // V2.1 templates run HMAC client-side via Web Crypto, no PHP.
+    expect(res.text).toContain("KEY_B64URL = 'embedded-key-1'")
     expect(res.text).toContain('Punkte jetzt')
   })
 
