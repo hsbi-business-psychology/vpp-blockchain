@@ -24,6 +24,12 @@ process.env.BALANCE_MONITOR_INTERVAL_MS = '0'
 vi.mock('../src/services/blockchain.js', () => ({
   MIN_BALANCE_WEI: ethers.parseEther('0.005'),
   WARN_BALANCE_WEI: ethers.parseEther('0.025'),
+  MAX_FEE_PER_GAS_WEI: ethers.parseUnits('2', 'gwei'),
+  MAX_PRIORITY_FEE_PER_GAS_WEI: ethers.parseUnits('0.5', 'gwei'),
+  TX_OVERRIDES: {
+    maxFeePerGas: ethers.parseUnits('2', 'gwei'),
+    maxPriorityFeePerGas: ethers.parseUnits('0.5', 'gwei'),
+  },
   awardPoints: vi.fn(),
   registerSurvey: vi.fn(),
   getSurveyInfo: vi.fn(),

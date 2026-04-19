@@ -147,4 +147,31 @@ export const config = {
    * docs/runbooks/eth-refill.md for the operator-side wiring.
    */
   balanceMonitorIntervalMs: parseInt(optional('BALANCE_MONITOR_INTERVAL_MS', '3600000'), 10),
+
+  /**
+   * Hard cap on `maxFeePerGas` (gwei) the backend is willing to pay for
+   * any state-changing transaction (audit F2.3 / M12).
+   *
+   * Base mainnet baseFee is typically 0.01–0.1 gwei. NFT mint waves
+   * (Friend.tech, BasePaint, Higher) and sequencer backlogs have
+   * historically pushed baseFee to 5–50 gwei for tens of minutes.
+   * Without an explicit cap, ethers v6 happily lets a single
+   * `awardPoints` Tx burn ~16 000× the normal fee, draining the
+   * minter wallet inside a handful of transactions.
+   *
+   * The default of 2 gwei is ~20–200× the typical Base baseFee, which
+   * leaves plenty of head room for normal congestion while putting a
+   * hard ceiling on a fee-spike loss event. Tx submitted during a
+   * spike above this cap simply hang in the mempool until baseFee
+   * drops back below the cap — students see a delay rather than a
+   * silent wallet drain.
+   */
+  maxFeePerGasGwei: optional('MAX_FEE_PER_GAS_GWEI', '2'),
+
+  /**
+   * Hard cap on `maxPriorityFeePerGas` (gwei). Base typically requires
+   * < 0.01 gwei; 0.5 gwei is generous head room without inviting
+   * priority-fee bidding wars during congestion.
+   */
+  maxPriorityFeePerGasGwei: optional('MAX_PRIORITY_FEE_PER_GAS_GWEI', '0.5'),
 } as const
