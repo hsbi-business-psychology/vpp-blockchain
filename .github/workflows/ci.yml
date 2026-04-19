@@ -11,6 +11,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  secret-scan:
+    name: Secret Scan (64-hex)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Need full history so the scanner can also see anything that
+          # leaked into older commits via untracked-then-tracked drift.
+          fetch-depth: 0
+
+      - name: Scan tracked + untracked files for plaintext private keys
+        run: bash scripts/scan-secrets.sh
+
   lint:
     name: Lint & Format
     runs-on: ubuntu-latest

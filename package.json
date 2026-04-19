@@ -23,6 +23,7 @@
     "test": "pnpm -r run test",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "scan:secrets": "bash scripts/scan-secrets.sh",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "clean": "pnpm -r run clean",
