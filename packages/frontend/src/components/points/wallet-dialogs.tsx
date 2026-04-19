@@ -693,12 +693,7 @@ export function MnemonicRevealDialog({
           <DialogDescription>{t('wallet.mnemonic.reveal.description')}</DialogDescription>
         </DialogHeader>
 
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-700 dark:text-amber-300">
-          <p className="font-medium">{t('wallet.mnemonic.reveal.safetyTitle')}</p>
-          <p className="mt-1 text-xs leading-relaxed">{t('wallet.mnemonic.reveal.safetyText')}</p>
-        </div>
-
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">
             {showAll ? t('wallet.mnemonic.reveal.modeAll') : t('wallet.mnemonic.reveal.modeSingle')}
           </p>
@@ -707,7 +702,7 @@ export function MnemonicRevealDialog({
             variant="ghost"
             size="sm"
             onClick={handleToggleShowAll}
-            className="h-7 text-xs"
+            className="h-7 self-start text-xs sm:self-auto"
           >
             {showAll ? (
               <>
