@@ -18,6 +18,7 @@ import type { WalletData } from '@/lib/wallet'
 import {
   createWallet as createWalletFn,
   importWallet as importWalletFn,
+  importFromMnemonic as importFromMnemonicFn,
   connectMetaMask as connectMetaMaskFn,
   saveWallet,
   loadWallet,
@@ -101,6 +102,18 @@ export function useWallet() {
     return data
   }, [])
 
+  /**
+   * Import a wallet from a BIP-39 12-word recovery phrase. Throws on
+   * checksum failure or unknown words; the dialog calling this hook
+   * is expected to surface a friendly error toast.
+   */
+  const importMnemonic = useCallback((phrase: string) => {
+    const data = importFromMnemonicFn(phrase)
+    saveWallet(data)
+    setWallet(data)
+    return data
+  }, [])
+
   const connectMetaMask = useCallback(async () => {
     const data = await connectMetaMaskFn()
     saveWallet(data)
@@ -164,6 +177,7 @@ export function useWallet() {
     createDraft,
     commitWallet,
     importKey,
+    importMnemonic,
     connectMetaMask,
     remove,
     sign,

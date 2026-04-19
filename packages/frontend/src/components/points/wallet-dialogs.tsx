@@ -11,7 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { BIP39_WORDLIST, isValidPrivateKey, normalizeMnemonic } from '@/lib/wallet'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { BIP39_WORDLIST, isValidMnemonic, isValidPrivateKey, normalizeMnemonic } from '@/lib/wallet'
 import { toast } from 'sonner'
 
 // ---------------------------------------------------------------------------
@@ -135,23 +136,35 @@ interface ImportDialogProps {
   onOpenChange: (open: boolean) => void
   hasExistingWallet: boolean
   onImport: (key: string) => void
+  /** New mnemonic-based import path. If omitted, the dialog falls back to PK only. */
+  onImportMnemonic?: (phrase: string) => void
 }
+
+const EMPTY_WORDS: string[] = Array.from({ length: 12 }, () => '')
+const WORDLIST_DATALIST_ID = 'vpp-bip39-wordlist-import'
 
 export function ImportWalletDialog({
   open,
   onOpenChange,
   hasExistingWallet,
   onImport,
+  onImportMnemonic,
 }: ImportDialogProps) {
   const { t } = useTranslation()
   const [importValue, setImportValue] = useState('')
+  const [words, setWords] = useState<string[]>(EMPTY_WORDS)
+  const [tab, setTab] = useState<'mnemonic' | 'pk'>(onImportMnemonic ? 'mnemonic' : 'pk')
 
   function handleOpenChange(next: boolean) {
-    if (!next) setImportValue('')
+    if (!next) {
+      setImportValue('')
+      setWords(EMPTY_WORDS)
+      setTab(onImportMnemonic ? 'mnemonic' : 'pk')
+    }
     onOpenChange(next)
   }
 
-  function handleImport() {
+  function handleImportPK() {
     const key = importValue.trim()
     if (!isValidPrivateKey(key)) {
       toast.error(t('wallet.import.error'))
@@ -161,24 +174,154 @@ export function ImportWalletDialog({
     setImportValue('')
   }
 
+  function handleWordChange(idx: number, value: string) {
+    setWords((prev) => {
+      const next = [...prev]
+      next[idx] = value.toLowerCase()
+      return next
+    })
+  }
+
+  function handlePaste(e: React.ClipboardEvent<HTMLInputElement>, startIdx: number) {
+    const text = e.clipboardData.getData('text')
+    if (!text) return
+    const tokens = normalizeMnemonic(text).split(' ').filter(Boolean)
+    if (tokens.length < 2) return
+    e.preventDefault()
+    setWords((prev) => {
+      const next = [...prev]
+      tokens.slice(0, 12 - startIdx).forEach((token, i) => {
+        next[startIdx + i] = token
+      })
+      return next
+    })
+  }
+
+  async function handlePasteAll() {
+    try {
+      const text = await navigator.clipboard.readText()
+      const tokens = normalizeMnemonic(text).split(' ').filter(Boolean)
+      if (tokens.length !== 12) {
+        toast.error(t('wallet.mnemonic.import.errorWrongLength'))
+        return
+      }
+      setWords(tokens)
+    } catch {
+      toast.error(t('wallet.mnemonic.import.errorClipboard'))
+    }
+  }
+
+  function handleImportMnemonic() {
+    const phrase = normalizeMnemonic(words.join(' '))
+    if (phrase.split(' ').length !== 12) {
+      toast.error(t('wallet.mnemonic.import.errorWrongLength'))
+      return
+    }
+    if (!isValidMnemonic(phrase)) {
+      toast.error(t('wallet.mnemonic.import.errorChecksum'))
+      return
+    }
+    onImportMnemonic?.(phrase)
+    setWords(EMPTY_WORDS)
+  }
+
+  const allWordsFilled = words.every((w) => w.trim().length > 0)
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10 mb-2">
+          <div className="mb-2 flex size-12 items-center justify-center rounded-lg bg-primary/10">
             <Upload className="size-6 text-primary" />
           </div>
           <DialogTitle>{t('wallet.import.title')}</DialogTitle>
           <DialogDescription>{t('wallet.import.description')}</DialogDescription>
         </DialogHeader>
         {hasExistingWallet && (
-          <div className="rounded-lg bg-amber-500/5 border border-amber-500/20 p-3">
+          <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
             <p className="text-sm text-amber-600 dark:text-amber-400">
               {t('wallet.reset.warning')}
             </p>
           </div>
         )}
-        <div>
+
+        {onImportMnemonic ? (
+          <Tabs value={tab} onValueChange={(v) => setTab(v as 'mnemonic' | 'pk')}>
+            <TabsList className="w-full">
+              <TabsTrigger value="mnemonic" className="flex-1">
+                {t('wallet.mnemonic.import.tabMnemonic')}
+              </TabsTrigger>
+              <TabsTrigger value="pk" className="flex-1">
+                {t('wallet.mnemonic.import.tabPrivateKey')}
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="mnemonic" className="space-y-3">
+              <p className="text-xs text-muted-foreground">
+                {t('wallet.mnemonic.import.description')}
+              </p>
+              <datalist id={WORDLIST_DATALIST_ID}>
+                {BIP39_WORDLIST.map((w) => (
+                  <option key={w} value={w} />
+                ))}
+              </datalist>
+              <div className="grid grid-cols-3 gap-2">
+                {words.map((word, idx) => (
+                  <div key={idx} className="flex items-center gap-1.5">
+                    <span className="w-5 shrink-0 text-xs font-mono text-muted-foreground">
+                      {String(idx + 1).padStart(2, '0')}
+                    </span>
+                    <Input
+                      value={word}
+                      onChange={(e) => handleWordChange(idx, e.target.value)}
+                      onPaste={(e) => handlePaste(e, idx)}
+                      placeholder={t('wallet.mnemonic.import.wordPlaceholder')}
+                      list={WORDLIST_DATALIST_ID}
+                      autoComplete="off"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      className="h-8 font-mono text-xs"
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handlePasteAll}
+                  className="h-7 text-xs"
+                >
+                  {t('wallet.mnemonic.import.pasteAll')}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setWords(EMPTY_WORDS)}
+                  className="h-7 text-xs"
+                >
+                  {t('common.clear', 'Leeren')}
+                </Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="pk" className="space-y-3">
+              <p className="text-xs text-muted-foreground">{t('wallet.mnemonic.import.pkHint')}</p>
+              <Input
+                value={importValue}
+                onChange={(e) => setImportValue(e.target.value)}
+                placeholder={t('wallet.import.placeholder')}
+                type="password"
+                className="font-mono text-xs"
+                aria-label={t('wallet.import.title', 'Private Key')}
+                autoComplete="off"
+              />
+            </TabsContent>
+          </Tabs>
+        ) : (
           <Input
             value={importValue}
             onChange={(e) => setImportValue(e.target.value)}
@@ -188,15 +331,23 @@ export function ImportWalletDialog({
             aria-label={t('wallet.import.title', 'Private Key')}
             autoComplete="off"
           />
-        </div>
+        )}
+
         <DialogFooter>
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             {t('common.cancel')}
           </Button>
-          <Button onClick={handleImport} disabled={!importValue.trim()}>
-            <Upload className="mr-1.5 size-4" />
-            {t('wallet.import.button')}
-          </Button>
+          {tab === 'mnemonic' && onImportMnemonic ? (
+            <Button onClick={handleImportMnemonic} disabled={!allWordsFilled}>
+              <Upload className="mr-1.5 size-4" />
+              {t('wallet.import.button')}
+            </Button>
+          ) : (
+            <Button onClick={handleImportPK} disabled={!importValue.trim()}>
+              <Upload className="mr-1.5 size-4" />
+              {t('wallet.import.button')}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

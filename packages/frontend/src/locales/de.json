@@ -218,6 +218,17 @@
         "backButton": "Zurück zur Phrase",
         "errorIncorrect": "Eines der Wörter ist nicht korrekt.",
         "errorHint": "Schau noch einmal bei deiner Recovery-Phrase nach – du kannst es beliebig oft erneut versuchen."
+      },
+      "import": {
+        "tabMnemonic": "Recovery-Phrase (12 Wörter)",
+        "tabPrivateKey": "Private Key",
+        "description": "Trage deine 12 Wörter in der ursprünglichen Reihenfolge ein. Beim Tippen schlägt dir der Browser passende BIP-39-Wörter vor.",
+        "wordPlaceholder": "Wort",
+        "pasteAll": "Aus Zwischenablage einfügen",
+        "pkHint": "Nur für ältere Wallets ohne 12-Wort-Phrase. Format: 64 Hex-Zeichen, optional mit 0x-Präfix.",
+        "errorChecksum": "Ungültige Recovery-Phrase. Prüfe Wörter und Reihenfolge – ein einziger Tippfehler reicht für eine Checksum-Abweichung.",
+        "errorWrongLength": "Eine Recovery-Phrase besteht aus genau 12 Wörtern.",
+        "errorClipboard": "Zwischenablage konnte nicht gelesen werden. Bitte tippe die Wörter direkt ein."
       }
     }
   },

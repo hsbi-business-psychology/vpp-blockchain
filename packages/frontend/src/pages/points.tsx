@@ -32,6 +32,7 @@ export default function PointsPage() {
     createDraft,
     commitWallet,
     importKey,
+    importMnemonic,
     connectMetaMask,
     remove,
     downloadKey,
@@ -135,6 +136,16 @@ export default function PointsPage() {
       toast.success(t('wallet.create.success'))
     } catch {
       toast.error(t('wallet.import.error'))
+    }
+  }
+
+  function handleImportMnemonic(phrase: string) {
+    try {
+      importMnemonic(phrase)
+      setShowImportDialog(false)
+      toast.success(t('wallet.create.success'))
+    } catch {
+      toast.error(t('wallet.mnemonic.import.errorChecksum'))
     }
   }
 
@@ -244,6 +255,7 @@ export default function PointsPage() {
         onOpenChange={setShowImportDialog}
         hasExistingWallet={hasWallet}
         onImport={handleImport}
+        onImportMnemonic={handleImportMnemonic}
       />
 
       <CreateWalletDialog

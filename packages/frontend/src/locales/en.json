@@ -218,6 +218,17 @@
         "backButton": "Back to phrase",
         "errorIncorrect": "One of the words is incorrect.",
         "errorHint": "Take another look at your recovery phrase – you can try as many times as you need."
+      },
+      "import": {
+        "tabMnemonic": "Recovery phrase (12 words)",
+        "tabPrivateKey": "Private key",
+        "description": "Type your 12 words in the original order. Your browser will autosuggest matching BIP-39 words as you type.",
+        "wordPlaceholder": "Word",
+        "pasteAll": "Paste from clipboard",
+        "pkHint": "Only for legacy wallets without a 12-word phrase. Format: 64 hex characters, with or without 0x prefix.",
+        "errorChecksum": "Invalid recovery phrase. Double-check the words and their order — a single typo is enough to fail the checksum.",
+        "errorWrongLength": "A recovery phrase consists of exactly 12 words.",
+        "errorClipboard": "Clipboard not readable. Please type the words directly."
       }
     }
   },
