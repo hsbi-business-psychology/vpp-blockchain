@@ -229,6 +229,13 @@
         "errorChecksum": "Ungültige Recovery-Phrase. Prüfe Wörter und Reihenfolge – ein einziger Tippfehler reicht für eine Checksum-Abweichung.",
         "errorWrongLength": "Eine Recovery-Phrase besteht aus genau 12 Wörtern.",
         "errorClipboard": "Zwischenablage konnte nicht gelesen werden. Bitte tippe die Wörter direkt ein."
+      },
+      "settings": {
+        "label": "Recovery-Phrase",
+        "tip": "Deine 12-Wort-Phrase ist der einzige Weg, dein Wallet auf einem neuen Gerät oder in MetaMask wiederherzustellen. Nach erstmaliger Erstellung musst du sie nur in Notfällen wieder anschauen.",
+        "holdButton": "Recovery-Phrase anzeigen – 3 Sekunden gedrückt halten",
+        "holdHint": "Halte den Button 3 Sekunden gedrückt, um versehentliche Klicks zu vermeiden.",
+        "legacyHint": "Dieses Wallet wurde vor dem Recovery-Phrase-Update erstellt und hat keine 12-Wort-Phrase. Du kannst es weiterhin nutzen; falls du eine Phrase haben möchtest, erstelle ein neues Wallet (deine bisherigen Punkte bleiben an die alte Adresse gebunden)."
       }
     }
   },

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Wallet,
@@ -7,6 +7,7 @@ import {
   Eye,
   EyeOff,
   Download,
+  KeyRound,
   Trash2,
   Upload,
   ChevronDown,
@@ -20,10 +21,13 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { MnemonicRevealDialog } from './wallet-dialogs'
 
 interface WalletCardProps {
   address: string
   privateKey: string
+  /** BIP-39 12-word recovery phrase for newly-created wallets; absent for legacy wallets and MetaMask. */
+  mnemonic?: string
   isMetaMask: boolean
   onRevealRequest: () => void
   onDownloadKey: () => void
@@ -34,9 +38,12 @@ interface WalletCardProps {
   onHideKey: () => void
 }
 
+const HOLD_TO_REVEAL_MS = 3000
+
 export function WalletCard({
   address,
   privateKey,
+  mnemonic,
   isMetaMask,
   onRevealRequest,
   onDownloadKey,
@@ -49,6 +56,53 @@ export function WalletCard({
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [showMnemonicDialog, setShowMnemonicDialog] = useState(false)
+
+  // Hold-to-reveal: visual progress 0..1 driven by requestAnimationFrame so
+  // the user gets immediate, smooth feedback that something is happening.
+  // Using rAF instead of CSS-only transition so we can cleanly cancel on
+  // pointerup/cancel without races.
+  const [holdProgress, setHoldProgress] = useState(0)
+  const holdStartRef = useRef<number | null>(null)
+  const holdRafRef = useRef<number | null>(null)
+
+  function cancelHold() {
+    holdStartRef.current = null
+    if (holdRafRef.current !== null) {
+      cancelAnimationFrame(holdRafRef.current)
+      holdRafRef.current = null
+    }
+    setHoldProgress(0)
+  }
+
+  function tickHold(timestamp: number) {
+    if (holdStartRef.current === null) return
+    const elapsed = timestamp - holdStartRef.current
+    const progress = Math.min(elapsed / HOLD_TO_REVEAL_MS, 1)
+    setHoldProgress(progress)
+    if (progress >= 1) {
+      cancelHold()
+      setShowMnemonicDialog(true)
+      return
+    }
+    holdRafRef.current = requestAnimationFrame(tickHold)
+  }
+
+  function handleHoldStart() {
+    if (holdStartRef.current !== null) return
+    // requestAnimationFrame's first callback receives the current timestamp,
+    // so we delay capturing the start until inside the rAF callback. That
+    // sidesteps the react-hooks/purity rule, which forbids calling
+    // `performance.now()` from anything that *might* be a render path.
+    holdRafRef.current = requestAnimationFrame((ts) => {
+      holdStartRef.current = ts
+      tickHold(ts)
+    })
+  }
+
+  // Always release any pending rAF on unmount so a quick navigate-away
+  // doesn't leak callbacks.
+  useEffect(() => cancelHold, [])
 
   function handleCopy(text: string) {
     navigator.clipboard.writeText(text)
@@ -192,6 +246,49 @@ export function WalletCard({
               </div>
             )}
 
+            {/* Recovery phrase (only for local wallets created with mnemonic) */}
+            {!isMetaMask && mnemonic && (
+              <div>
+                <div className="mb-1 flex items-center gap-1">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    {t('wallet.mnemonic.settings.label')}
+                  </label>
+                  <InfoTip text={t('wallet.mnemonic.settings.tip')} />
+                </div>
+                <button
+                  type="button"
+                  onPointerDown={handleHoldStart}
+                  onPointerUp={cancelHold}
+                  onPointerLeave={cancelHold}
+                  onPointerCancel={cancelHold}
+                  onContextMenu={(e) => e.preventDefault()}
+                  className="relative w-full overflow-hidden rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-left text-sm text-destructive transition-colors hover:bg-destructive/10"
+                  aria-label={t('wallet.mnemonic.settings.holdButton')}
+                  style={{ touchAction: 'none' }}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-y-0 left-0 bg-destructive/15 transition-[width] duration-75"
+                    style={{ width: `${holdProgress * 100}%` }}
+                  />
+                  <span className="relative flex items-center gap-2">
+                    <KeyRound className="size-3.5" aria-hidden="true" />
+                    {t('wallet.mnemonic.settings.holdButton')}
+                  </span>
+                </button>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t('wallet.mnemonic.settings.holdHint')}
+                </p>
+              </div>
+            )}
+
+            {/* Legacy hint for wallets without mnemonic */}
+            {!isMetaMask && !mnemonic && (
+              <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+                {t('wallet.mnemonic.settings.legacyHint')}
+              </div>
+            )}
+
             <Separator />
 
             {/* Actions */}
@@ -222,6 +319,14 @@ export function WalletCard({
           </div>
         )}
       </CardContent>
+      {mnemonic && (
+        <MnemonicRevealDialog
+          open={showMnemonicDialog}
+          onOpenChange={setShowMnemonicDialog}
+          mnemonic={mnemonic}
+          mode="view"
+        />
+      )}
     </Card>
   )
 }

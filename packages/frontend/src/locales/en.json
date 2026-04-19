@@ -229,6 +229,13 @@
         "errorChecksum": "Invalid recovery phrase. Double-check the words and their order — a single typo is enough to fail the checksum.",
         "errorWrongLength": "A recovery phrase consists of exactly 12 words.",
         "errorClipboard": "Clipboard not readable. Please type the words directly."
+      },
+      "settings": {
+        "label": "Recovery phrase",
+        "tip": "Your 12-word phrase is the only way to restore your wallet on a new device or in MetaMask. After the initial setup you should only need to view it again in emergencies.",
+        "holdButton": "Show recovery phrase – press and hold for 3 seconds",
+        "holdHint": "Hold the button for 3 seconds to avoid accidental clicks.",
+        "legacyHint": "This wallet was created before the recovery-phrase update and has no 12-word phrase. You can keep using it; if you'd like a phrase, create a new wallet (any points already earned remain tied to the old address)."
       }
     }
   },

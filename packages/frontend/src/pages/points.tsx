@@ -210,6 +210,7 @@ export default function PointsPage() {
           <WalletCard
             address={wallet!.address}
             privateKey={wallet!.privateKey}
+            mnemonic={wallet!.mnemonic}
             isMetaMask={isMetaMask}
             keyRevealed={keyRevealed}
             onRevealRequest={() => setShowRevealDialog(true)}
