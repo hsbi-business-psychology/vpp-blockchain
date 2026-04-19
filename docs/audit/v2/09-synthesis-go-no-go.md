@@ -4,7 +4,7 @@
 **Datum:** 2026-04-19
 **Scope:** Re-Synthese der Findings aus `01-bereich-1` bis `08-bereich-8` mit dem Ziel, zwei klar getrennte Verdicts zu produzieren — **Studi-Testrun (Tage)** und **2-Jahre-Produktivbetrieb (unbeobachtet)** — plus eine ausführbare 24-Stunden-Fix-Sequenz.
 
-> Diese Datei ergänzt `09-synthese-go-no-go.md` (Phasen-Roadmap-Sicht). Die Phasen-Sicht bleibt gültig; diese Synthese **dedupliziert** die Findings auf 18 Master-Items, **re-priorisiert** sie nach Blast-Radius × Wahrscheinlichkeit × Reparatur-Kosten und gibt zwei Verdicts mit explizit benannten Inkompatibilitäten.
+> Diese Datei ist die finale Synthese: sie **dedupliziert** die 96 Findings auf 18 Master-Items, **re-priorisiert** sie nach Blast-Radius × Wahrscheinlichkeit × Reparatur-Kosten und gibt zwei Verdicts mit explizit benannten Inkompatibilitäten.
 
 ---
 

@@ -13,13 +13,9 @@ Letzte Aktualisierung: 2026-04-19 (Re-Synthese-Pass abgeschlossen)
 - [x] Bereich 6 — Auth, Replay & Sign-Flows
 - [x] Bereich 7 — Deployment, Hosting & Operational Readiness
 - [x] Bereich 8 — Tests & CI
-- [x] Bereich 9a — Synthese (Phasen-Roadmap, `09-synthese-go-no-go.md`)
-- [x] Bereich 9b — Re-Synthese (Master-Findings + zwei Verdicts, `09-synthesis-go-no-go.md`)
+- [x] Bereich 9 — Synthese (Master-Findings + zwei Verdicts, `09-synthesis-go-no-go.md`)
 
-**Audit V2 abgeschlossen.** Zwei komplementäre Synthese-Sichten verfügbar:
-
-- `09-synthese-go-no-go.md`: 4-Phasen-Roadmap, Owner-Aktionsliste 4 Wochen.
-- `09-synthesis-go-no-go.md`: Master-Findings (18 dedupliziert), Verdict Testrun vs. Verdict 2-Jahre, 24-h-Fix-Sequenz, Akzeptierte Risiken, Long-Term-Backlog, Bus-Factor-Test.
+**Audit V2 abgeschlossen.** Finale Synthese in `09-synthesis-go-no-go.md`: Master-Findings (18 dedupliziert), Verdict Testrun vs. Verdict 2-Jahre, 24-h-Fix-Sequenz, Akzeptierte Risiken, Long-Term-Backlog, Bus-Factor-Test.
 
 ## Severity-Tally — Original (per-Bereich-Findings, wie gemeldet)
 
@@ -856,7 +852,7 @@ Das System ist ein architektonisch durchdachter Re-Build (V1→V2) mit hochwerti
 
 - 1× Audit-Plan (`00-audit-plan-v2.md`)
 - 8× Bereich-Audit-Reports (`01-08-*.md`)
-- 1× Synthese (`09-synthese-go-no-go.md`)
+- 1× Synthese (`09-synthesis-go-no-go.md` — Master-Findings + Verdicts)
 - 1× Master-Log (`AUDIT-LOG.md`)
 - 7× Runbooks unter `docs/runbooks/`
 - 96 Findings + 2 Owner Decisions + 36-Item-Test-Backlog + 4-Phasen-Roadmap
@@ -897,4 +893,4 @@ Der Wunsch "heute fertig + 2 Jahre läuft es" ist nur partiell vereinbar.
 - **HEUTE 1 Tag + 2 Wochen Spät-Sprints (3 PW total):** Vollständige 2-Jahre-Sicherheit ✅✅.
 - **NUR 24-h-Sequenz, dann nichts mehr:** Erster echter Vorfall realistisch in 6–9 Monaten.
 
-**Audit V2 final abgeschlossen.** Stand 2026-04-19. Owner kann anhand der zwei Synthese-Files eigene Investitions-Entscheidung treffen (Phasen-Roadmap aus `09-synthese-go-no-go.md` für sequentielle Sicht; Master-Findings + Verdicts aus `09-synthesis-go-no-go.md` für Risiko-/Aufwand-Sicht).
+**Audit V2 final abgeschlossen.** Stand 2026-04-19. Master-Findings, Verdicts (Testrun vs. 2-Jahre) und 24-h-Fix-Sequenz in `09-synthesis-go-no-go.md`.
