@@ -1,237 +1,121 @@
-# VPP Blockchain
+<p align="center">
+  <img src="docs/assets/readme-hero.png" alt="Verifiable Participant Points — on-chain credit for survey participation" />
+</p>
 
-**Verifiable Participant Points** — A blockchain-based system for awarding tamper-proof, pseudonymous survey participation points.
+<p align="center">
+  <a href="https://github.com/hsbi-business-psychology/vpp-blockchain/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/hsbi-business-psychology/vpp-blockchain/actions/workflows/ci.yml/badge.svg"></a>
+  &nbsp;·&nbsp;
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-0B1220?style=flat-square"></a>
+  &nbsp;·&nbsp;
+  <a href="https://base.org/"><img alt="Base L2" src="https://img.shields.io/badge/chain-Base%20L2-0052FF?style=flat-square"></a>
+</p>
 
-[![CI](https://github.com/hsbi-business-psychology/vpp-blockchain/actions/workflows/ci.yml/badge.svg)](https://github.com/hsbi-business-psychology/vpp-blockchain/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/hsbi-business-psychology/vpp-blockchain/graph/badge.svg)](https://codecov.io/gh/hsbi-business-psychology/vpp-blockchain)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-green)](https://nodejs.org/)
-[![Solidity](https://img.shields.io/badge/Solidity-%5E0.8.24-363636)](https://soliditylang.org/)
-[![Base L2](https://img.shields.io/badge/Chain-Base%20L2-0052FF)](https://base.org/)
-[![pnpm](https://img.shields.io/badge/pnpm-%3E%3D9-F69220)](https://pnpm.io/)
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
+<h1 align="center">VPP — Verifiable Participant Points</h1>
+
+<p align="center">
+  An open-source credit system for university research that records survey
+  participation on a public blockchain — tamper-proof, pseudonymous, and free
+  for participants.
+</p>
+
+<p align="center">
+  Built at <a href="https://www.hsbi.de/">HSBI · Hochschule Bielefeld</a>,
+  designed to be adopted by any institution.
+</p>
 
 ---
 
-## What is VPP?
+## Why it exists
 
-VPP lets students earn points for completing surveys. Points are recorded on a public blockchain (Base L2), making them **transparent, tamper-proof, and pseudonymous**. No cryptocurrency knowledge is required — wallets can be created in-app or connected via MetaMask, and all transaction fees are covered by the system.
+Universities run hundreds of paid-credit studies every semester. The current
+state is a mix of paper lists, Moodle plugins, and Excel sheets — easy to
+manipulate, easy to lose, and entirely opaque to the students whose grades
+depend on them.
 
-### Key Principles
+VPP replaces that with a tiny smart contract on Base L2:
 
-- **Pseudonymous** — Points are tied to wallet addresses, not real identities
-- **Transparent** — All points are publicly verifiable on-chain
-- **Self-sovereign** — Students own their private keys and control their wallets
-- **Free for participants** — No gas fees, no crypto required
-- **Flexible** — Browser wallets for beginners, MetaMask for advanced users
-- **Accessible** — WCAG-compliant, mobile-first, bilingual (DE/EN)
+- **Verifiable.** Every point is a public on-chain transaction. Students,
+  lecturers, and external auditors see the same source of truth.
+- **Pseudonymous.** Points belong to wallet addresses, not student IDs. The
+  system never stores names, emails, or matriculation numbers on-chain.
+- **Frictionless.** Participants don't need crypto, gas, MetaMask, or even an
+  account — a wallet is created in their browser the first time they claim.
 
-## Architecture
-
-```
-┌─────────────┐    Redirect     ┌──────────────────────────────────┐
-│ SoSci Survey │ ─────────────→ │  VPP Web App                     │
-│ (external)   │  surveyId +    │                                  │
-└─────────────┘  secret         │  Frontend (React + shadcn/ui)    │
-                                │  └─ Wallet · Claim · Points     │
-                                │                                  │
-                                │  Backend (Node.js API)           │
-                                │  └─ Signature verification       │
-                                │  └─ Transaction relay            │
-                                └──────────────┬───────────────────┘
-                                               │
-                                               ▼
-                                ┌──────────────────────────────────┐
-                                │  Base L2 Blockchain              │
-                                │  SurveyPoints Smart Contract     │
-                                │  └─ registerSurvey()             │
-                                │  └─ awardPoints()                │
-                                │  └─ addAdmin() / removeAdmin()   │
-                                │  └─ totalPoints() / surveyPoints │
-                                └──────────────────────────────────┘
-```
-
-## Monorepo Structure
-
-| Package                                    | Description                                        |
-| ------------------------------------------ | -------------------------------------------------- |
-| [`packages/contracts`](packages/contracts) | Solidity smart contract with Hardhat tooling       |
-| [`packages/backend`](packages/backend)     | Node.js/Express API server (transaction relayer)   |
-| [`packages/frontend`](packages/frontend)   | React + Vite + shadcn/ui reference frontend        |
-| [`packages/shared`](packages/shared)       | Shared TypeScript types used by backend & frontend |
-
-## Tech Stack
-
-| Layer          | Technology                                                        |
-| -------------- | ----------------------------------------------------------------- |
-| Smart Contract | Solidity 0.8.24, Hardhat, OpenZeppelin, TypeChain                 |
-| Backend        | Node.js 20+, Express, ethers.js v6, TypeScript                    |
-| Frontend       | React 19, Vite 6, TypeScript, Tailwind CSS v4, shadcn/ui, i18next |
-| Wallet         | Browser wallet (built-in) or MetaMask (optional)                  |
-| Testing        | Hardhat + Chai, Vitest, React Testing Library                     |
-| CI/CD          | GitHub Actions                                                    |
-
-## Quick Start
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) >= 20
-- [pnpm](https://pnpm.io/) >= 9
-
-### Installation
+## See it in 30 seconds
 
 ```bash
 git clone https://github.com/hsbi-business-psychology/vpp-blockchain.git
-cd vpp-blockchain
-pnpm install
-```
-
-### Run Tests
-
-```bash
-pnpm test
-```
-
-### Local Development with Test Data
-
-The fastest way to explore the full application locally, including the admin dashboard and on-chain role management:
-
-```bash
-# Single command — starts blockchain, deploys, backend, and frontend
+cd vpp-blockchain && pnpm install
 pnpm dev
 ```
 
-Or manually in separate terminals:
+`pnpm dev` boots a local blockchain, deploys the contract, seeds three test
+surveys, and starts the API and frontend. Open <http://localhost:5173>, claim
+the printed test link, and watch the points land on-chain in your browser.
 
-```bash
-pnpm dev:node        # Terminal 1 — Local blockchain
-pnpm dev:deploy      # Terminal 2 — Deploy + seed test data
-pnpm dev:backend     # Terminal 3 — Backend API
-pnpm dev:frontend    # Terminal 4 — Frontend
+## How it works
+
+```
+SoSci Survey   ──redirect──►   VPP Frontend   ──HMAC claim──►   VPP Backend
+   (external)                  (React + wallet)                  (signs tx)
+                                                                      │
+                                                                      ▼
+                                                          Base L2 · SurveyPoints
+                                                          contract  (tamper-proof
+                                                                     ledger)
 ```
 
-The deploy script creates **3 test surveys** and awards **15 points** to a test student. It prints all private keys and secrets you need.
+Three components, all in this monorepo:
 
-#### Test Accounts (Hardhat Defaults)
+| Package                                    | Role                                                                |
+| ------------------------------------------ | ------------------------------------------------------------------- |
+| [`packages/contracts`](packages/contracts) | `SurveyPointsV2.sol` — UUPS-upgradeable, role-gated points ledger.  |
+| [`packages/backend`](packages/backend)     | Stateless relayer. Validates HMAC claim tokens, signs the L2 tx.    |
+| [`packages/frontend`](packages/frontend)   | React app. In-browser wallet, MetaMask support, lecturer dashboard. |
 
-| Role                     | Address                                      | Private Key                                                          |
-| ------------------------ | -------------------------------------------- | -------------------------------------------------------------------- |
-| **Admin** (ADMIN_ROLE)   | `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266` | `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80` |
-| **Student** (has 15 pts) | `0x70997970C51812dc3A010C7d01b50e0d17dc79C8` | `0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d` |
+See [`docs/architecture.md`](docs/architecture.md) for the full data flow,
+threat model, and key-management design.
 
-#### Testing the Admin Flow
+## Tech stack
 
-1. Open `http://localhost:5173` and create a **new wallet** (Browser Wallet, MetaMask, or import a key)
-2. Navigate to **Lecturers' Area** — you will see an "Access Denied" message because the new wallet has no ADMIN_ROLE
-3. Switch to the Admin wallet: delete the current wallet and **import the Admin private key** from the table above
-4. Navigate to **Lecturers' Area** — the on-chain check passes, authentication happens automatically
-5. In the **Admin Role Management** section at the bottom, you can grant ADMIN_ROLE to any other wallet address
+Solidity 0.8.24 · Hardhat · OpenZeppelin UUPS · ethers v6 · Node 20 · Express ·
+React 19 · Vite 6 · Tailwind v4 · shadcn/ui · i18next · Vitest · Hardhat-Chai.
 
-#### Testing the Student Flow
-
-1. Import the **Student private key** from the table above
-2. Navigate to **My Points** — you will see 15 points and the claim history
-3. To test a new claim, visit: `http://localhost:5173/claim?surveyId=3&secret=test-secret-gamma`
-
-#### Test Secrets
-
-| Survey | Secret              | Points |
-| ------ | ------------------- | ------ |
-| #1     | `test-secret-alpha` | 5      |
-| #2     | `test-secret-beta`  | 10     |
-| #3     | `test-secret-gamma` | 3      |
-
-## Documentation
-
-Comprehensive documentation is available in the [`docs/`](docs/) directory:
-
-- [Architecture](docs/architecture.md) — System design and data flow
-- [Getting Started](docs/getting-started.md) — Development setup guide
-- [API Reference](docs/api-reference.md) — Backend REST API documentation
-- [Smart Contract](docs/smart-contract.md) — On-chain contract details
-- [SoSci Survey Integration](docs/sosci-integration.md) — Survey template setup
-- [Deployment](docs/deployment.md) — Production deployment guide
-- [Security](docs/security.md) — Security architecture and threat model
-- [For Universities](docs/for-universities.md) — Adoption guide for other institutions
-- [Operations Runbooks](docs/runbooks/README.md) — Provider-agnostic playbooks (deploy, recovery, key rotation, incident response)
-- [Architecture Decision Records](docs/adr/README.md) — Long-form rationale for major design decisions
-- [Audit Findings (V2)](docs/audit/v2/) — Full security audit, master-finding deduplication, go/no-go synthesis
-
-## Integration Options
-
-VPP is designed as an open-source toolkit. Other universities can integrate at three levels:
-
-### Level 1: Full Deployment
-
-Clone the repo, configure environment variables, and deploy everything.
-
-```bash
-cp packages/backend/.env.example packages/backend/.env
-# Edit .env with your RPC URL, private key, and contract address
-docker build -t vpp-backend packages/backend
-docker run -p 3000:3000 --env-file packages/backend/.env vpp-backend
-```
-
-### Level 2: Custom Frontend
-
-Use the backend API and smart contract, but build your own frontend.
-
-```bash
-# Deploy the backend and contract, then point your frontend at the API
-VITE_API_URL=https://vpp.your-university.edu/api
-```
-
-### Level 3: Direct Contract Interaction
-
-Interact with the verified smart contract on Base directly using any Ethereum-compatible library.
+Runs on Base mainnet for production, Base Sepolia for staging, and a local
+Hardhat node for development.
 
 ## Cost
 
-VPP runs on Base L2, where transaction costs are minimal:
+A semester of 4 studies × 200 students costs roughly **\$2 in gas**. Contract
+deployment is a one-time \$0.50. Reads are free. Full breakdown in
+[`docs/deployment.md`](docs/deployment.md).
 
-| Operation            | Estimated Cost |
-| -------------------- | -------------- |
-| Contract deployment  | ~$0.50         |
-| Register a survey    | ~$0.005        |
-| Award points (claim) | ~$0.002        |
-| Read points          | Free           |
+## Documentation
 
-A single $10 deposit covers thousands of claims across multiple semesters.
+Everything is under [`docs/`](docs/):
 
-## CI / CD & Branch Protection
+| Topic                                                                           | What's in it                                           |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| [Getting started](docs/getting-started.md)                                      | Local setup, test accounts, walkthrough.               |
+| [Architecture](docs/architecture.md) · [Smart contract](docs/smart-contract.md) | System design, on-chain model, upgrade story.          |
+| [Security](docs/security.md)                                                    | Threat model, key handling, replay protection.         |
+| [SoSci integration](docs/sosci-integration.md)                                  | Drop-in survey templates with HMAC claim links.        |
+| [Deployment](docs/deployment.md) · [Runbooks](docs/runbooks/README.md)          | Production deploy, key rotation, incident response.    |
+| [For universities](docs/for-universities.md)                                    | Adoption guide for other institutions.                 |
+| [ADRs](docs/adr/README.md)                                                      | Long-form rationale for major design decisions.        |
+| [Audit V2](docs/audit/v2/)                                                      | Independent security audit, master findings, go/no-go. |
 
-The repository ships two GitHub Actions workflows:
+## Contributing & operating
 
-| Workflow                       | Trigger                         | Purpose                                                                     |
-| ------------------------------ | ------------------------------- | --------------------------------------------------------------------------- |
-| `.github/workflows/ci.yml`     | every push, every pull request  | Lint, type-check, contracts/backend/frontend tests, secret scan             |
-| `.github/workflows/deploy.yml` | push to `main`, manual dispatch | Build + deploy to the configured hosting provider, post-deploy health check |
-
-**Recommended branch protection on `main`** (set once after forking):
-
-- Require pull requests before merging
-- Require ≥ 1 approving review (Owner / Maintainer)
-- Require status check `CI` to pass
-- Restrict who can push to `main` to repository owners only
-- Require conversation resolution before merging
-- Disallow force pushes and branch deletion
-
-The exact `gh` CLI commands and the GitHub UI walkthrough live in [`CONTRIBUTING.md`](CONTRIBUTING.md#branch-protection-required-for-production-instances). A pre-flight script is provided at [`scripts/setup-branch-protection.sh`](scripts/setup-branch-protection.sh).
-
-## Contributing
-
-We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) before submitting a pull request.
-
-This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md).
-
-## Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for a list of notable changes.
-
-## Security
-
-To report a vulnerability, please see our [Security Policy](SECURITY.md).
+- Branch protection, review rules, and the `gh` setup are in
+  [`CONTRIBUTING.md`](CONTRIBUTING.md). New instances should run
+  [`scripts/setup-branch-protection.sh`](scripts/setup-branch-protection.sh)
+  before going live.
+- Vulnerability reports → [`SECURITY.md`](SECURITY.md).
+- Community standards → [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
+- Release history → [`CHANGELOG.md`](CHANGELOG.md).
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+[MIT](LICENSE) — fork it, run it, write a paper about it. If you adopt VPP at
+your institution, we'd love to hear about it.
