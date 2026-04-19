@@ -1,8 +1,10 @@
 # Incident Response — "VPP funktioniert nicht"
 
+> **Provider-Hinweis:** Beispiele zeigen Plesk-Restart-Workflow; für cPanel/VPS/Docker siehe Mapping in [`README.md`](README.md#zu-hosting-provider-spezifika).
+
 **Wann nutzen:** Studi-Beschwerde, UptimeRobot-Alarm, eigener Verdacht.
 **Geschätzte Zeit:** 5-30 min für die häufigen Vorfälle. 1-3 h bei kompliziertem Fall.
-**Voraussetzung:** Plesk-Panel-Zugang. Falls nein → siehe `operators-private.md`.
+**Voraussetzung:** Hosting-Panel-Zugang. Falls nein → siehe `operators-private.md`.
 
 ---
 
@@ -12,7 +14,7 @@ Bevor du einen Restart auslöst (= 30 s Service-Unterbrechung): **verifiziere**.
 
 ```bash
 # Aus jedem Browser/Terminal:
-curl -sS https://vpstunden.hsbi.de/api/v1/health/ready
+curl -sS https://<VPP_INSTANCE>/api/v1/health/ready
 ```
 
 | Antwort                                                                | Bedeutung                                           | Weiter mit |
@@ -49,17 +51,17 @@ Phusion Passenger pausiert den Worker zwischen Requests. Manchmal reicht ein Res
 ### Variante A — via Plesk-Panel (langsamer, aber GUI):
 
 1. Login: `<EINTRAGEN: PLESK_PANEL_URL>` (siehe `runbooks/README.md` Konstanten-Tabelle)
-2. Domains → `vpstunden.hsbi.de` → **Node.js**
+2. Domains → `<VPP_INSTANCE>` → **Node.js**
 3. Klicke **"Restart App"**
 4. Warte 30 s
-5. Erneut `curl https://vpstunden.hsbi.de/api/v1/health/ready` → sollte HTTP 200 sein
+5. Erneut `curl https://<VPP_INSTANCE>/api/v1/health/ready` → sollte HTTP 200 sein
 
 ### Variante B — via SSH (schneller):
 
 ```bash
-ssh <PLESK_USER>@vpstunden.hsbi.de
+ssh <PLESK_USER>@<VPP_INSTANCE>
 touch /httpdocs/packages/backend/tmp/restart.txt
-curl -sS https://vpstunden.hsbi.de/api/v1/health/live
+curl -sS https://<VPP_INSTANCE>/api/v1/health/live
 ```
 
 **Wenn das geholfen hat:** Du bist fertig. Notiere den Vorfall in `docs/incidents/<datum>.md` (siehe Schritt 10).
@@ -71,7 +73,7 @@ curl -sS https://vpstunden.hsbi.de/api/v1/health/live
 ## Schritt 3 — `/health/diag` lesen (Deep-Probe)
 
 ```bash
-curl -sS https://vpstunden.hsbi.de/api/v1/health/diag | jq
+curl -sS https://<VPP_INSTANCE>/api/v1/health/diag | jq
 ```
 
 Prüfe:
@@ -122,7 +124,7 @@ Prüfe:
 ## Schritt 4 — Logs prüfen
 
 ```bash
-ssh <PLESK_USER>@vpstunden.hsbi.de
+ssh <PLESK_USER>@<VPP_INSTANCE>
 
 # Backend-Errors:
 tail -100 <PASSENGER_LOG_PATH>/error.log
@@ -193,7 +195,7 @@ sudo : > <PASSENGER_LOG_PATH>/error.log
 
 Studi sagt "Claim-Link funktioniert nicht" / "INVALID_HMAC".
 
-1. **Survey aktiv?** `curl https://vpstunden.hsbi.de/api/v1/surveys/<id>` → Antwort prüfen, `active: true`?
+1. **Survey aktiv?** `curl https://<VPP_INSTANCE>/api/v1/surveys/<id>` → Antwort prüfen, `active: true`?
 2. **Studi sieht alte Mail/SoSci-Snippet?** Prüfen, ob die Survey kürzlich rotiert wurde (Admin → Survey-Details → "Key rotiert am..."-Anzeige).
 3. **Falls rotiert:** Studis brauchen das **neue** SoSci-Snippet. Lehrende:r informieren, dass alte Claims nicht mehr funktionieren.
 4. **Falls Studi behauptet "ist die erste Mail":** Logs auf Backend prüfen (`grep 'INVALID_HMAC\|claim' <PASSENGER_LOG_PATH>/error.log`). Wahrscheinlich Konfigurations-Drift zwischen SoSci-PHP-Snippet und `survey-keys.json`.
@@ -204,7 +206,7 @@ Studi sagt "Claim-Link funktioniert nicht" / "INVALID_HMAC".
 
 `curl /api/v1/health/live` liefert HTML statt JSON?
 
-1. Plesk-Panel → Domains → `vpstunden.hsbi.de` → **Node.js**
+1. Plesk-Panel → Domains → `<VPP_INSTANCE>` → **Node.js**
 2. Status sollte **"Node.js Application is enabled"** sein. Wenn nicht: **"Enable Node.js"** klicken.
 3. Falls "Enable" failed: NPM-Install-Errors prüfen (Plesk-Panel zeigt's an). Häufigste Ursache: `package.json`-Drift nach manuellem Eingriff. → `deploy-rollback.md`.
 
@@ -212,12 +214,12 @@ Studi sagt "Claim-Link funktioniert nicht" / "INVALID_HMAC".
 
 ## Schritt 9 — Plesk/Domain selbst ist down
 
-`curl https://vpstunden.hsbi.de/` liefert "Connection refused" / DNS-Fehler?
+`curl https://<VPP_INSTANCE>/` liefert "Connection refused" / DNS-Fehler?
 
-1. **DNS-Check:** `dig vpstunden.hsbi.de +short` → IP-Antwort?
-2. **TLS-Check:** `curl -sSv https://vpstunden.hsbi.de/ 2>&1 | head -20` → Cert-Issue?
-3. **Plesk-Panel selbst erreichbar?** Versuche `https://hosting.hsbi.de:8443/`.
-4. **Wenn Plesk-Panel auch down:** **Eskalation an HSBI-IT** (siehe `operators-private.md`).
+1. **DNS-Check:** `dig <VPP_INSTANCE> +short` → IP-Antwort?
+2. **TLS-Check:** `curl -sSv https://<VPP_INSTANCE>/ 2>&1 | head -20` → Cert-Issue?
+3. **Hosting-Panel selbst erreichbar?** Versuche die Panel-URL aus `operators-private.md` (z.B. `https://<HOSTING_PANEL_HOST>:<PORT>/`).
+4. **Wenn Hosting-Panel auch down:** **Eskalation an `<HOSTING_PROVIDER_SUPPORT>`** (siehe `operators-private.md`).
 
 ---
 

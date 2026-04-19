@@ -1,8 +1,10 @@
-# Disaster Recovery — Plesk-Server tot, Daten weg
+# Disaster Recovery — Hosting-Server tot, Daten weg
+
+> **Provider-Hinweis:** Beispielbefehle nutzen Plesk + SSH. Für andere Hoster (cPanel, plain VPS, Docker) siehe Mapping-Tabelle in [`README.md`](README.md#zu-hosting-provider-spezifika). Platzhalter wie `<VPP_INSTANCE>`, `<HOSTING_PANEL_HOST>` werden in `docs/operators-private.md` definiert.
 
 **Wann nutzen:**
 
-- Plesk-Server ist permanent down (Hardware-Defekt, HSBI-IT-Migration)
+- Hosting-Server ist permanent down (Hardware-Defekt, Provider-Migration)
 - `data/*.json` ist korrupt oder gelöscht
 - Tenant-Migration auf andere Plesk-Instanz
 - "wir müssen das Backend von Null aufbauen"
@@ -35,19 +37,19 @@
 
 ```bash
 # Externer Health-Check:
-curl -sS -m 5 https://vpstunden.hsbi.de/api/v1/health/live
+curl -sS -m 5 https://<VPP_INSTANCE>/api/v1/health/live
 
 # Wenn DNS auflöst, aber kein TLS:
-curl -sSv https://vpstunden.hsbi.de/ 2>&1 | head -20
+curl -sSv https://<VPP_INSTANCE>/ 2>&1 | head -20
 
 # Wenn DNS nicht auflöst:
-dig vpstunden.hsbi.de +short
+dig <VPP_INSTANCE> +short
 
 # Plesk-Panel erreichbar?
-curl -sSI https://hosting.hsbi.de:8443/
+curl -sSI "https://${HOSTING_PANEL_HOST}:${HOSTING_PANEL_PORT}/"
 
 # SSH-Erreichbarkeit:
-ssh -o ConnectTimeout=5 <PLESK_USER>@vpstunden.hsbi.de echo ok
+ssh -o ConnectTimeout=5 <PLESK_USER>@<VPP_INSTANCE> echo ok
 ```
 
 ---
@@ -106,17 +108,17 @@ done
 
 ## Schritt 2 — Plesk re-Setup (falls Tenant tot)
 
-> **Vorausgesetzt:** Du hast einen funktionierenden Plesk-Tenant. Falls nein → HSBI-IT für Provisionierung.
+> **Vorausgesetzt:** Du hast einen funktionierenden Hosting-Tenant. Falls nein → `<HOSTING_PROVIDER_SUPPORT>` für Provisionierung.
 
 ### Variante A — bestehender Tenant, nur App-Re-Setup:
 
-1. Plesk-Panel → Domains → `vpstunden.hsbi.de` → **Node.js**
+1. Plesk-Panel → Domains → `<VPP_INSTANCE>` → **Node.js**
 2. **Enable Node.js**
 3. Konfiguration:
    - **Node.js Version:** matching `.nvmrc` (verifizieren: `cat .nvmrc` → z.B. `20`)
    - **Document Root:** `/httpdocs/`
    - **Application Mode:** `production`
-   - **Application URL:** https://vpstunden.hsbi.de/
+   - **Application URL:** https://<VPP_INSTANCE>/
    - **Application Root:** `/httpdocs/packages/backend/`
    - **Application Startup File:** `app.js`
 4. **Custom Environment Variables** — komplette Liste setzen (siehe `docs/env-reference.md` oder bisher `docs/deployment.md`):
@@ -131,7 +133,7 @@ done
 
 ### Variante B — komplett neuer Tenant:
 
-1. HSBI-IT: neue Subdomain provisionieren (z.B. `vpstunden-new.hsbi.de`).
+1. `<HOSTING_PROVIDER_SUPPORT>` kontaktieren: neue Subdomain provisionieren (z.B. `vpp-new.example.edu`).
 2. Wie Variante A vorgehen.
 3. **Achtung:** Frontend-CORS, OAuth-Callbacks, BaseScan-Verifications etc. müssen auf neuen Hostname umgestellt werden. → komplettes Audit nötig.
 
@@ -173,14 +175,14 @@ lftp -u <FTP_USER>,<FTP_PASS> -e "
   mirror --reverse --delete deploy/ /httpdocs/;
   put /dev/null -o /httpdocs/packages/backend/tmp/restart.txt;
   quit;
-" hosting.hsbi.de
+" "$HOSTING_PANEL_HOST"
 ```
 
 Verifikation:
 
 ```bash
 sleep 15
-curl -sS https://vpstunden.hsbi.de/api/v1/health/live
+curl -sS https://<VPP_INSTANCE>/api/v1/health/live
 ```
 
 ---
@@ -188,15 +190,15 @@ curl -sS https://vpstunden.hsbi.de/api/v1/health/live
 ## Schritt 4 — Stores wiederherstellen
 
 ```bash
-ssh <PLESK_USER>@vpstunden.hsbi.de
+ssh <PLESK_USER>@<VPP_INSTANCE>
 
 # Backup-Files hochladen via SCP von deinem lokalen Rechner:
 # (vorher: lokal die backup/data/ aus Schritt 1)
 exit
-scp -r backup/data/* <PLESK_USER>@vpstunden.hsbi.de:/httpdocs/packages/backend/data/
+scp -r backup/data/* <PLESK_USER>@<VPP_INSTANCE>:/httpdocs/packages/backend/data/
 
 # Permissions setzen (Bereich 4 F4.5):
-ssh <PLESK_USER>@vpstunden.hsbi.de
+ssh <PLESK_USER>@<VPP_INSTANCE>
 chmod 600 /httpdocs/packages/backend/data/*.json
 ls -la /httpdocs/packages/backend/data/
 # Erwartet: -rw------- für jede Datei
@@ -211,7 +213,7 @@ touch /httpdocs/packages/backend/tmp/restart.txt
 **Verifikation:**
 
 ```bash
-curl -sS https://vpstunden.hsbi.de/api/v1/health/diag | jq '.eventStore'
+curl -sS https://<VPP_INSTANCE>/api/v1/health/diag | jq '.eventStore'
 ```
 
 `lastSyncedBlock` sollte ein realistischer Wert sein (nicht 0). Wenn 0: Backup von events.json war leer oder nicht gemounted.
@@ -227,7 +229,7 @@ curl -sS https://vpstunden.hsbi.de/api/v1/health/diag | jq '.eventStore'
 # EVENT_STORE_FROM_BLOCK = <CONTRACT_DEPLOYMENT_BLOCK> (siehe BaseScan)
 
 # Restart Backend — es startet Cold-Sync von FROM_BLOCK an
-ssh <PLESK_USER>@vpstunden.hsbi.de
+ssh <PLESK_USER>@<VPP_INSTANCE>
 touch /httpdocs/packages/backend/tmp/restart.txt
 ```
 
@@ -243,14 +245,14 @@ touch /httpdocs/packages/backend/tmp/restart.txt
 
 ```bash
 # In zweitem Terminal:
-ssh <PLESK_USER>@vpstunden.hsbi.de
+ssh <PLESK_USER>@<VPP_INSTANCE>
 tail -f <PASSENGER_LOG_PATH>/access.log | grep -i sync
 ```
 
 ODER alle 2 min:
 
 ```bash
-curl -sS https://vpstunden.hsbi.de/api/v1/health/diag | jq '.eventStore.lastSyncedBlock'
+curl -sS https://<VPP_INSTANCE>/api/v1/health/diag | jq '.eventStore.lastSyncedBlock'
 ```
 
 `lastSyncedBlock` sollte konstant steigen.
@@ -267,10 +269,10 @@ curl -sS https://vpstunden.hsbi.de/api/v1/health/diag | jq '.eventStore.lastSync
 
 ```bash
 # Health komplett:
-curl -sS https://vpstunden.hsbi.de/api/v1/health/diag | jq
+curl -sS https://<VPP_INSTANCE>/api/v1/health/diag | jq
 
 # Surveys-Endpoint:
-curl -sS https://vpstunden.hsbi.de/api/v1/surveys
+curl -sS https://<VPP_INSTANCE>/api/v1/surveys
 
 # Test-Claim (mit einer bekannt-gültigen Studi-Wallet):
 # Manueller Test im Frontend.
@@ -301,13 +303,13 @@ curl -sS https://vpstunden.hsbi.de/api/v1/surveys
 
 ## Recovery-Time-Budget (RTB) Tabelle
 
-| Disaster                             | Minimum-RTB                            | Realistische-RTB | Worst-Case-RTB          |
-| ------------------------------------ | -------------------------------------- | ---------------- | ----------------------- |
-| Code-Deploy kaputt                   | 5 min (Rollback)                       | 15 min           | 1 h                     |
-| `data/`-Restore aus aktuellem Backup | 15 min                                 | 1 h              | 3 h                     |
-| Cold-Sync für `events.json`          | 30 min                                 | 90 min           | 4 h                     |
-| Plesk-Tenant-Migration               | 4 h                                    | 8 h              | 2 Tage (HSBI-IT-Latenz) |
-| Komplett-Verlust ohne Backup         | "permanenter Datenverlust" + Cold-Sync | –                | –                       |
+| Disaster                             | Minimum-RTB                            | Realistische-RTB | Worst-Case-RTB           |
+| ------------------------------------ | -------------------------------------- | ---------------- | ------------------------ |
+| Code-Deploy kaputt                   | 5 min (Rollback)                       | 15 min           | 1 h                      |
+| `data/`-Restore aus aktuellem Backup | 15 min                                 | 1 h              | 3 h                      |
+| Cold-Sync für `events.json`          | 30 min                                 | 90 min           | 4 h                      |
+| Hosting-Tenant-Migration             | 4 h                                    | 8 h              | 2 Tage (Provider-Latenz) |
+| Komplett-Verlust ohne Backup         | "permanenter Datenverlust" + Cold-Sync | –                | –                        |
 
 ---
 

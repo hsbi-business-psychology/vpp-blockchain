@@ -1,5 +1,7 @@
 # SoSci-Onboarding — Neue Lehrende will VPP für eigene Studie nutzen
 
+> **Hinweis:** Dieser Runbook ist provider-agnostisch und benötigt nur die `<VPP_INSTANCE>`-URL. SoSci-Survey ist nur eines der unterstützten Engines — LimeSurvey, Qualtrics oder Custom-HTML funktionieren analog (siehe [`docs/sosci-integration.md`](../sosci-integration.md)).
+
 **Wann nutzen:** Lehrende:r möchte für ein eigenes Survey das VPP-System nutzen, um Studis automatisiert Versuchspersonenpunkte zu vergeben.
 
 **Geschätzte Zeit:**
@@ -46,7 +48,7 @@ Falls Lehrende:r schon eine Wallet hat (z.B. aus eigener DApp-Nutzung): Adresse 
 
 ### Variante A — via Frontend (UX-empfohlen)
 
-1. Frontend öffnen: https://vpstunden.hsbi.de/admin
+1. Frontend öffnen: https://<VPP_INSTANCE>/admin
 2. Mit eigener Wallet einloggen (Sign-Message mit MetaMask).
 3. Tab **"Admins"** → **"Add Admin"**.
 4. Lehrende:r-Wallet-Adresse einfügen.
@@ -85,7 +87,7 @@ cast send "$PROXY" "grantRole(bytes32,address)" "$ADMIN_HASH" "$NEW_ADMIN" \
 **Verifikation:**
 
 ```bash
-curl -sS https://vpstunden.hsbi.de/api/v1/surveys/<SURVEY_ID>
+curl -sS https://<VPP_INSTANCE>/api/v1/surveys/<SURVEY_ID>
 ```
 
 ---
@@ -121,7 +123,7 @@ funktioniert kein Claim.
    - Format wählen: `sosci` (XML) oder `limesurvey` (.lss).
 2. Backend generiert ein **HTML-Snippet ohne Script/PHP**, das:
    - Einen styled `<a href>`-Button auf
-     `https://vpstunden.hsbi.de/api/v1/claim/launch/<survey_id>` rendert.
+     `https://<VPP_INSTANCE>/api/v1/claim/launch/<survey_id>` rendert.
    - Beim Klick erzeugt der Backend-Launcher pro Aufruf einen frischen
      Nonce + HMAC-Token serverseitig und 302-redirected zur Claim-Page.
    - Der HMAC-Key liegt nur im Backend-`survey-keys`-Store, nie im
@@ -149,7 +151,7 @@ Lehrende:r meldet sich an und importiert die Datei:
 - Survey aktivieren → Vorschau öffnen → durchklicken bis Endseite.
 - Erwartung: blauer Button **"Punkte jetzt einlösen →"** sofort sichtbar.
 - Klick auf den Button → Browser geht auf
-  `https://vpstunden.hsbi.de/api/v1/claim/launch/<id>` →
+  `https://<VPP_INSTANCE>/api/v1/claim/launch/<id>` →
   Backend antwortet 302 → landet auf `/claim?s=…&n=…&t=…` → Wallet-Sign.
 - Falls der Button gar nicht angezeigt wird → die Survey-Engine
   hat sogar `<a>`-Tags gestrippt (extrem aggressive XSS-Settings).
@@ -161,7 +163,7 @@ Lehrende:r meldet sich an und importiert die Datei:
 Studi muss in der SoSci-Survey ihre Wallet-Adresse eingeben. Standard-Pattern:
 
 - SoSci-Item: Texteingabe-Feld, Label "Deine VPP-Wallet-Adresse (0x...)".
-- Hinweis-Text: "Du hast noch keine? → erstelle eine unter https://vpstunden.hsbi.de/wallet (Anleitung 2 min)".
+- Hinweis-Text: "Du hast noch keine? → erstelle eine unter https://<VPP_INSTANCE>/wallet (Anleitung 2 min)".
 - Validierung: regex `^0x[a-fA-F0-9]{40}$`.
 
 Lehrende:r muss dieses Feld in jeder Survey selbst hinzufügen. → siehe `docs/sosci-integration.md` für Standard-Snippets.
@@ -220,10 +222,10 @@ Plus: Notiz in `operators-private.md` ergänzen:
 
 ## Lehrende:r-Selbsthilfe-Materialien (zum Verlinken)
 
-- **Studi-Wallet erstellen:** https://vpstunden.hsbi.de/wallet (Frontend hat eigene Anleitung)
+- **Studi-Wallet erstellen:** https://<VPP_INSTANCE>/wallet (Frontend hat eigene Anleitung)
 - **MetaMask:** https://metamask.io
-- **Was sind VP-Punkte:** entweder existing HSBI-Doku oder Lehrende:r erklärt selbst
-- **Datenschutz-Hinweis** (von HSBI-Datenschutz vorgegeben — Lehrende:r muss in Studie eigenständig einbinden): Wallet-Adressen sind pseudonyme Identifier, keine direkten Personendaten. Aber: Verknüpfung mit Studi-Identität liegt in der SoSci-Datenbank, die unter Lehrenden-Verantwortung steht.
+- **Was sind VP-Punkte:** entweder bestehende Doku der Institution oder Lehrende:r erklärt selbst
+- **Datenschutz-Hinweis** (von `<INSTITUTION_DPO>` vorgegeben — Lehrende:r muss in Studie eigenständig einbinden): Wallet-Adressen sind pseudonyme Identifier, keine direkten Personendaten. Aber: Verknüpfung mit Studi-Identität liegt in der SoSci-Datenbank, die unter Lehrenden-Verantwortung steht.
 
 ---
 
@@ -238,7 +240,7 @@ Lehrende:r hat MetaMask-Reset gemacht oder Seed-Phrase verloren:
 
 ---
 
-## Wenn Lehrende:r aus HSBI ausscheidet
+## Wenn Lehrende:r aus der Institution ausscheidet
 
 1. Lehrende:r-Wallet als Admin entfernen (siehe Schritt oben).
 2. Aktive Surveys der Person → entscheiden: deaktivieren? übertragen an Nachfolge?

@@ -1,5 +1,7 @@
 # Deploy Rollback — Letzter Deploy ist kaputt
 
+> **Provider-Hinweis:** Beispielbefehle nutzen Plesk + GitHub Actions. Für andere Hoster siehe Mapping-Tabelle in [`README.md`](README.md#zu-hosting-provider-spezifika). Konkrete Werte (Domain, Panel-URL, SSH-User) liegen in `docs/operators-private.md`.
+
 **Wann nutzen:**
 
 - GHA Post-Deploy-Health-Check (F7.4) hat fail gemeldet
@@ -15,7 +17,7 @@
 
 Bevor du rollbackst:
 
-1. `curl -sS https://vpstunden.hsbi.de/api/v1/health/diag` → Befund?
+1. `curl -sS https://<VPP_INSTANCE>/api/v1/health/diag` → Befund?
 2. GHA → letzten Deploy-Run prüfen (`gh run list --workflow=deploy.yml --limit 5`).
 3. Letzter Deploy: erfolgreich oder failed?
 4. Wenn letzter Deploy **failed**: vermutlich Plesk hat halb-deployed-State (siehe F7.8). → Rollback ist die richtige Aktion.
@@ -83,7 +85,7 @@ gh run list --workflow=deploy.yml --limit 1 --json status,conclusion
 
 ```bash
 sleep 15
-curl -sS https://vpstunden.hsbi.de/api/v1/health/ready | jq
+curl -sS https://<VPP_INSTANCE>/api/v1/health/ready | jq
 ```
 
 Erwartet: HTTP 200, `status: ok`.
@@ -117,7 +119,7 @@ GHA deployed automatisch (push:main-Trigger).
 
 Wenn weder GHA noch Re-Deploy funktioniert:
 
-1. Plesk-Panel → Domains → `vpstunden.hsbi.de` → **Node.js**
+1. Plesk-Panel → Domains → `<VPP_INSTANCE>` → **Node.js**
 2. **"Disable Node.js"** klicken.
 3. Studis sehen Plesk-Default-Page.
 4. Owner kontaktieren (siehe `operators-private.md`).
@@ -136,7 +138,7 @@ Vor dem Forward-Fix: verstehen, warum der Deploy kaputt war.
 gh run view <RUN_ID> --log
 
 # Backend-Logs aus dem kaputten Zeitraum:
-ssh <PLESK_USER>@vpstunden.hsbi.de
+ssh <PLESK_USER>@<VPP_INSTANCE>
 tail -200 <PASSENGER_LOG_PATH>/error.log
 ```
 

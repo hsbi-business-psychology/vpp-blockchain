@@ -1,5 +1,7 @@
 # Key Rotation — `MINTER_PRIVATE_KEY` ist (oder könnte sein) kompromittiert
 
+> **Provider-Hinweis:** Beispielbefehle nutzen Plesk-Custom-ENV-Vars für die Schlüsselablage. Andere Hoster: cPanel-Application-Env / systemd-EnvironmentFile / Docker-Secret. Siehe Mapping in [`README.md`](README.md#zu-hosting-provider-spezifika).
+
 **Wann nutzen:**
 
 - Verdacht auf Plesk-Tenant-Compromise
@@ -55,7 +57,7 @@ Bevor du dieses Runbook ausführst (= 30-90 min Arbeit + Service-Unterbrechung):
 
 Plesk-Panel:
 
-1. Domains → `vpstunden.hsbi.de` → **Node.js**
+1. Domains → `<VPP_INSTANCE>` → **Node.js**
 2. **"Disable Node.js"** klicken.
 3. Frontend zeigt Plesk-Default-Page; Studis können nicht claimen, aber auch keine kompromittierten Tx triggern.
 
@@ -185,18 +187,18 @@ cast call "$PROXY" "hasRole(bytes32,address)" "$MINTER_HASH" "$NEW" \
 
 ## Schritt 5 — Backend mit neuem Key konfigurieren
 
-Plesk-Panel → Domains → `vpstunden.hsbi.de` → **Node.js** → Custom Environment Variables:
+Plesk-Panel → Domains → `<VPP_INSTANCE>` → **Node.js** → Custom Environment Variables:
 
 1. `MINTER_PRIVATE_KEY` → neuer Wert (`0x...` mit `0x`-Prefix, 64 Hex-Chars).
 2. **Save**
 3. Re-Enable Node.js (falls Schritt 1A genutzt) ODER Restart:
    ```bash
-   ssh <PLESK_USER>@vpstunden.hsbi.de
+   ssh <PLESK_USER>@<VPP_INSTANCE>
    touch /httpdocs/packages/backend/tmp/restart.txt
    ```
 4. Verifikation:
    ```bash
-   curl -sS https://vpstunden.hsbi.de/api/v1/health/diag | jq '.minter.address'
+   curl -sS https://<VPP_INSTANCE>/api/v1/health/diag | jq '.minter.address'
    # Erwartet: "<NEW_MINTER_ADDRESS>"
    ```
 
@@ -284,7 +286,7 @@ Nach jeder Rotation:
 2. **Backend-Logs:** unauffällige Patterns? `grep -i 'minter\|sign\|transaction' <PASSENGER_LOG_PATH>/error.log` für die Vorfalls-Periode.
 3. **Plesk-Audit-Log:** wurde Custom-Env-Vars editiert? Plesk-Panel → Tools → Audit Log.
 4. **GHA-Audit:** wurde der `MINTER_PRIVATE_KEY` jemals als GHA-Secret konfiguriert? `Repo → Settings → Secrets`. Wenn ja → GHA-Logs prüfen, ob der Key irgendwann via `echo $SECRET` versehentlich geprintet wurde.
-5. **HSBI-IT informieren** falls Verdacht auf Plesk-Tenant-Compromise.
+5. **`<HOSTING_PROVIDER_SUPPORT>` informieren** falls Verdacht auf Hosting-Tenant-Compromise.
 6. **Datenschutzbeauftragte informieren** falls Personendaten betroffen sein könnten (technisch sind im Repo nur Wallet-Adressen + Survey-IDs — kein direkter Bezug zu Studi-Identitäten, aber dokumentieren).
 
 ---

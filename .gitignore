@@ -57,3 +57,8 @@ temp/
 # exports stay out of the code repo.
 docs/paper/
 docs/diagrams/
+
+# Operator-private constants (instance URLs, contact persons, wallet
+# addresses, hosting credentials). Each adopting institution maintains
+# its own copy based on `docs/operators-private.md.example`.
+docs/operators-private.md

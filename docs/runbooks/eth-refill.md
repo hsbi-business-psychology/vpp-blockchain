@@ -1,5 +1,7 @@
 # ETH-Refill — Backend-Wallet auffüllen
 
+> **Provider-Hinweis:** Beispiele für Balance-Watch-Cron nutzen Plesk-Scheduled-Tasks; auf cPanel/VPS/Docker entsprechend Cron-Job/systemd-Timer/Sidecar verwenden. Siehe [`README.md`](README.md#zu-hosting-provider-spezifika).
+
 **Wann nutzen:**
 
 - Plesk-Cron / UptimeRobot meldet `MINTER_BALANCE_LOW`
@@ -15,7 +17,7 @@
 
 ```bash
 # Aktuelle Balance des Minter-Wallets:
-curl -sS https://vpstunden.hsbi.de/api/v1/health/diag | jq '.minter.balanceWei'
+curl -sS https://<VPP_INSTANCE>/api/v1/health/diag | jq '.minter.balanceWei'
 ```
 
 ODER auf BaseScan: `https://basescan.org/address/<MINTER_ADDRESS>`
@@ -81,7 +83,7 @@ Wenn weder Coinbase noch L1-Wallet verfügbar:
 # https://basescan.org/address/<MINTER_ADDRESS>
 
 # Oder via Backend-Health:
-curl -sS https://vpstunden.hsbi.de/api/v1/health/diag | jq '.minter'
+curl -sS https://<VPP_INSTANCE>/api/v1/health/diag | jq '.minter'
 ```
 
 Erwartete Antwort (`/api/v1/status` als Admin, V2-Felder):
@@ -127,11 +129,11 @@ Zugehöriger Plesk-Cron (Beispiel, in `/etc/cron.hourly/vpp-balance-warn`):
 
 ```bash
 #!/usr/bin/env bash
-LOG=/var/www/vhosts/vpstunden.hsbi.de/logs/access_log
+LOG=/var/www/vhosts/<VPP_INSTANCE>/logs/access_log
 MARKER=/tmp/vpp-balance-warned
 
 if [ ! -f "$MARKER" ] && grep -q 'MINTER_BALANCE_LOW' "$LOG"; then
-  mail -s '[VPP] Minter wallet low' owner@hsbi.de < "$LOG" \
+  mail -s '[VPP] Minter wallet low' "$VPP_OWNER_EMAIL" < "$LOG" \
     | head -n 200 \
     && touch "$MARKER"
 fi
@@ -141,7 +143,7 @@ Nach erfolgreichem Refill den Marker löschen, sonst feuert der Cron nicht
 erneut, wenn die Balance später wieder absinkt:
 
 ```bash
-ssh <PLESK_USER>@vpstunden.hsbi.de
+ssh <PLESK_USER>@<VPP_INSTANCE>
 rm /tmp/vpp-balance-warned
 ```
 

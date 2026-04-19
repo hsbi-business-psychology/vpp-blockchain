@@ -1,0 +1,84 @@
+# Operators — Private Constants (Template)
+
+> **Wichtig:** Kopiere diese Datei nach `docs/operators-private.md` und fülle die Werte aus. `docs/operators-private.md` ist in `.gitignore` und darf **nicht** ins Repo committed werden — sie enthält ggf. Wallet-Adressen, Hosting-Zugänge und Eskalationskontakte, die zwar nicht streng geheim, aber auch nicht öffentlich sind.
+
+## Instanz-Identifikation
+
+| Feld                      | Wert                                                              |
+| ------------------------- | ----------------------------------------------------------------- |
+| Institution / Betreiber   | `<z.B. Hochschule Beispielstadt — Wirtschaftspsychologie>`        |
+| `<VPP_INSTANCE>`          | `<z.B. vpp.example.edu>`                                          |
+| Frontend-URL              | `https://<VPP_INSTANCE>/`                                         |
+| Backend-API               | `https://<VPP_INSTANCE>/api/v1/`                                  |
+| Health `/live`            | `https://<VPP_INSTANCE>/api/v1/health/live`                       |
+| Health `/ready`           | `https://<VPP_INSTANCE>/api/v1/health/ready`                      |
+| Health `/diag`            | `https://<VPP_INSTANCE>/api/v1/health/diag`                       |
+
+## Hosting-Provider
+
+| Feld                       | Wert                                                              |
+| -------------------------- | ----------------------------------------------------------------- |
+| Hoster (Plesk/cPanel/…)    | `<z.B. Plesk Onyx, IONOS Cloud Server>`                           |
+| `<HOSTING_PANEL_HOST>`     | `<z.B. hosting.example.edu>`                                      |
+| `<HOSTING_PANEL_PORT>`     | `<z.B. 8443>`                                                     |
+| Panel-URL                  | `https://<HOSTING_PANEL_HOST>:<HOSTING_PANEL_PORT>/`              |
+| `<PLESK_USER>` (SSH-User)  | `<z.B. vpp-prod>`                                                 |
+| App-Pfad on host           | `<z.B. /var/www/vhosts/vpp.example.edu/httpdocs/>`                |
+| Backend-Pfad               | `<App-Pfad>/packages/backend/`                                    |
+| Restart-Trigger            | `touch <Backend-Pfad>/tmp/restart.txt`                            |
+| Passenger-/App-Log         | `<z.B. /var/log/passenger/vpp-backend.log>`                       |
+
+## Smart-Contract (V2 UUPS)
+
+| Feld                       | Wert                                                              |
+| -------------------------- | ----------------------------------------------------------------- |
+| `<PROXY_ADDRESS>`          | `<z.B. 0x8b8E…4cAa>`                                              |
+| BaseScan-Proxy-Link        | `https://basescan.org/address/<PROXY_ADDRESS>`                    |
+| Implementation-Address (V2)| `<z.B. 0x9c…>`                                                    |
+| Chain                      | Base Mainnet (chainId 8453)                                       |
+
+## Wallets
+
+| Rolle                      | Adresse                                       | Wo liegt der Schlüssel?                             |
+| -------------------------- | --------------------------------------------- | --------------------------------------------------- |
+| MINTER (Backend-Hot)       | `<z.B. 0x6f9b…>`                              | Hosting-Panel-ENV `MINTER_PRIVATE_KEY`              |
+| DEFAULT_ADMIN (Owner)      | `<z.B. 0xab…>`                                | Hardware-Wallet (Ledger/Trezor) bei Owner           |
+| Optional: zweiter ADMIN    | `<…>`                                         | Hardware-Wallet bei Co-Owner                        |
+
+## Eskalationskontakte
+
+| Stufe                            | Kontakt                                                    |
+| -------------------------------- | ---------------------------------------------------------- |
+| `<HOSTING_PROVIDER_SUPPORT>`     | `<z.B. it-support@example.edu (Mo-Fr 8-17)>`               |
+| `<INSTITUTION_DPO>` (Datenschutz)| `<z.B. dsb@example.edu>`                                   |
+| `<OWNER_EMAIL>` (Operator-Alert) | `<z.B. vpp-ops@example.edu>`                               |
+| Owner (Telefon, Notfall)         | `<+49 …>`                                                  |
+| Co-Owner / Stellvertretung       | `<Name + Kontakt>`                                         |
+
+## Secret-Lokationen (Klartext NIE hier eintragen!)
+
+| Secret                       | Vault                                                   |
+| ---------------------------- | ------------------------------------------------------- |
+| `MINTER_PRIVATE_KEY`         | Hosting-Panel-Custom-ENV + 1Password "VPP Operations"   |
+| `BASESCAN_API_KEY`           | 1Password "VPP Operations" / Bitwarden                  |
+| `RPC_URL` (Alchemy/Infura)   | Hosting-Panel-Custom-ENV + Provider-Dashboard           |
+| `HMAC_BASE_SECRET`           | Hosting-Panel-Custom-ENV (auto-rotiert über Admin-UI)   |
+
+## Monitoring / Watchlists
+
+| Tool                         | Konfiguration                                           |
+| ---------------------------- | ------------------------------------------------------- |
+| UptimeRobot                  | 5 Monitore (`/live`, `/ready`, `/diag`, BaseScan-…)     |
+| BaseScan-Watchlist           | MINTER, PROXY, DEFAULT_ADMIN-Wallet                     |
+| Plesk-Cron Balance-Watch     | `*/30 * * * *` `bash scripts/check-balance.sh`          |
+
+## Last-Known-Good Deploy-Tag
+
+| Feld           | Wert                                                              |
+| -------------- | ----------------------------------------------------------------- |
+| Tag-Name       | `last-known-good` (auto-aktualisiert von GHA bei grünem Deploy)   |
+| Letzter Push   | `<Datum + Commit-SHA>`                                            |
+
+---
+
+**Pflege:** Bei Personalwechsel, Tenant-Migration oder Schlüssel-Rotation muss diese Datei innerhalb von 24 h aktualisiert werden. Halbjährlicher Review siehe `docs/runbooks/README.md`.

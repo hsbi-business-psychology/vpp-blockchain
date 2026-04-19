@@ -159,6 +159,37 @@ The frontend ships with German and English translations. To add a new language:
 - **Browsers:** Chrome, Firefox, Safari, Edge (desktop and mobile)
 - **No extensions required:** No MetaMask or other wallet software needed
 
+## Operations Runbooks
+
+Production-ready, provider-agnostic step-by-step playbooks live in [`docs/runbooks/`](runbooks/README.md). They cover every standard operational situation:
+
+| Situation                                     | Runbook                                                          |
+| --------------------------------------------- | ---------------------------------------------------------------- |
+| Backend wallet running low on ETH             | [`runbooks/eth-refill.md`](runbooks/eth-refill.md)               |
+| Last deploy is broken / service down          | [`runbooks/deploy-rollback.md`](runbooks/deploy-rollback.md)     |
+| Backend hangs / Studi-Beschwerde / 5xx errors | [`runbooks/incident-response.md`](runbooks/incident-response.md) |
+| `MINTER_PRIVATE_KEY` may be compromised       | [`runbooks/key-rotation.md`](runbooks/key-rotation.md)           |
+| Hosting tenant lost; restore from backup      | [`runbooks/disaster-recovery.md`](runbooks/disaster-recovery.md) |
+| New lecturer wants to use VPP                 | [`runbooks/sosci-onboarding.md`](runbooks/sosci-onboarding.md)   |
+
+Examples reference Plesk + GitHub Actions (the reference instance), but every runbook includes a hosting-provider mapping table for cPanel, plain VPS+systemd, and Docker. Instance-specific values (your domain, panel URL, wallet addresses, contact persons) are kept in `docs/operators-private.md` (gitignored) — see [`docs/operators-private.md.example`](operators-private.md.example) for the template.
+
+### Adoption Checklist
+
+Before going live with students:
+
+- [ ] Forked the repo to your university's GitHub org and updated repo URLs in `README.md`/badges
+- [ ] Deployed your own V2 contract on Base (`pnpm --filter @vpp/contracts run deploy:mainnet`)
+- [ ] Funded the backend wallet with ≥ 0.005 ETH
+- [ ] Set all backend ENV vars in your hosting panel (see `packages/backend/.env.example`)
+- [ ] Set frontend ENV vars (`VITE_APP_NAME`, `VITE_API_URL`, `VITE_CONTRACT_ADDRESS`) and deployed the frontend
+- [ ] Replaced `packages/frontend/public/hsbi-logo-*.png` with your institution's logo
+- [ ] Copied `docs/operators-private.md.example` to `docs/operators-private.md` and filled in all placeholders
+- [ ] Walked through `runbooks/sosci-onboarding.md` once with a test survey to verify the launcher route
+- [ ] Configured branch protection on `main` (see [`CONTRIBUTING.md`](../CONTRIBUTING.md))
+- [ ] Added at least 2 monitors (UptimeRobot or equivalent) for `/api/v1/health/live` and `/api/v1/health/ready`
+- [ ] Stored `DEFAULT_ADMIN_ROLE` keys on a hardware wallet (Ledger/Trezor); never on the hosting server
+
 ## Support
 
 - [GitHub Issues](https://github.com/hsbi-business-psychology/vpp-blockchain/issues) — Bug reports and feature requests
