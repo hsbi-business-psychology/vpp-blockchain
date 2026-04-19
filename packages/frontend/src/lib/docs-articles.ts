@@ -14,6 +14,7 @@ import {
   Info,
   Building2,
   Lock,
+  LifeBuoy,
   HelpCircle,
   type LucideIcon,
 } from 'lucide-react'
@@ -30,6 +31,7 @@ export const DOCS_ARTICLES: DocsArticle[] = [
   { slug: 'getting-started', category: 'students', icon: Rocket },
   { slug: 'claim-process', category: 'students', icon: MousePointerClick },
   { slug: 'wallet-security', category: 'students', icon: ShieldCheck },
+  { slug: 'wallet-recovery', category: 'students', icon: LifeBuoy },
   { slug: 'thesis-submission', category: 'students', icon: GraduationCap },
 
   { slug: 'survey-management', category: 'lecturers', icon: ClipboardList },

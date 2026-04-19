@@ -154,6 +154,139 @@
             "type": "callout",
             "variant": "warning",
             "content": "Es gibt kein \"Passwort zurücksetzen\". Private Keys können nicht wiederhergestellt werden. Wenn du ihn verlierst, sind deine Punkte unwiederbringlich verloren."
+          },
+          {
+            "type": "callout",
+            "variant": "tip",
+            "content": "Neu erstellte Browser-Wallets bekommen zusätzlich eine 12-Wort-Recovery-Phrase (Seed Phrase). Wie du sie sicher aufbewahrst, in MetaMask importierst und was bei Verlust passiert, steht im nächsten Artikel \"Recovery-Phrase und Wallet-Wiederherstellung\"."
+          }
+        ]
+      },
+      "wallet-recovery": {
+        "title": "Recovery-Phrase und Wallet-Wiederherstellung",
+        "description": "Was die 12-Wort-Phrase ist, wo du sie aufbewahrst, wie du dein Wallet auf einem neuen Gerät oder in MetaMask wiederherstellst -- erklärt von null an.",
+        "sections": [
+          {
+            "type": "text",
+            "heading": "Was ist eine Seed Phrase?",
+            "content": "Wenn du im VPP-System ein neues Browser-Wallet erstellst, erzeugt die Anwendung 12 zufällige englische Wörter. Diese 12 Wörter heißen Seed Phrase, Recovery-Phrase oder im Standard BIP-39-Phrase.\n\nKlingt erstmal merkwürdig -- wieso Wörter? Ganz einfach: Hinter deinem Wallet steckt eine sehr lange zufällige Zahl (256 Bit). Niemand kann sich so eine Zahl merken oder sauber abschreiben. Deshalb hat die Branche sich vor Jahren auf eine Liste mit 2048 englischen Wörtern geeinigt. Aus deiner zufälligen Zahl werden 12 dieser Wörter -- in einer ganz bestimmten Reihenfolge. Aus diesen 12 Wörtern lässt sich umgekehrt jederzeit dieselbe Zahl und damit dein komplettes Wallet (Adresse + Private Key) zurückrechnen.\n\nDie Liste der 2048 Wörter ist öffentlich -- es ist kein Geheimnis, welche Wörter es gibt. Geheim ist nur die Reihenfolge deiner persönlichen 12 Wörter."
+          },
+          {
+            "type": "callout",
+            "variant": "info",
+            "content": "Beispiel (so eine Phrase könnte aussehen, NICHT verwenden!): \"witch collapse practice feed shame open despair creek road again ice least\"."
+          },
+          {
+            "type": "text",
+            "heading": "Warum ist das besser als ein Private Key?",
+            "content": "Technisch sind Recovery-Phrase und Private Key gleich sicher -- sie verschlüsseln dasselbe Wallet. Praktisch ist die Phrase aber für Menschen viel angenehmer:\n\n- 12 echte Wörter sind leichter abzuschreiben als 64 Hex-Zeichen.\n- Tippfehler fallen sofort auf, weil die Phrase eine eingebaute Prüfsumme hat (das letzte Wort prüft die anderen elf).\n- Jedes seriöse Wallet (MetaMask, Trust, Coinbase, Rabby, Ledger, Trezor) versteht dieselbe Phrase. Du bist nicht auf unsere Seite angewiesen.\n- Sie passt in jeden Passwort-Manager, ohne dass irgendwer eine Datei mit deinem Schlüssel auf seinem Cloud-Drive liegen hat."
+          },
+          {
+            "type": "list",
+            "heading": "Wo bewahre ich die 12 Wörter sicher auf?",
+            "items": [
+              "Im Passwort-Manager: Bitwarden, 1Password, KeePassXC, Apple Schlüsselbund oder Google Passwortmanager. Lege einen neuen Eintrag \"VPP Recovery-Phrase\" an und kopiere die 12 Wörter dort hinein.",
+              "Zusätzlich auf Papier: Schreibe die 12 Wörter mit einem Stift auf einen Zettel (durchnummeriert 1-12) und lege ihn zu wichtigen Dokumenten -- z.B. Reisepass-Schublade, Bankordner oder bei den Eltern.",
+              "Achte auf die Reihenfolge: Wort 1 ist nicht dasselbe wie Wort 7. Notiere die Nummern.",
+              "Mache zwei Kopien an unterschiedlichen Orten, falls eine kaputtgeht oder verlorengeht."
+            ]
+          },
+          {
+            "type": "list",
+            "heading": "Was du NIEMALS mit der Phrase machst",
+            "items": [
+              "Kein Foto vom Bildschirm oder vom Zettel machen. Smartphones syncen Fotos automatisch in die iCloud oder Google Fotos -- damit landet deine Phrase auf einem fremden Server.",
+              "Nicht in WhatsApp, Telegram, Discord, E-Mail, Slack, Microsoft Teams oder ähnliche Chats kopieren. Diese Apps speichern Nachrichten unverschlüsselt auf ihren Servern.",
+              "Nicht in einer Datei \"phrase.txt\" auf dem Desktop oder in iCloud Drive / OneDrive / Google Drive ablegen.",
+              "Niemals an Lehrende, Tutorinnen, IT-Support oder das VPP-System weitergeben. Wir fragen NIEMALS nach deiner Phrase.",
+              "Nicht in eine fremde Webseite oder ein fremdes Tool eingeben, das nichts mit MetaMask oder dem VPP-Frontend zu tun hat."
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "warning",
+            "content": "Wer die 12 Wörter kennt, kontrolliert dein Wallet vollständig. Behandle die Phrase wie das Master-Passwort deines Online-Bankings."
+          },
+          {
+            "type": "steps",
+            "heading": "Wallet im VPP-Frontend wiederherstellen",
+            "steps": [
+              {
+                "title": "Wallet-Bereich öffnen",
+                "text": "Gehe auf die Seite \"Meine Punkte\". Wenn dort kein Wallet aktiv ist, siehst du die drei Setup-Optionen."
+              },
+              {
+                "title": "\"Wallet importieren\" wählen",
+                "text": "Klicke auf \"Wallet importieren\" und wechsle in den Tab \"Recovery-Phrase (12 Wörter)\"."
+              },
+              {
+                "title": "12 Wörter eintragen",
+                "text": "Tippe die Wörter in der ursprünglichen Reihenfolge ein. Während du tippst, schlägt der Browser passende BIP-39-Wörter vor. Du kannst auch alle 12 Wörter auf einmal aus deinem Passwort-Manager einfügen (\"Aus Zwischenablage einfügen\")."
+              },
+              {
+                "title": "Importieren bestätigen",
+                "text": "Klicke auf \"Importieren\". Dieselbe Wallet-Adresse wie vorher erscheint -- inklusive aller Punkte, die du je geclaimt hast."
+              }
+            ]
+          },
+          {
+            "type": "steps",
+            "heading": "Wallet in MetaMask importieren (Browser oder Mobile)",
+            "steps": [
+              {
+                "title": "MetaMask installieren",
+                "text": "Falls noch nicht vorhanden: metamask.io öffnen und die Browser-Erweiterung oder Mobile-App installieren. MetaMask ist die bekannteste Wallet-App und kostenlos."
+              },
+              {
+                "title": "Bestehendes Wallet importieren",
+                "text": "Beim ersten Start wählst du \"Bestehendes Wallet importieren\" (englisch: \"Import an existing wallet\")."
+              },
+              {
+                "title": "Passcode setzen",
+                "text": "MetaMask fragt nach einem Passcode (mindestens 8 Zeichen). Dieser Code verschlüsselt deine Phrase im MetaMask-Tresor -- er ist NICHT deine Phrase."
+              },
+              {
+                "title": "Recovery-Phrase eingeben",
+                "text": "Im Schritt \"Geheime Wiederherstellungsphrase\" (englisch \"Secret Recovery Phrase\") trage die 12 Wörter in der Reihenfolge ein, in der du sie im VPP-System notiert hast."
+              },
+              {
+                "title": "Netzwerk auf Base umschalten",
+                "text": "MetaMask startet auf Ethereum Mainnet. Wechsle oben auf das Netzwerk \"Base\". Falls Base nicht in der Liste ist: Einmal die Seite basescan.org öffnen, MetaMask bietet das Hinzufügen automatisch an."
+              },
+              {
+                "title": "Adresse vergleichen",
+                "text": "MetaMask zeigt nun unter Account 1 dieselbe Adresse, die du im VPP-Frontend hattest. Wenn nicht, prüfe, ob wirklich \"Account 1\" ausgewählt ist -- das VPP-System nutzt den Standard-Pfad, der in MetaMask Account 1 entspricht."
+              }
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "info",
+            "content": "Du musst dich nicht zwischen unserem Browser-Wallet und MetaMask entscheiden. Du kannst dieselbe Phrase in beiden parallel benutzen -- es ist mathematisch dasselbe Wallet."
+          },
+          {
+            "type": "text",
+            "heading": "Häufige Probleme und was du tun kannst",
+            "content": "Im Folgenden die typischen Fragen, die uns Studierende stellen -- und was du dann konkret tun kannst."
+          },
+          {
+            "type": "list",
+            "heading": "FAQ",
+            "items": [
+              "\"Ich habe meinen Browser-Cache gelöscht und das Wallet ist weg.\" -- Solange du die 12 Wörter hast: kein Problem. Importiere sie über \"Wallet importieren\", dann ist alles wieder da.",
+              "\"Ich habe die 12 Wörter verloren und kein Backup.\" -- Dann sind die bereits geclaimten Punkte leider verloren. Sie liegen weiter auf der Blockchain unter deiner alten Adresse, aber niemand kann sie noch verschieben. Erstelle ein neues Wallet, sichere die neue Phrase ordentlich, und lass dir für neue Umfragen Punkte auf die neue Adresse buchen.",
+              "\"Ich tippe die Phrase ein, aber es kommt 'Phrase ungültig'.\" -- Das ist fast immer ein Tippfehler. Achte auf ähnliche Wörter wie \"use\" und \"used\", \"flat\" und \"flag\". Die Phrase hat eine Prüfsumme, ein einziger falscher Buchstabe reicht für die Fehlermeldung. Prüfe auch die Reihenfolge.",
+              "\"Kann jemand meine Phrase aus dem Browser auslesen?\" -- Theoretisch ja: Wer Zugriff auf deinen Account auf dem Computer hat, kann den Browser-Speicher (localStorage) lesen. Deshalb solltest du das VPP-Wallet NICHT auf einem fremden oder geteilten Computer benutzen (Internet-Café, Familien-PC ohne eigenes Login). Auf deinem persönlichen Laptop oder im Hochschul-Pool ist das Risiko sehr gering, solange du keine fragwürdigen Browser-Erweiterungen installierst.",
+              "\"Warum kann ich den Private Key nicht mehr als Datei herunterladen?\" -- Eine .json-Datei mit deinem Klartext-Schlüssel landet zu schnell in Cloud-Backups, Mail-Anhängen oder im Download-Ordner. Die 12-Wort-Phrase erfüllt denselben Zweck, ist aber für Menschen viel besser zu verwalten und passt in jeden Passwort-Manager.",
+              "\"Mein Handy ist kaputt -- was passiert mit meinen Punkten?\" -- Die Punkte hängen an deiner Wallet-Adresse, nicht am Handy. Solange du die 12 Wörter hast, kannst du das Wallet auf jedem neuen Gerät wiederherstellen. Ohne die Phrase: siehe oben.",
+              "\"Ich habe ein älteres Wallet ohne 12-Wort-Phrase. Was tun?\" -- Du kannst es weiter verwenden, nichts geht verloren. In den Wallet-Einstellungen siehst du den Hinweis, dass keine Phrase verfügbar ist. Du hast zwei Optionen: Den Private Key bei Bedarf in MetaMask importieren (\"Konto importieren\" -> \"Privater Schlüssel\"), oder ein neues Wallet mit Phrase erstellen und neue Punkte dorthin claimen. Beide Adressen können nebeneinander existieren.",
+              "\"Jemand fragt mich nach meiner Recovery-Phrase, angeblich vom HSBI-Support.\" -- Das ist ein Betrugsversuch. NIEMAND vom HSBI, weder Lehrende noch IT noch Support, fragt jemals nach deiner Phrase. Phrase nicht herausgeben, Person blockieren, ggf. den Vorfall melden."
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "success",
+            "content": "Wenn du die 12 Wörter sicher abgespeichert hast, hast du genau das gleiche Sicherheits- und Komfortniveau wie ein professioneller Krypto-Nutzer mit MetaMask. Es gibt nichts \"Höheres\", was wir noch tun könnten -- du bist auf dem Standard, den weltweit hunderte Millionen Wallets verwenden."
           }
         ]
       },

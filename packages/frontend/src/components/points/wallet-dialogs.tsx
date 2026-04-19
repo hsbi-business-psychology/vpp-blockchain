@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import {
   BookOpen,
@@ -29,13 +30,21 @@ import { toast } from 'sonner'
 // Recovery-phrase help link (renders an external link to docs/wallet-recovery)
 // ---------------------------------------------------------------------------
 
-export function MnemonicHelpLink({ className = '' }: { className?: string }) {
+export function MnemonicHelpLink({
+  className = '',
+  newTab = true,
+}: {
+  className?: string
+  /** When the link is shown inside a dialog, opening in a new tab keeps the
+   * current onboarding/import flow intact (the dialog is not torn down). */
+  newTab?: boolean
+}) {
   const { t } = useTranslation()
   return (
-    <a
-      href={t('wallet.mnemonic.help.url')}
-      target="_blank"
-      rel="noopener noreferrer"
+    <Link
+      to="/docs/wallet-recovery"
+      target={newTab ? '_blank' : undefined}
+      rel={newTab ? 'noopener noreferrer' : undefined}
       className={
         'inline-flex items-center gap-1.5 text-sm text-primary underline-offset-4 hover:underline ' +
         className
@@ -43,7 +52,7 @@ export function MnemonicHelpLink({ className = '' }: { className?: string }) {
     >
       <BookOpen className="size-3.5" aria-hidden="true" />
       {t('wallet.mnemonic.help.label')}
-    </a>
+    </Link>
   )
 }
 

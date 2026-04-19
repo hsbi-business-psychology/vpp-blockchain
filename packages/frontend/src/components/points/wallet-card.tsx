@@ -277,7 +277,7 @@ export function WalletCard({
                   <p className="text-xs text-muted-foreground">
                     {t('wallet.mnemonic.settings.holdHint')}
                   </p>
-                  <MnemonicHelpLink className="text-xs" />
+                  <MnemonicHelpLink className="text-xs" newTab={false} />
                 </div>
               </div>
             )}
@@ -286,7 +286,7 @@ export function WalletCard({
             {!isMetaMask && !mnemonic && (
               <div className="space-y-2 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
                 <p>{t('wallet.mnemonic.settings.legacyHint')}</p>
-                <MnemonicHelpLink className="text-xs" />
+                <MnemonicHelpLink className="text-xs" newTab={false} />
               </div>
             )}
 

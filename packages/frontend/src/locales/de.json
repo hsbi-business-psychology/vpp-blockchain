@@ -136,16 +136,16 @@
       "dialogTitle": "Wichtig: Bevor du dein Wallet erstellst",
       "dialogDescription": "Lies dir die folgenden Punkte aufmerksam durch. Dein Wallet und deine Punkte hängen davon ab.",
       "dialogInfo1Title": "Wie wird dein Wallet gespeichert?",
-      "dialogInfo1Text": "Dein Wallet wird direkt in deinem Browser (im sogenannten \"Local Storage\") erstellt und gespeichert. Das bedeutet: Es existiert nur in diesem Browser auf diesem Gerät. Es gibt keinen Account, kein Passwort und keine E-Mail – nur deinen Private Key.",
-      "dialogInfo2Title": "Was ist der Private Key?",
-      "dialogInfo2Text": "Der Private Key ist der einzige Zugang zu deinem Wallet und deinen Punkten. Er funktioniert wie ein Passwort, das nicht zurückgesetzt werden kann. Wer den Key hat, kontrolliert das Wallet. Wenn du ihn verlierst, sind deine Punkte unwiederbringlich weg.",
+      "dialogInfo1Text": "Dein Wallet wird direkt in deinem Browser (im sogenannten \"Local Storage\") erstellt und gespeichert. Es gibt keinen Account, kein Passwort und keine E-Mail. Wir generieren für dich eine 12-Wort-Recovery-Phrase (Seed Phrase) – damit kannst du dein Wallet jederzeit auf einem anderen Gerät oder in MetaMask wiederherstellen.",
+      "dialogInfo2Title": "Was ist die Recovery-Phrase?",
+      "dialogInfo2Text": "Die 12 Wörter sind dein Generalschlüssel. Sie sind der Industriestandard (BIP-39) und funktionieren mit MetaMask, Trust, Coinbase und allen weiteren Wallets. Wer die Phrase kennt, kontrolliert dein Wallet. Wenn du sie verlierst und kein Backup hast, sind deine Punkte unwiederbringlich weg – wir können sie dir nicht wiederherstellen.",
       "dialogInfo3Title": "Was musst du tun?",
-      "dialogInfo3Text": "Speichere deinen Private Key sofort an einem sicheren Ort: In einem Passwort-Manager (z.B. Bitwarden, 1Password) oder auf Papier aufgeschrieben an einem sicheren Platz. Lösche niemals den Browser-Cache bzw. die Website-Daten, sonst wird dein Wallet entfernt.",
+      "dialogInfo3Text": "Im nächsten Schritt zeigen wir dir die 12 Wörter. Schreibe sie sofort in deinen Passwort-Manager (z.B. Bitwarden, 1Password, Apple Schlüsselbund) oder auf Papier auf. Anschließend fragen wir drei zufällige Wörter ab, damit du sicher bist, sie korrekt erfasst zu haben.",
       "dialogInfo4Title": "Ist das sicher?",
-      "dialogInfo4Text": "Ein Browser-Wallet ist die einfachste Option, aber weniger sicher als MetaMask. Dein Key liegt unverschlüsselt im Browser. Wenn du einen gemeinsam genutzten Computer verwendest oder mehr Sicherheit möchtest, nutze stattdessen MetaMask.",
-      "dialogCheck1": "Ich verstehe, dass der Private Key mein einziger Zugang ist und nicht wiederhergestellt werden kann.",
-      "dialogCheck2": "Ich werde den Private Key sofort sicher abspeichern (Passwort-Manager oder Papier).",
-      "dialogCheck3": "Ich weiß, dass mein Wallet gelöscht wird, wenn ich den Browser-Cache lösche.",
+      "dialogInfo4Text": "Ein Browser-Wallet ist die einfachste Option, aber weniger sicher als MetaMask, weil die Phrase unverschlüsselt im Browser liegt. Wenn du einen geteilten Computer verwendest oder mehr Sicherheit möchtest, importiere die 12 Wörter im Anschluss direkt in MetaMask – die Adresse bleibt dieselbe.",
+      "dialogCheck1": "Ich verstehe, dass die 12 Wörter der einzige Weg sind, mein Wallet wiederherzustellen.",
+      "dialogCheck2": "Ich werde die 12 Wörter sofort sicher abspeichern (Passwort-Manager oder Papier).",
+      "dialogCheck3": "Ich weiß, dass mein Wallet aus dem Browser verschwindet, wenn ich den Cache lösche – die 12 Wörter bringen es jederzeit wieder.",
       "dialogConfirm": "Verstanden – Wallet erstellen"
     },
     "import": {
@@ -190,8 +190,7 @@
     },
     "mnemonic": {
       "help": {
-        "label": "Anleitung & FAQ zur Recovery-Phrase öffnen",
-        "url": "https://github.com/hsbi-business-psychology/vpp-blockchain/blob/main/docs/wallet-recovery.de.md"
+        "label": "Anleitung & FAQ zur Recovery-Phrase öffnen"
       },
       "reveal": {
         "title": "Deine Recovery-Phrase",
