@@ -9,6 +9,12 @@ export default function PrivacyPage() {
   const logItems = t('privacy.sections.serverLogs.items', {
     returnObjects: true,
   }) as string[]
+  const onChainItems = t('privacy.sections.web3.onChainItems', {
+    returnObjects: true,
+  }) as string[]
+  const processors = t('privacy.sections.processors.items', {
+    returnObjects: true,
+  }) as Array<{ name: string; desc: string }>
   const rights = t('privacy.sections.rights.items', { returnObjects: true }) as Array<{
     name: string
     desc: string
@@ -20,6 +26,7 @@ export default function PrivacyPage() {
     'serverLogs',
     'cookies',
     'web3',
+    'processors',
     'fonts',
     'rights',
     'security',
@@ -99,9 +106,37 @@ export default function PrivacyPage() {
 
       <section id="web3">
         <h2 className="mb-3 text-xl font-semibold">{t('privacy.sections.web3.title')}</h2>
-        <p className="mb-2 text-base">{t('privacy.sections.web3.text1')}</p>
-        <p className="mb-2 text-base">{t('privacy.sections.web3.text2')}</p>
-        <p className="text-base">{t('privacy.sections.web3.text3')}</p>
+        <p className="mb-4 text-base">{t('privacy.sections.web3.text1')}</p>
+
+        <h3 className="mb-2 text-base font-semibold">{t('privacy.sections.web3.onChainTitle')}</h3>
+        <p className="mb-2 text-base">{t('privacy.sections.web3.onChainIntro')}</p>
+        <ul className="mb-4 list-inside list-disc space-y-1 text-base">
+          {onChainItems.map((item, i) => (
+            <li key={i}>{item}</li>
+          ))}
+        </ul>
+
+        <h3 className="mb-2 text-base font-semibold">
+          {t('privacy.sections.web3.immutableTitle')}
+        </h3>
+        <p className="mb-3 text-base">{t('privacy.sections.web3.immutableText')}</p>
+
+        <p className="text-base text-muted-foreground">{t('privacy.sections.web3.legal')}</p>
+      </section>
+
+      <hr className="border-border" />
+
+      <section id="processors">
+        <h2 className="mb-3 text-xl font-semibold">{t('privacy.sections.processors.title')}</h2>
+        <p className="mb-3 text-base">{t('privacy.sections.processors.intro')}</p>
+        <dl className="space-y-3">
+          {processors.map((p, i) => (
+            <div key={i}>
+              <dt className="text-base font-semibold">{p.name}</dt>
+              <dd className="text-base text-muted-foreground">{p.desc}</dd>
+            </div>
+          ))}
+        </dl>
       </section>
 
       <hr className="border-border" />

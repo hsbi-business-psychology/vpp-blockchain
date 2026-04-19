@@ -645,9 +645,36 @@
       },
       "web3": {
         "title": "Web3 / Wallets and Blockchain",
-        "text1": "When creating or importing a wallet, we process your public wallet address and technical metadata to provide the service.",
-        "text2": "On-chain data is publicly accessible and permanently stored on the blockchain. Please do not store personal data in transaction metadata.",
-        "text3": "Legal basis: Art. 6(1)(b) GDPR (contractual purposes) and Art. 6(1)(f) GDPR (IT security)."
+        "text1": "When creating or importing a wallet, we process your public wallet address and technical metadata to provide the service. Your private key or recovery phrase is stored exclusively in your local browser and is never transmitted to our servers.",
+        "onChainTitle": "Which data is written to the blockchain?",
+        "onChainIntro": "Whenever you redeem participation points, the following information is permanently stored on the Base blockchain (an Ethereum Layer 2):",
+        "onChainItems": [
+          "your public wallet address (pseudonymous, without your real name)",
+          "the survey ID for which the points were awarded",
+          "the number of points awarded",
+          "the time of the booking (block timestamp)"
+        ],
+        "immutableTitle": "Immutability on-chain",
+        "immutableText": "These entries are publicly visible via block explorers such as BaseScan and cannot be technically deleted or altered – not even by us. The right to erasure (Art. 17 GDPR) therefore cannot be enforced for on-chain records that have already been booked. Because the wallet address by itself does not directly identify a person, we treat it as a pseudonymous identifier in line with Recital 26 GDPR. Please do not include any additional personal data in transaction metadata.",
+        "legal": "Legal basis: Art. 6(1)(b) GDPR (contractual purposes) and Art. 6(1)(f) GDPR (IT security)."
+      },
+      "processors": {
+        "title": "External Services and Recipients",
+        "intro": "We use the following external services to operate this site:",
+        "items": [
+          {
+            "name": "SoSci Survey",
+            "desc": "Surveys are conducted on SoSci Survey. After completing a survey you are redirected to our claim page, passing along a survey ID, a one-time token, and a random nonce. The content of your survey answers is not transmitted to us. Provider: SoSci Survey GmbH, Munich."
+          },
+          {
+            "name": "Base / Ethereum RPC providers",
+            "desc": "To read and write transactions on the Base blockchain we connect to commercial RPC providers (e.g. Alchemy, QuickNode) as well as public Base endpoints. Your wallet address and the respective RPC request are transmitted in the process."
+          },
+          {
+            "name": "Hosting provider",
+            "desc": "The website is hosted in Germany. Server logs are processed in line with the \"Server Log Files\" section."
+          }
+        ]
       },
       "fonts": {
         "title": "Fonts",
@@ -667,7 +694,7 @@
           },
           {
             "name": "Erasure (Art. 17 GDPR)",
-            "desc": "You may request the deletion of your data."
+            "desc": "You may request the deletion of your data. Note: records that have already been written to the blockchain (wallet address, survey ID, points, timestamp) cannot technically be deleted – see the section \"Web3 / Wallets and Blockchain\"."
           },
           {
             "name": "Restriction (Art. 18 GDPR)",

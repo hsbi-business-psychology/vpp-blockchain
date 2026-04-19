@@ -645,9 +645,36 @@
       },
       "web3": {
         "title": "Web3 / Wallets und Blockchain",
-        "text1": "Beim Erstellen oder Importieren einer Wallet verarbeiten wir Ihre öffentliche Wallet-Adresse und technische Metadaten zur Bereitstellung des Dienstes.",
-        "text2": "On-Chain-Daten sind öffentlich zugänglich und dauerhaft auf der jeweiligen Blockchain gespeichert. Bitte hinterlegen Sie keine personenbezogenen Daten in Transaktions-Metadaten.",
-        "text3": "Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (nutzungsvertragliche Zwecke) und Art. 6 Abs. 1 lit. f DSGVO (IT-Sicherheit)."
+        "text1": "Beim Erstellen oder Importieren einer Wallet verarbeiten wir Ihre öffentliche Wallet-Adresse und technische Metadaten zur Bereitstellung des Dienstes. Der private Schlüssel bzw. die Recovery-Phrase wird ausschließlich lokal in Ihrem Browser gespeichert und niemals an unsere Server übertragen.",
+        "onChainTitle": "Welche Daten landen auf der Blockchain?",
+        "onChainIntro": "Sobald Sie Versuchspersonenpunkte einlösen, werden folgende Informationen dauerhaft auf der Base-Blockchain (Layer-2 von Ethereum) gespeichert:",
+        "onChainItems": [
+          "Ihre öffentliche Wallet-Adresse (pseudonym, ohne Klarnamen)",
+          "die Survey-ID der Umfrage, für die die Punkte vergeben wurden",
+          "die Anzahl der vergebenen Punkte",
+          "der Zeitpunkt der Buchung (Block-Zeitstempel)"
+        ],
+        "immutableTitle": "Unwiderrufbarkeit on-chain",
+        "immutableText": "Diese Einträge sind öffentlich über Block-Explorer wie BaseScan einsehbar und können technisch weder gelöscht noch verändert werden – auch nicht von uns. Ein Recht auf Löschung (Art. 17 DSGVO) lässt sich für bereits gebuchte On-Chain-Datensätze daher nicht umsetzen. Da die Wallet-Adresse für sich genommen keinen direkten Personenbezug enthält, behandeln wir sie nach Erwägungsgrund 26 DSGVO als pseudonymes Identifikationsmerkmal. Bitte hinterlegen Sie keine zusätzlichen personenbezogenen Daten in Transaktions-Metadaten.",
+        "legal": "Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (nutzungsvertragliche Zwecke) und Art. 6 Abs. 1 lit. f DSGVO (IT-Sicherheit)."
+      },
+      "processors": {
+        "title": "Externe Dienste und Empfänger",
+        "intro": "Für den Betrieb des Dienstes binden wir folgende externe Dienste ein:",
+        "items": [
+          {
+            "name": "SoSci Survey",
+            "desc": "Die Umfragen werden auf SoSci Survey durchgeführt. Nach Abschluss einer Umfrage werden Sie auf unsere Claim-Seite weitergeleitet; dabei werden eine Survey-ID, ein Einmal-Token und ein zufälliger Nonce übergeben. Inhaltliche Umfrageantworten werden uns nicht übermittelt. Anbieter: SoSci Survey GmbH, München."
+          },
+          {
+            "name": "Base- bzw. Ethereum-RPC-Anbieter",
+            "desc": "Zum Lesen und Schreiben von Transaktionen auf der Base-Blockchain verbinden wir uns mit kommerziellen RPC-Anbietern (z. B. Alchemy, QuickNode) sowie öffentlichen Base-Endpunkten. Übermittelt werden Ihre Wallet-Adresse und die jeweilige RPC-Anfrage."
+          },
+          {
+            "name": "Hosting-Provider",
+            "desc": "Die Website wird in Deutschland gehostet. Server-Logs werden gemäß dem Abschnitt „Server-Logdateien“ verarbeitet."
+          }
+        ]
       },
       "fonts": {
         "title": "Schriften",
@@ -667,7 +694,7 @@
           },
           {
             "name": "Löschung (Art. 17 DSGVO)",
-            "desc": "Sie können die Löschung Ihrer Daten verlangen."
+            "desc": "Sie können die Löschung Ihrer Daten verlangen. Hinweis: Bereits auf der Blockchain gespeicherte Datensätze (Wallet-Adresse, Survey-ID, Punktzahl, Zeitpunkt) lassen sich technisch nicht löschen – siehe Abschnitt „Web3 / Wallets und Blockchain“."
           },
           {
             "name": "Einschränkung (Art. 18 DSGVO)",
