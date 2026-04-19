@@ -107,6 +107,13 @@ Plesk with the Node.js extension runs the backend and serves the frontend from t
    - `MINTER_PRIVATE_KEY` = your backend wallet key
    - `EXPLORER_BASE_URL` = `https://basescan.org`
    - `FRONTEND_URL` = `https://vpstunden.hsbi.de`
+   - `TRUST_PROXY` = `1` — **REQUIRED on Plesk** so Express reads the
+     real client IP from `X-Forwarded-For` (Plesk fronts Phusion
+     Passenger with Apache/Nginx). Without this, every request appears
+     to come from the loopback address and the rate limiter cannot
+     distinguish students.
+   - `EXPECTED_CHAIN_ID` = `8453` (Base Mainnet) or `84532` (Sepolia) —
+     fail-fast guard against an `RPC_URL` that points at the wrong chain.
 5. Click **Enable Node.js** and then **NPM Install**
 
 #### GitHub Actions Deployment

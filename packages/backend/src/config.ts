@@ -74,14 +74,45 @@ export const config = {
   explorerBaseUrl: optional('EXPLORER_BASE_URL', 'https://sepolia.basescan.org'),
   frontendUrl: optional('FRONTEND_URL', 'http://localhost:5173'),
 
+  /**
+   * Per-IP rate limits (audit F6.6 / M2-Mitigation).
+   *
+   * **Defaults sized for a 100-student class behind a single NAT IP**
+   * (HSBI eduroam, lecture-hall WiFi, etc.). With every student device
+   * funnelled through one public IP, the limiter must accommodate the
+   * worst-case "everyone clicks Submit at the end of the survey
+   * minute" burst plus retries on flaky MetaMask popups.
+   *
+   * Sizing math for the claim limit (default 500/min):
+   *   - 100 students × 1 successful claim   = 100 req/min worst case
+   *   - + ~30 % retry overhead              ≈ 130 req/min
+   *   - + admin parallel monitoring         + 50 req/min
+   *   - safety buffer × 3                   → 500 req/min
+   *
+   * Sizing math for the general API limit (default 2000/min):
+   *   - 100 students × 5-10 page-load
+   *     reads (survey/wallet/status)        ≈ 750 req/min
+   *   - + admin dashboard polling           + several hundred req/min
+   *   - safety buffer × ~2                  → 2000 req/min
+   *
+   * Real abuse defence is the per-survey HMAC nonce (single use,
+   * see `services/nonce-store.ts`) and the on-chain `_claimed` guard,
+   * NOT this IP-based limiter — the limiter only protects against
+   * accidental hammering and trivial DoS, never against a determined
+   * attacker who can rotate IPs.
+   *
+   * Operators who run smaller cohorts can lower the env values; the
+   * defaults intentionally err on the generous side to avoid blocking
+   * legitimate students mid-class.
+   */
   claimRateLimit: {
     windowMs: parseInt(optional('CLAIM_RATE_LIMIT_WINDOW_MS', '60000'), 10),
-    max: parseInt(optional('CLAIM_RATE_LIMIT_MAX', '100'), 10),
+    max: parseInt(optional('CLAIM_RATE_LIMIT_MAX', '500'), 10),
   },
 
   apiRateLimit: {
     windowMs: parseInt(optional('API_RATE_LIMIT_WINDOW_MS', '60000'), 10),
-    max: parseInt(optional('API_RATE_LIMIT_MAX', '600'), 10),
+    max: parseInt(optional('API_RATE_LIMIT_MAX', '2000'), 10),
   },
 
   trustProxy: optional('TRUST_PROXY', 'false'),
