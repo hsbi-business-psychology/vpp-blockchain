@@ -20,3 +20,4 @@ Each ADR is a short Markdown file with these sections:
 | [0002](0002-mappings-statt-erc721.md)                      | Use simple mappings instead of token standards | Accepted |
 | [0003](0003-stateless-backend-relayer.md)                  | Stateless backend as transaction relayer       | Accepted |
 | [0004](0004-hmac-claim-tokens-and-upgradeable-contract.md) | HMAC claim tokens & upgradeable SurveyPointsV2 | Accepted |
+| [0006](0006-engine-agnostic-launcher-link.md)              | Engine-agnostic launcher link (V2.3)           | Accepted |

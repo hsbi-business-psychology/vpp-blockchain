@@ -50,3 +50,10 @@ data/
 .cache/
 tmp/
 temp/
+
+# Paper / publication artifacts (kept local; published separately)
+# The architecture/security documentation in docs/ is committed; only
+# the in-progress paper manuscript and its standalone HTML diagram
+# exports stay out of the code repo.
+docs/paper/
+docs/diagrams/
