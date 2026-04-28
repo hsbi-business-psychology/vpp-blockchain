@@ -8,6 +8,8 @@
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-0B1220?style=flat-square"></a>
   &nbsp;·&nbsp;
   <a href="https://base.org/"><img alt="Base L2" src="https://img.shields.io/badge/chain-Base%20L2-0052FF?style=flat-square"></a>
+  &nbsp;·&nbsp;
+  <a href="https://doi.org/10.5281/zenodo.19845637"><img alt="DOI" src="https://zenodo.org/badge/1178968003.svg"></a>
 </p>
 
 <h1 align="center">VPP — Verifiable Participant Points</h1>
@@ -118,15 +120,18 @@ Everything is under [`docs/`](docs/):
 ## Citing VPP
 
 If you use VPP in academic work, please cite the software via the
-[`CITATION.cff`](CITATION.cff) file. A persistent DOI for the
-software archive is minted on Zenodo from the GitHub release tagged
-`paper-v1` and onwards. Citation metadata for Zenodo is in
-[`.zenodo.json`](.zenodo.json).
+[`CITATION.cff`](CITATION.cff) file. The persistent identifier that
+resolves to the latest release is
+[`10.5281/zenodo.19845637`](https://doi.org/10.5281/zenodo.19845637).
+The version-specific DOI for the snapshot described in the
+accompanying _Behavior Research Methods_ manuscript is
+[`10.5281/zenodo.19845636`](https://doi.org/10.5281/zenodo.19845636)
+(GitHub tag `paper-v1`).
 
 The de-identified usability evaluation data set and the analysis
-script that reproduces every reported number in the accompanying
-_Behavior Research Methods_ manuscript live under
-[`docs/paper/data/`](docs/paper/data/).
+script that reproduces every reported number live under
+[`docs/paper/data/`](docs/paper/data/) and are included in the Zenodo
+archive.
 
 ## License
 

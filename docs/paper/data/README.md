@@ -12,10 +12,13 @@ Section&nbsp;4 of the VPP paper.
 | `sus_analysis.py`    | Python 3 script that reads the CSV and prints all numbers reported in the paper.      |
 | `README.md`          | This file.                                                                            |
 
-The same files are deposited under a persistent DOI on the Open Science
-Framework (see the _Open Practices Statement_ of the paper). The version
-in this repository is provided for convenient inline inspection. The
-authoritative version of record is the OSF deposit.
+The same files are archived under a persistent DOI together with the
+full source code on Zenodo at
+[10.5281/zenodo.19845636](https://doi.org/10.5281/zenodo.19845636)
+(version DOI for the BRM submission snapshot, GitHub tag `paper-v1`).
+They are additionally deposited as a standalone data record on the
+Open Science Framework; see the _Open Practices Statement_ of the
+paper for the OSF DOI.
 
 ## Data dictionary
 

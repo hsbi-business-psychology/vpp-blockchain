@@ -9,12 +9,20 @@ abstract: >-
   behalf of students, and a React frontend with internationalised
   German and English UI.
 type: software
+version: paper-v1
 authors:
   - family-names: Strakeljahn
     given-names: Joris
     affiliation: "Bielefeld University of Applied Sciences and Arts (HSBI)"
 license: MIT
 repository-code: "https://github.com/hsbi-business-psychology/vpp-blockchain"
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.19845637
+    description: "Concept DOI (resolves to the latest release)"
+  - type: doi
+    value: 10.5281/zenodo.19845636
+    description: "Version DOI for the BRM submission snapshot (paper-v1)"
 keywords:
   - participant pool
   - survey credits
