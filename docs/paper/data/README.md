@@ -16,9 +16,8 @@ The same files are archived under a persistent DOI together with the
 full source code on Zenodo at
 [10.5281/zenodo.19845636](https://doi.org/10.5281/zenodo.19845636)
 (version DOI for the BRM submission snapshot, GitHub tag `paper-v1`).
-They are additionally deposited as a standalone data record on the
-Open Science Framework; see the _Open Practices Statement_ of the
-paper for the OSF DOI.
+That archive is the citable version of record for both the data and
+the software.
 
 ## Data dictionary
 
