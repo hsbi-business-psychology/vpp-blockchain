@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "If you use VPP in academic work, please cite both this software and the accompanying paper."
+title: "Verifiable Participant Points (VPP): an open-source blockchain ledger for survey participation credits"
+abstract: >-
+  VPP is an open-source system for recording survey participation
+  credits as tamper-proof, pseudonymous transactions on the Base
+  layer-2 blockchain. It consists of an upgradable smart contract, a
+  stateless transaction-relay backend that covers all gas fees on
+  behalf of students, and a React frontend with internationalised
+  German and English UI.
+type: software
+authors:
+  - family-names: Strakeljahn
+    given-names: Joris
+    affiliation: "Bielefeld University of Applied Sciences and Arts (HSBI)"
+license: MIT
+repository-code: "https://github.com/hsbi-business-psychology/vpp-blockchain"
+keywords:
+  - participant pool
+  - survey credits
+  - blockchain
+  - smart contract
+  - open science
+  - research infrastructure
+  - GDPR
+  - System Usability Scale
+preferred-citation:
+  type: article
+  title: "Verifiable Participant Points: Recording Survey Participation Credits on a Public Blockchain"
+  authors:
+    - family-names: Strakeljahn
+      given-names: Joris
+      affiliation: "Bielefeld University of Applied Sciences and Arts (HSBI)"
+  journal: "Behavior Research Methods"
+  year: 2026
+  notes: "Manuscript in preparation; replace with final citation upon acceptance."

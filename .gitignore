@@ -51,11 +51,15 @@ data/
 tmp/
 temp/
 
-# Paper / publication artifacts (kept local; published separately)
-# The architecture/security documentation in docs/ is committed; only
-# the in-progress paper manuscript and its standalone HTML diagram
-# exports stay out of the code repo.
-docs/paper/
+# Paper / publication artifacts.
+# The manuscript sources, build artefacts, and review notes stay local.
+# The de-identified usability data set is the only paper-related folder
+# we publish in this repository, so we whitelist it explicitly. The
+# stable DOI for this data set is also minted on the Open Science
+# Framework (see docs/paper/data/PUBLISH.md).
+docs/paper/*
+!docs/paper/data
+!docs/paper/data/**
 docs/diagrams/
 
 # Operator-private constants (instance URLs, contact persons, wallet

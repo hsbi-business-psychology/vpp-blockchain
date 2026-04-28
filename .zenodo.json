@@ -1,0 +1,46 @@
+{
+  "title": "Verifiable Participant Points (VPP): an open-source blockchain ledger for survey participation credits",
+  "description": "<p>VPP is an open-source system for recording survey participation credits as tamper-proof, pseudonymous transactions on the Base layer-2 blockchain. The system consists of an upgradable smart contract, a stateless transaction-relay backend that covers all gas fees on behalf of students, and a React frontend with internationalised German and English UI. Wallets can be created in-app, no prior knowledge of cryptocurrencies is required, and the institution covers all transaction costs. The repository contains the complete source code, deployment manifests, operational runbooks, the de-identified usability evaluation data set ($N = 99$, two waves), the analysis script that reproduces every number reported in the accompanying <em>Behavior Research Methods</em> manuscript, and the static-analysis report from <a href=\"https://github.com/crytic/slither\">slither</a>.</p>",
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "MIT",
+  "creators": [
+    {
+      "name": "Strakeljahn, Joris",
+      "affiliation": "Bielefeld University of Applied Sciences and Arts (HSBI)"
+    }
+  ],
+  "keywords": [
+    "participant pool",
+    "survey credits",
+    "blockchain",
+    "Base",
+    "Ethereum",
+    "smart contract",
+    "open science",
+    "research infrastructure",
+    "pseudonymity",
+    "GDPR",
+    "data minimisation",
+    "psychology research methods",
+    "System Usability Scale"
+  ],
+  "communities": [
+    {
+      "identifier": "open-research-software"
+    }
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/hsbi-business-psychology/vpp-blockchain",
+      "relation": "isSupplementTo",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "https://basescan.org/address/0x8b8Ed86CEC6f886EC5AE208C1Ef3B084d91a86Dd",
+      "relation": "documents",
+      "resource_type": "other"
+    }
+  ],
+  "language": "eng"
+}

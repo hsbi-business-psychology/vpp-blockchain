@@ -86,8 +86,8 @@ Hardhat node for development.
 
 ## Cost
 
-A semester of 4 studies × 200 students costs roughly **\$2 in gas**. Contract
-deployment is a one-time \$0.50. Reads are free. Full breakdown in
+A semester of 4 studies × 200 students costs roughly **2 € in gas**. Contract
+deployment is a one-time 0.50 €. Reads are free. Full breakdown in
 [`docs/deployment.md`](docs/deployment.md).
 
 ## Documentation
@@ -114,6 +114,19 @@ Everything is under [`docs/`](docs/):
 - Vulnerability reports → [`SECURITY.md`](SECURITY.md).
 - Community standards → [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
 - Release history → [`CHANGELOG.md`](CHANGELOG.md).
+
+## Citing VPP
+
+If you use VPP in academic work, please cite the software via the
+[`CITATION.cff`](CITATION.cff) file. A persistent DOI for the
+software archive is minted on Zenodo from the GitHub release tagged
+`paper-v1` and onwards. Citation metadata for Zenodo is in
+[`.zenodo.json`](.zenodo.json).
+
+The de-identified usability evaluation data set and the analysis
+script that reproduces every reported number in the accompanying
+_Behavior Research Methods_ manuscript live under
+[`docs/paper/data/`](docs/paper/data/).
 
 ## License
 
