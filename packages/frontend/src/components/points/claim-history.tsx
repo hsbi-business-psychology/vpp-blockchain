@@ -12,6 +12,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { getTxUrl } from '@/lib/config'
+import { formatPoints } from '@/lib/utils'
 
 export interface ClaimEntry {
   surveyId: number
@@ -26,7 +27,7 @@ interface ClaimHistoryProps {
 }
 
 export function ClaimHistory({ history, dataLoading }: ClaimHistoryProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   return (
     <Card>
@@ -59,7 +60,9 @@ export function ClaimHistory({ history, dataLoading }: ClaimHistoryProps) {
                   {history.map((entry) => (
                     <TableRow key={entry.txHash}>
                       <TableCell className="font-medium">#{entry.surveyId}</TableCell>
-                      <TableCell className="text-right font-semibold">{entry.points}</TableCell>
+                      <TableCell className="text-right font-semibold">
+                        {formatPoints(entry.points, i18n.language)}
+                      </TableCell>
                       <TableCell>
                         <a
                           href={getTxUrl(entry.txHash)}
@@ -99,7 +102,7 @@ export function ClaimHistory({ history, dataLoading }: ClaimHistoryProps) {
                     </a>
                   </div>
                   <Badge variant="secondary" className="text-sm font-semibold">
-                    +{entry.points}
+                    +{formatPoints(entry.points, i18n.language)}
                   </Badge>
                 </div>
               ))}

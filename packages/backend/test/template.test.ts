@@ -30,6 +30,18 @@ describe('generateSoSciTemplate', () => {
     expect(xml).not.toContain('Versuchspersonenpunkte')
   })
 
+  it('formats fractional points the German way, with the plural label', () => {
+    expect(generateSoSciTemplate(3, 'k', 0.5)).toContain(
+      '<strong>0,5 Versuchspersonenpunkte</strong>',
+    )
+    expect(generateSoSciTemplate(4, 'k', 0.25)).toContain(
+      '<strong>0,25 Versuchspersonenpunkte</strong>',
+    )
+    expect(generateSoSciTemplate(5, 'k', 1.5)).toContain(
+      '<strong>1,5 Versuchspersonenpunkte</strong>',
+    )
+  })
+
   it('includes the goodbye section', () => {
     const xml = generateSoSciTemplate(10, 'k', 1)
 

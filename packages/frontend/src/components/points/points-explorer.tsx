@@ -15,9 +15,10 @@ import {
 } from '@/components/ui/table'
 import { useApi } from '@/hooks/use-api'
 import { getTxUrl } from '@/lib/config'
+import { formatPoints } from '@/lib/utils'
 
 export function PointsExplorer() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { getPointsData } = useApi()
 
   const [searchAddress, setSearchAddress] = useState('')
@@ -93,7 +94,9 @@ export function PointsExplorer() {
                 <Award className="size-4 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold leading-none">{searchPoints}</p>
+                <p className="text-2xl font-bold leading-none">
+                  {formatPoints(searchPoints, i18n.language)}
+                </p>
                 <p className="mt-0.5 text-xs text-muted-foreground">{t('points.total')}</p>
               </div>
             </div>
@@ -111,7 +114,9 @@ export function PointsExplorer() {
                     {searchHistory.map((entry) => (
                       <TableRow key={entry.txHash}>
                         <TableCell className="font-medium">#{entry.surveyId}</TableCell>
-                        <TableCell className="text-right font-semibold">{entry.points}</TableCell>
+                        <TableCell className="text-right font-semibold">
+                          {formatPoints(entry.points, i18n.language)}
+                        </TableCell>
                         <TableCell>
                           <a
                             href={getTxUrl(entry.txHash)}

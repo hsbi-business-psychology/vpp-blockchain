@@ -90,7 +90,7 @@ const REVERT_MAP: Record<string, { status: number; code: string; message: string
   InvalidPoints: {
     status: 400,
     code: 'INVALID_POINTS',
-    message: 'Points must be between 1 and 255.',
+    message: 'Points must be between 0.01 and 255, with at most two decimals.',
   },
   SurveyNotFound: {
     status: 404,

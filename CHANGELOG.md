@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Fractional points** (`SurveyPointsV3`, UUPS upgrade of V2): surveys can award values with two decimals, e.g. 0.25, 0.5, 0.75 or 1.5 points. Whole-point surveys keep the exact V2 storage, events and views; nothing is migrated. New views `getSurveyInfoCenti`, `totalPointsCenti`, `surveyPointsCenti`; new events `SurveyRegisteredCenti`, `PointsAwardedCenti`, `PointsRevokedCenti`. See [docs/v3-fractional-points.md](docs/v3-fractional-points.md).
+- Backend: decimal `points` in the API, runtime detection of the contract version (works against V2 and V3), event store reads the new events.
+- Frontend: decimal input with comma or dot in the register dialog; all point displays show up to two decimals.
+
+### Fixed
+
+- Event store: sync now checkpoints after every block window and resumes across runs. Previously a backlog larger than the 45 s watchdog could never be saved, so new surveys and claims silently stopped appearing in the dashboard.
+
 ## [1.0.0] — 2026-03-11
 
 First public release of VPP Blockchain.

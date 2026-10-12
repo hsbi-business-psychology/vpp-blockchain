@@ -232,6 +232,8 @@ pnpm run upgrade:v2:mainnet
 
 `scripts/upgrade-v2.ts` deploys a new implementation, runs the OpenZeppelin storage-layout check, calls `upgradeToAndCall(impl, "")` from `TARGET_ADMIN`, and verifies the new implementation on BaseScan. The proxy address never changes.
 
+The first such upgrade is **V3 — fractional points** (0.25, 0.5, …): see [v3-fractional-points.md](v3-fractional-points.md) for the design and the step-by-step runbook (`pnpm run upgrade:v3:mainnet`).
+
 ## Verification
 
 `scripts/deploy-v2.ts` and `scripts/upgrade-v2.ts` invoke `hardhat verify` automatically. To re-run manually:

@@ -19,19 +19,20 @@ import { config } from '../config.js'
 import { withRpcRetry } from '../lib/rpcRetry.js'
 import { AdaptiveLogReader } from '../lib/log-reader.js'
 import { BACKEND_ROOT } from '../lib/paths.js'
+import { fromCentiPoints, toCentiPoints } from '../lib/points.js'
 
 /**
- * Loads the SurveyPointsV2 ABI from the contracts package artifacts. The V2
- * proxy is what production and Sepolia run as of the V2 cutover (see
- * docs/v2-migration-runbook.md and contracts/SurveyPointsV2.sol). V1
- * artifacts were intentionally retired — V1 surveys are deactivated as
- * part of the migration and their data is no longer surfaced through the
- * backend.
+ * Loads the SurveyPointsV3 ABI from the contracts package artifacts. V3 is
+ * a superset of V2: every V2 function and event keeps its signature, and
+ * V3 adds the centipoint functions/events for fractional surveys. The
+ * same ABI therefore works against a proxy that still runs the V2
+ * implementation — V3-only calls are gated by `supportsFractionalPoints()`.
+ * V1 artifacts were intentionally retired (see docs/v2-migration-runbook.md).
  */
 function loadContractABI(): ethers.InterfaceAbi {
   const artifactPath = resolve(
     BACKEND_ROOT,
-    '../contracts/artifacts/contracts/SurveyPointsV2.sol/SurveyPointsV2.json',
+    '../contracts/artifacts/contracts/SurveyPointsV3.sol/SurveyPointsV3.json',
   )
   const artifact = JSON.parse(readFileSync(artifactPath, 'utf-8'))
   return artifact.abi
@@ -300,6 +301,39 @@ async function assertSufficientBalance(): Promise<void> {
   }
 }
 
+// ---------------------------------------------------------------------------
+//  Fractional points (contract V3)
+// ---------------------------------------------------------------------------
+
+let fractionalSupport: { value: boolean; checkedAt: number } | null = null
+const FRACTIONAL_RECHECK_MS = 5 * 60_000
+
+/**
+ * Whether the live contract understands centipoints (implementation
+ * version >= 3). Lets this backend run against both the V2 and the V3
+ * implementation, so deploying the backend and upgrading the proxy can
+ * happen in either order. A positive answer is cached for good (upgrades
+ * never go backwards); a negative one is re-checked every 5 minutes so
+ * the backend picks up a proxy upgrade without a restart.
+ */
+export async function supportsFractionalPoints(): Promise<boolean> {
+  if (fractionalSupport) {
+    if (fractionalSupport.value) return true
+    if (Date.now() - fractionalSupport.checkedAt < FRACTIONAL_RECHECK_MS) return false
+  }
+  const version = await getContractVersion()
+  if (version === 'unknown') return false // transient RPC failure — don't cache
+  const major = parseInt(version.split('.')[0], 10)
+  const value = Number.isFinite(major) && major >= 3
+  fractionalSupport = { value, checkedAt: Date.now() }
+  return value
+}
+
+/** Test hook: forget the cached version check. */
+export function resetFractionalSupportCache(): void {
+  fractionalSupport = null
+}
+
 /**
  * Award points to `student` for `surveyId`. V2 dropped the on-chain
  * secret parameter — proof of completion is verified off-chain by the
@@ -319,6 +353,11 @@ export async function awardPoints(
 /**
  * Register a new survey on-chain. V2 no longer stores any per-survey
  * secret hash — the off-chain `survey-keys` store owns the HMAC key.
+ *
+ * `points` is a decimal number. Whole values go through the V2
+ * `registerSurvey` function (works on V2 and V3); fractional values need
+ * the V3 `registerSurveyCenti` — callers must check
+ * `supportsFractionalPoints()` first.
  */
 export async function registerSurvey(
   surveyId: number,
@@ -327,19 +366,30 @@ export async function registerSurvey(
   title: string,
 ): Promise<ethers.TransactionReceipt> {
   await assertSufficientBalance()
-  const tx = await contract.registerSurvey(
-    surveyId,
-    points,
-    maxClaims,
-    title,
-    await buildTxOverrides(),
-  )
+  const centi = toCentiPoints(points)
+  const tx =
+    centi % 100 === 0
+      ? await contract.registerSurvey(
+          surveyId,
+          centi / 100,
+          maxClaims,
+          title,
+          await buildTxOverrides(),
+        )
+      : await contract.registerSurveyCenti(
+          surveyId,
+          centi,
+          maxClaims,
+          title,
+          await buildTxOverrides(),
+        )
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
   return receipt
 }
 
 export interface SurveyInfoRaw {
+  /** Decimal points (0.25, 1, 1.5). 0 means the survey does not exist. */
   points: number
   maxClaims: bigint
   claimCount: bigint
@@ -384,6 +434,19 @@ export async function revokePoints(
 }
 
 export async function getSurveyInfo(surveyId: number): Promise<SurveyInfoRaw> {
+  if (await supportsFractionalPoints()) {
+    const result = await withRpcRetry(() => readOnlyContract.getSurveyInfoCenti(surveyId), {
+      label: 'getSurveyInfoCenti',
+    })
+    return {
+      points: fromCentiPoints(result[0]),
+      maxClaims: result[1],
+      claimCount: result[2],
+      active: result[3],
+      registeredAt: result[4],
+      title: result[5],
+    }
+  }
   const result = await withRpcRetry(() => readOnlyContract.getSurveyInfo(surveyId), {
     label: 'getSurveyInfo',
   })
@@ -397,14 +460,29 @@ export async function getSurveyInfo(surveyId: number): Promise<SurveyInfoRaw> {
   }
 }
 
+/** Total points of a wallet as a decimal number. */
 export async function getTotalPoints(walletAddress: string): Promise<number> {
+  if (await supportsFractionalPoints()) {
+    const centi = await withRpcRetry(() => readOnlyContract.totalPointsCenti(walletAddress), {
+      label: 'totalPointsCenti',
+    })
+    return fromCentiPoints(centi)
+  }
   const points = await withRpcRetry(() => readOnlyContract.totalPoints(walletAddress), {
     label: 'totalPoints',
   })
   return Number(points)
 }
 
+/** Points a wallet earned for one survey, as a decimal number. */
 export async function getSurveyPoints(walletAddress: string, surveyId: number): Promise<number> {
+  if (await supportsFractionalPoints()) {
+    const centi = await withRpcRetry(
+      () => readOnlyContract.surveyPointsCenti(walletAddress, surveyId),
+      { label: 'surveyPointsCenti' },
+    )
+    return fromCentiPoints(centi)
+  }
   const points = await withRpcRetry(() => readOnlyContract.surveyPoints(walletAddress, surveyId), {
     label: 'surveyPoints',
   })
@@ -426,10 +504,35 @@ export interface PointsAwardedEvent {
   timestamp: number
 }
 
+/**
+ * Sort helper so whole-point (V2 `PointsAwarded`) and fractional (V3
+ * `PointsAwardedCenti`) events appear in on-chain order.
+ */
+function byChainOrder(a: ethers.EventLog | ethers.Log, b: ethers.EventLog | ethers.Log): number {
+  return a.blockNumber - b.blockNumber || a.index - b.index
+}
+
+/** Decimal points carried by a V2 (whole) or V3 (`*Centi`) event. */
+function eventPoints(event: ethers.EventLog, valueArgIndex: number): number {
+  const raw = event.args[valueArgIndex]
+  return event.fragment.name.endsWith('Centi') ? fromCentiPoints(raw) : Number(raw)
+}
+
 export async function getPointsAwardedEvents(walletAddress: string): Promise<PointsAwardedEvent[]> {
   const fromBlock = config.contractDeployBlock || 0
-  const filter = readOnlyContract.filters.PointsAwarded(walletAddress)
-  const events = await queryFilterChunked(readOnlyContract, filter, fromBlock)
+  const [whole, fractional] = await Promise.all([
+    queryFilterChunked(
+      readOnlyContract,
+      readOnlyContract.filters.PointsAwarded(walletAddress),
+      fromBlock,
+    ),
+    queryFilterChunked(
+      readOnlyContract,
+      readOnlyContract.filters.PointsAwardedCenti(walletAddress),
+      fromBlock,
+    ),
+  ])
+  const events = [...whole, ...fractional].sort(byChainOrder)
 
   const results: PointsAwardedEvent[] = []
   for (const event of events) {
@@ -438,7 +541,7 @@ export async function getPointsAwardedEvents(walletAddress: string): Promise<Poi
     results.push({
       wallet: event.args[0],
       surveyId: Number(event.args[1]),
-      points: Number(event.args[2]),
+      points: eventPoints(event, 2),
       blockNumber: event.blockNumber,
       transactionHash: event.transactionHash,
       timestamp: block.timestamp,
@@ -459,8 +562,15 @@ export interface SurveyRegisteredEvent {
 
 export async function getSurveyRegisteredEvents(): Promise<SurveyRegisteredEvent[]> {
   const fromBlock = config.contractDeployBlock || 0
-  const filter = readOnlyContract.filters.SurveyRegistered()
-  const events = await queryFilterChunked(readOnlyContract, filter, fromBlock)
+  const [whole, fractional] = await Promise.all([
+    queryFilterChunked(readOnlyContract, readOnlyContract.filters.SurveyRegistered(), fromBlock),
+    queryFilterChunked(
+      readOnlyContract,
+      readOnlyContract.filters.SurveyRegisteredCenti(),
+      fromBlock,
+    ),
+  ])
+  const events = [...whole, ...fractional].sort(byChainOrder)
 
   const results: SurveyRegisteredEvent[] = []
   for (const event of events) {
@@ -468,7 +578,7 @@ export async function getSurveyRegisteredEvents(): Promise<SurveyRegisteredEvent
     const block = await event.getBlock()
     results.push({
       surveyId: Number(event.args[0]),
-      points: Number(event.args[1]),
+      points: eventPoints(event, 1),
       maxClaims: Number(event.args[2]),
       blockNumber: event.blockNumber,
       transactionHash: event.transactionHash,

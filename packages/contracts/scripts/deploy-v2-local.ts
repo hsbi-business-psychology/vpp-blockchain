@@ -56,10 +56,23 @@ async function main() {
 
   console.log(`\nStudent total: ${await v2.totalPoints(student.address)} pts (survey #5 open)\n`)
 
+  // Upgrade to V3 (fractional points) after seeding, exactly like the
+  // production path: V2 data first, then the UUPS upgrade. Set
+  // LOCAL_CONTRACT_VERSION=v2 to stay on V2 (e.g. to test the backend's
+  // V2 fallback).
+  if ((process.env.LOCAL_CONTRACT_VERSION || 'v3').toLowerCase() !== 'v2') {
+    const v3Factory = await ethers.getContractFactory('SurveyPointsV3', deployer)
+    const upgraded = await upgrades.upgradeProxy(address, v3Factory)
+    await upgraded.waitForDeployment()
+    console.log(`Upgraded proxy to SurveyPointsV3 (${await upgraded.version()})`)
+    console.log(
+      `Implementation now:         ${await upgrades.erc1967.getImplementationAddress(address)}\n`,
+    )
+  }
+
   console.log('=== Setup Complete ===\n')
   console.log('Add this to your .env files:\n')
   console.log(`  CONTRACT_ADDRESS=${address}`)
-  console.log('  CONTRACT_ABI=SurveyPointsV2')
   console.log('  RPC_URL=http://127.0.0.1:8545')
   console.log(`  VITE_CONTRACT_ADDRESS=${address}`)
   console.log('  VITE_RPC_URL=http://127.0.0.1:8545\n')

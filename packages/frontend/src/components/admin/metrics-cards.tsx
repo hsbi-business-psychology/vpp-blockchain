@@ -64,7 +64,9 @@ export function MetricsCards({
             {loading ? (
               <Skeleton className="h-7 w-12" />
             ) : (
-              <p className="text-2xl font-bold leading-none">{value.toLocaleString()}</p>
+              <p className="text-2xl font-bold leading-none">
+                {value.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              </p>
             )}
             <p className="mt-0.5 truncate text-xs text-muted-foreground">{label}</p>
           </div>

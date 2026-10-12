@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { parsePointsInput } from '@/lib/utils'
 
 interface RegisterSurveyDialogProps {
   onRegister: (data: {
@@ -52,7 +53,7 @@ export function RegisterSurveyDialog({ onRegister, nextSurveyId }: RegisterSurve
     try {
       await onRegister({
         surveyId: Number(form.surveyId),
-        points: Number(form.points),
+        points: parsePointsInput(form.points) ?? 0,
         maxClaims: 0,
         title: form.title,
       })
@@ -62,12 +63,11 @@ export function RegisterSurveyDialog({ onRegister, nextSurveyId }: RegisterSurve
     }
   }
 
+  const parsedPoints = parsePointsInput(form.points)
+  const pointsInvalid = form.points.trim() !== '' && parsedPoints === null
+
   const isValid =
-    form.title.trim() &&
-    form.surveyId &&
-    form.points &&
-    Number(form.surveyId) > 0 &&
-    Number(form.points) > 0
+    form.title.trim() && form.surveyId && Number(form.surveyId) > 0 && parsedPoints !== null
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -101,15 +101,29 @@ export function RegisterSurveyDialog({ onRegister, nextSurveyId }: RegisterSurve
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="reg-points">{t('admin.register.points')}</Label>
+                {/* Text + inputMode="decimal" instead of type="number" so a German
+                    decimal comma ("0,25") is accepted on every browser. */}
                 <Input
                   id="reg-points"
-                  type="number"
-                  min="1"
-                  max="255"
+                  type="text"
+                  inputMode="decimal"
+                  autoComplete="off"
                   value={form.points}
                   onChange={(e) => setForm((f) => ({ ...f, points: e.target.value }))}
+                  aria-invalid={pointsInvalid}
+                  aria-describedby="reg-points-hint"
                   required
                 />
+                <p
+                  id="reg-points-hint"
+                  className={
+                    pointsInvalid ? 'text-xs text-destructive' : 'text-xs text-muted-foreground'
+                  }
+                >
+                  {pointsInvalid
+                    ? t('admin.register.pointsInvalid')
+                    : t('admin.register.pointsHint')}
+                </p>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center gap-1">

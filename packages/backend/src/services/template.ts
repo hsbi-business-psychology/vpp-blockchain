@@ -52,6 +52,7 @@
  *                        in the survey end message (surveyls_endtext).
  */
 import { config } from '../config.js'
+import { formatPointsDe } from '../lib/points.js'
 
 export type TemplateFormat = 'sosci' | 'limesurvey'
 
@@ -72,13 +73,15 @@ export type TemplateFormat = 'sosci' | 'limesurvey'
  * looks it up server-side from the per-survey key store.
  */
 function buildLinkSnippet(surveyId: number, points: number): string {
-  const pointLabel = points > 1 ? 'Versuchspersonenpunkte' : 'Versuchspersonenpunkt'
+  // German uses the singular only for exactly one point ("1 Punkt",
+  // but "0,5 Punkte" / "1,5 Punkte").
+  const pointLabel = points === 1 ? 'Versuchspersonenpunkt' : 'Versuchspersonenpunkte'
   const launchUrl = `${config.frontendUrl}/api/v1/claim/launch/${surveyId}`
   return `<div style="max-width:480px;margin:2rem auto;text-align:center;font-family:system-ui,-apple-system,sans-serif;">
   <div style="font-size:2.5rem;margin-bottom:0.5rem;">&#10003;</div>
   <h2 style="margin:0 0 0.5rem;font-size:1.35rem;color:#111;">Vielen Dank f&#252;r deine Teilnahme!</h2>
   <p style="margin:0.75rem 0;color:#555;font-size:0.95rem;">
-    Du erh&#228;ltst <strong>${points} ${pointLabel}</strong> f&#252;r diese Umfrage.
+    Du erh&#228;ltst <strong>${formatPointsDe(points)} ${pointLabel}</strong> f&#252;r diese Umfrage.
     Klicke auf den Button, um deine Punkte einzul&#246;sen.
   </p>
   <a href="${launchUrl}" rel="noopener" style="display:inline-block;margin:1rem 0;padding:0.7rem 2rem;background:#2563eb;color:#fff;text-decoration:none;border-radius:0.5rem;font-weight:600;font-size:1rem;">

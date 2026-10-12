@@ -120,6 +120,74 @@ describe('POST /api/v1/surveys', () => {
     expect(mockKeys[43]).toBeUndefined()
   })
 
+  describe('fractional points', () => {
+    async function registerWith(surveyId: number, points: number) {
+      const timestamp = Math.floor(Date.now() / 1000)
+      const adminMessage = `register:${surveyId}:${timestamp}`
+      const adminSignature = await ADMIN_WALLET.signMessage(adminMessage)
+      return request(app).post('/api/v1/surveys').send({
+        surveyId,
+        points,
+        maxClaims: 0,
+        adminSignature,
+        adminMessage,
+      })
+    }
+
+    beforeEach(() => {
+      vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
+      vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
+        points: 0,
+        maxClaims: 0n,
+        claimCount: 0n,
+        active: false,
+        registeredAt: 0n,
+        title: '',
+      })
+      vi.mocked(blockchain.registerSurvey).mockResolvedValue({
+        hash: '0xfrac',
+      } as unknown as ethers.TransactionReceipt)
+    })
+
+    it('registers 0.25 points when the contract supports fractions', async () => {
+      vi.mocked(blockchain.supportsFractionalPoints).mockResolvedValue(true)
+
+      const res = await registerWith(60, 0.25)
+
+      expect(res.status).toBe(201)
+      expect(blockchain.registerSurvey).toHaveBeenCalledWith(60, 0.25, 0, '')
+    })
+
+    it('refuses fractional points while the contract is still V2', async () => {
+      vi.mocked(blockchain.supportsFractionalPoints).mockResolvedValue(false)
+
+      const res = await registerWith(61, 0.5)
+
+      expect(res.status).toBe(409)
+      expect(res.body.error).toBe('FRACTIONAL_POINTS_UNSUPPORTED')
+      expect(blockchain.registerSurvey).not.toHaveBeenCalled()
+      expect(mockKeys[61]).toBeUndefined()
+    })
+
+    it('does not need the V3 contract for whole points', async () => {
+      vi.mocked(blockchain.supportsFractionalPoints).mockResolvedValue(false)
+
+      const res = await registerWith(62, 3)
+
+      expect(res.status).toBe(201)
+      expect(blockchain.registerSurvey).toHaveBeenCalledWith(62, 3, 0, '')
+    })
+
+    it.each([0, -1, 0.125, 255.5])('rejects %s points', async (points) => {
+      vi.mocked(blockchain.supportsFractionalPoints).mockResolvedValue(true)
+
+      const res = await registerWith(63, points)
+
+      expect(res.status).toBe(400)
+      expect(blockchain.registerSurvey).not.toHaveBeenCalled()
+    })
+  })
+
   it('should reject a request from a non-admin wallet', async () => {
     const nonAdmin = ethers.Wallet.createRandom()
     const timestamp = Math.floor(Date.now() / 1000)

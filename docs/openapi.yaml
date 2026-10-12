@@ -161,10 +161,15 @@ paths:
                   minimum: 1
                   description: Unique positive integer for the survey
                 points:
-                  type: integer
-                  minimum: 1
+                  type: number
+                  exclusiveMinimum: 0
                   maximum: 255
-                  description: Points awarded per claim
+                  multipleOf: 0.01
+                  description: >-
+                    Points awarded per claim, at most two decimals (e.g. 0.25).
+                    Fractional values require the SurveyPointsV3 contract;
+                    otherwise the API answers 409 FRACTIONAL_POINTS_UNSUPPORTED.
+                  example: 0.5
                 maxClaims:
                   type: integer
                   minimum: 0
@@ -771,7 +776,7 @@ components:
         txHash:
           type: string
         points:
-          type: integer
+          type: number
         explorerUrl:
           type: string
 
@@ -781,7 +786,7 @@ components:
         wallet:
           type: string
         totalPoints:
-          type: integer
+          type: number
         surveys:
           type: array
           items:
@@ -790,7 +795,7 @@ components:
               surveyId:
                 type: integer
               points:
-                type: integer
+                type: number
               claimedAt:
                 type: string
                 format: date-time
@@ -803,7 +808,7 @@ components:
         surveyId:
           type: integer
         points:
-          type: integer
+          type: number
         maxClaims:
           type: integer
         claimCount:

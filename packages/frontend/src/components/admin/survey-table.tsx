@@ -34,7 +34,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { cn } from '@/lib/utils'
+import { cn, formatPoints } from '@/lib/utils'
 import type { SurveyInfo } from '@vpp/shared'
 
 interface SurveyTableProps {
@@ -64,7 +64,7 @@ export function SurveyTable({
   onRegenerateTemplate,
   onSelect,
 }: SurveyTableProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest')
@@ -173,7 +173,9 @@ export function SurveyTable({
                       <TableCell className="font-medium">
                         {survey.title || `Survey #${survey.surveyId}`}
                       </TableCell>
-                      <TableCell className="text-right">{survey.points}</TableCell>
+                      <TableCell className="text-right">
+                        {formatPoints(survey.points, i18n.language)}
+                      </TableCell>
                       <TableCell className="text-right">{survey.claimCount}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={cn('border', statusVariant[status])}>
@@ -264,7 +266,7 @@ export function SurveyTable({
                   <div className="grid grid-cols-3 gap-2 text-sm">
                     <div>
                       <p className="text-muted-foreground">{t('admin.surveys.table.points')}</p>
-                      <p className="font-medium">{survey.points}</p>
+                      <p className="font-medium">{formatPoints(survey.points, i18n.language)}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">{t('admin.surveys.table.claims')}</p>

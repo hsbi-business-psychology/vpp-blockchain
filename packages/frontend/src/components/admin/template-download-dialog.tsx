@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import type { SurveyInfo } from '@vpp/shared'
+import { formatPoints } from '@/lib/utils'
 
 interface TemplateDownloadDialogProps {
   survey: SurveyInfo | null
@@ -26,7 +27,7 @@ export function TemplateDownloadDialog({
   onDownload,
   onClose,
 }: TemplateDownloadDialogProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const freshKey =
     freshHintMode === 'registered'
@@ -50,7 +51,8 @@ export function TemplateDownloadDialog({
           <div className="space-y-1 rounded-lg bg-muted p-3">
             <p className="text-sm font-medium">{survey.title || `Survey #${survey.surveyId}`}</p>
             <p className="text-xs text-muted-foreground">
-              ID: {survey.surveyId} · {survey.points} {t('admin.register.points')}
+              ID: {survey.surveyId} · {formatPoints(survey.points, i18n.language)}{' '}
+              {t('admin.register.points')}
             </p>
           </div>
         )}

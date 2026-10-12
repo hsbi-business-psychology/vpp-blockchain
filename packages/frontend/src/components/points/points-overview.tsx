@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Loader2, Info, Award, ClipboardCheck, Gift, BarChart3, CheckCircle2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { formatPoints } from '@/lib/utils'
 
 interface PointsOverviewProps {
   totalPoints: number | null
@@ -17,7 +18,7 @@ export function PointsOverview({
   walletSubmitted,
   hasHistory,
 }: PointsOverviewProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   return (
     <>
@@ -31,7 +32,7 @@ export function PointsOverview({
             {dataLoading && totalPoints === null ? (
               <Loader2 className="size-8 animate-spin" />
             ) : (
-              (totalPoints ?? 0)
+              formatPoints(totalPoints ?? 0, i18n.language)
             )}
           </p>
           <p className="mt-1 text-sm text-muted-foreground sm:text-base">{t('points.total')}</p>

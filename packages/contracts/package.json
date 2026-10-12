@@ -23,6 +23,8 @@
     "deploy:v2:mainnet": "hardhat run scripts/deploy-v2.ts --network baseMainnet",
     "upgrade:v2:sepolia": "hardhat run scripts/upgrade-v2.ts --network baseSepolia",
     "upgrade:v2:mainnet": "hardhat run scripts/upgrade-v2.ts --network baseMainnet",
+    "upgrade:v3:sepolia": "IMPLEMENTATION_NAME=SurveyPointsV3 hardhat run scripts/upgrade-v2.ts --network baseSepolia",
+    "upgrade:v3:mainnet": "IMPLEMENTATION_NAME=SurveyPointsV3 hardhat run scripts/upgrade-v2.ts --network baseMainnet",
     "clean": "hardhat clean && rm -rf coverage coverage.json"
   },
   "devDependencies": {

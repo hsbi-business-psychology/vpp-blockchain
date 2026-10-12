@@ -28,6 +28,7 @@ import {
 import { useApi } from '@/hooks/use-api'
 import { useWallet } from '@/hooks/use-wallet'
 import { ApiRequestError } from '@vpp/shared'
+import { formatPoints } from '@/lib/utils'
 
 interface SearchResult {
   address: string
@@ -36,7 +37,7 @@ interface SearchResult {
 }
 
 export function SubmissionManagement() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { wallet, sign } = useWallet()
   const { getWalletSubmissionStatus, markWalletSubmitted, unmarkWalletSubmitted } = useApi()
 
@@ -167,7 +168,9 @@ export function SubmissionManagement() {
                     <div className="mt-1 flex items-center gap-3">
                       <span className="flex items-center gap-1 text-sm">
                         <Award className="size-3.5 text-primary" />
-                        <span className="font-semibold">{result.totalPoints}</span>
+                        <span className="font-semibold">
+                          {formatPoints(result.totalPoints, i18n.language)}
+                        </span>
                         <span className="text-muted-foreground">
                           {t('admin.submissions.points')}
                         </span>
@@ -252,7 +255,7 @@ export function SubmissionManagement() {
             <div className="rounded-lg bg-muted p-3 space-y-1">
               <p className="truncate font-mono text-sm">{result.address}</p>
               <p className="text-xs text-muted-foreground">
-                {result.totalPoints} {t('admin.submissions.points')}
+                {formatPoints(result.totalPoints, i18n.language)} {t('admin.submissions.points')}
               </p>
             </div>
           )}

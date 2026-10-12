@@ -1,6 +1,6 @@
 /**
- * End-to-end integration tests against a real Hardhat node running
- * SurveyPointsV2 (UUPS proxy).
+ * End-to-end integration tests against a real Hardhat node running the
+ * SurveyPoints UUPS proxy (seeded as V2, then upgraded to V3).
  *
  * Prerequisites (both from packages/contracts/):
  *   1. npx hardhat node
@@ -171,14 +171,63 @@ describe('integration: full HMAC claim flow', () => {
   })
 })
 
+describe('integration: fractional points (SurveyPointsV3)', () => {
+  // deploy-v2-local.ts upgrades the seeded V2 proxy to V3, like production.
+  const SURVEY_ID = 101
+  let issuedKey: string
+
+  it('POST /api/v1/surveys registers a 0.25-point survey', async () => {
+    const { signature, message } = await adminAuth(`Register survey ${SURVEY_ID}`)
+
+    const res = await request(app).post('/api/v1/surveys').send({
+      surveyId: SURVEY_ID,
+      points: 0.25,
+      maxClaims: 0,
+      title: 'Viertelpunkt-Studie',
+      adminSignature: signature,
+      adminMessage: message,
+    })
+
+    expect(res.status).toBe(201)
+    issuedKey = res.body.data.key
+  })
+
+  it('lists the survey with 0.25 points', async () => {
+    const res = await request(app).get('/api/v1/surveys')
+    const survey = res.body.data.find((s: { surveyId: number }) => s.surveyId === SURVEY_ID)
+    expect(survey?.points).toBe(0.25)
+  })
+
+  it('POST /api/v1/claim awards 0.25 points', async () => {
+    expect(issuedKey).toBeDefined()
+    const nonce = freshNonce()
+    const token = issueToken({ surveyId: SURVEY_ID, nonce, key: issuedKey })
+    const timestamp = Math.floor(Date.now() / 1000)
+    const message = `claim:${SURVEY_ID}:${nonce}:${timestamp}`
+    const signature = await studentWallet.signMessage(message)
+
+    const res = await request(app).post('/api/v1/claim').send({
+      walletAddress: studentWallet.address,
+      surveyId: SURVEY_ID,
+      nonce,
+      token,
+      signature,
+      message,
+    })
+
+    expect(res.status).toBe(200)
+    expect(res.body.data.points).toBe(0.25)
+  })
+})
+
 describe('integration: points', () => {
-  it('GET /api/v1/points/:wallet should reflect the seeded + new claim', async () => {
+  it('GET /api/v1/points/:wallet should reflect the seeded + new claims', async () => {
     const res = await request(app).get(`/api/v1/points/${studentWallet.address}`)
 
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(true)
-    // 4 seeded claims (2+1+3+1=7) + 1 from our claim test (2) = 9
-    expect(res.body.data.totalPoints).toBe(9)
+    // 4 seeded claims (2+1+3+1=7) + 2 (survey 100) + 0.25 (survey 101) = 9.25
+    expect(res.body.data.totalPoints).toBe(9.25)
   })
 })
 

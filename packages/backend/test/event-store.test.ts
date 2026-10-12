@@ -38,7 +38,9 @@ const mockBlockchain = {
 vi.mock('../src/services/blockchain.js', () => {
   const filters = {
     SurveyRegistered: () => 'SurveyRegistered',
+    SurveyRegisteredCenti: () => 'SurveyRegisteredCenti',
     PointsAwarded: () => 'PointsAwarded',
+    PointsAwardedCenti: () => 'PointsAwardedCenti',
     RoleGranted: (role: string) => `RoleGranted(${role})`,
     RoleRevoked: (role: string) => `RoleRevoked(${role})`,
   }
@@ -84,12 +86,15 @@ interface MockEvent {
   blockNumber: number
   index: number
   transactionHash?: string
+  fragment?: { name: string }
 }
 
 function configureChainMocks(opts: {
   blockNumber?: number
   surveyEvents?: MockEvent[]
+  surveyCentiEvents?: MockEvent[]
   pointsEvents?: MockEvent[]
+  pointsCentiEvents?: MockEvent[]
   grantEvents?: MockEvent[]
   revokeEvents?: MockEvent[]
 }) {
@@ -98,7 +103,9 @@ function configureChainMocks(opts: {
     async (_contract: unknown, filter: unknown, _from: number) => {
       const f = filter as string
       if (f === 'SurveyRegistered') return opts.surveyEvents ?? []
+      if (f === 'SurveyRegisteredCenti') return opts.surveyCentiEvents ?? []
       if (f === 'PointsAwarded') return opts.pointsEvents ?? []
+      if (f === 'PointsAwardedCenti') return opts.pointsCentiEvents ?? []
       if (f === `RoleGranted(${ADMIN_ROLE_HASH})`) return opts.grantEvents ?? []
       if (f === `RoleRevoked(${ADMIN_ROLE_HASH})`) return opts.revokeEvents ?? []
       return []
@@ -551,6 +558,50 @@ describe('JsonFileEventStore — wallet queries', () => {
     expect(
       store.getPointsAwardedByWallet('0xdeadbeef00000000000000000000000000000000'),
     ).toHaveLength(0)
+  })
+})
+
+describe('JsonFileEventStore — fractional points (contract V3)', () => {
+  const WALLET = '0xABCDEF0000000000000000000000000000000001'
+
+  it('stores centipoint events as decimal points, merged in chain order', async () => {
+    configureChainMocks({
+      blockNumber: 100,
+      surveyEvents: [{ args: [1n, 2n, 0n], blockNumber: 10, index: 0, transactionHash: '0xs1' }],
+      surveyCentiEvents: [
+        {
+          args: [2n, 25n, 0n],
+          blockNumber: 5,
+          index: 0,
+          transactionHash: '0xs2',
+          fragment: { name: 'SurveyRegisteredCenti' },
+        },
+      ],
+      pointsEvents: [
+        { args: [WALLET, 1n, 2n], blockNumber: 40, index: 1, transactionHash: '0xp1' },
+      ],
+      pointsCentiEvents: [
+        {
+          args: [WALLET, 2n, 75n],
+          blockNumber: 40,
+          index: 0,
+          transactionHash: '0xp2',
+          fragment: { name: 'PointsAwardedCenti' },
+        },
+      ],
+    })
+    const { JsonFileEventStore } = await import('../src/services/json-file-event-store.js')
+    const store = new JsonFileEventStore()
+    await store.sync()
+
+    expect(store.getSurveyRegisteredEvents().map((e) => [e.surveyId, e.points])).toEqual([
+      [2, 0.25],
+      [1, 2],
+    ])
+    expect(store.getPointsAwardedByWallet(WALLET).map((e) => [e.surveyId, e.points])).toEqual([
+      [2, 0.75],
+      [1, 2],
+    ])
   })
 })
 

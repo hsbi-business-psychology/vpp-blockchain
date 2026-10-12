@@ -439,6 +439,8 @@
       "surveyTitlePlaceholder": "z. B. Persönlichkeitstest WS 2025",
       "surveyId": "Umfrage-ID",
       "points": "Punkte pro Claim",
+      "pointsHint": "z. B. 0,25 · 0,5 · 1 · 1,5",
+      "pointsInvalid": "Bitte einen Wert zwischen 0,01 und 255 mit höchstens zwei Nachkommastellen eingeben.",
       "button": "Registrieren",
       "success": "Umfrage registriert. Lade jetzt die Vorlage herunter und importiere sie in dein Umfrage-Tool.",
       "error": "Umfrage konnte nicht registriert werden. Prüfe, ob die ID bereits vergeben ist und ob das Backend-Wallet über ausreichend Guthaben verfügt.",

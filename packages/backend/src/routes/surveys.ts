@@ -30,6 +30,7 @@ import { syncWithin } from '../lib/sync-within.js'
 import { getSurveysWithCache, invalidateCache } from '../services/survey-cache.js'
 import { generateSoSciTemplate, generateLimeSurveyTemplate } from '../services/template.js'
 import { parsePagination, paginate } from '../lib/pagination.js'
+import { MAX_POINTS, hasAtMostTwoDecimals, isFractional } from '../lib/points.js'
 import {
   createKey,
   deleteKey,
@@ -43,7 +44,13 @@ const router: Router = Router()
 
 const registerSchema = z.object({
   surveyId: z.number().int().positive(),
-  points: z.number().int().min(1).max(255),
+  // Decimal points with at most two decimals (0.25, 0.5, 1.5 …). Fractional
+  // values need contract V3; whole values work on V2 and V3.
+  points: z
+    .number()
+    .positive('Points must be greater than 0')
+    .max(MAX_POINTS, `Points must be at most ${MAX_POINTS}`)
+    .refine(hasAtMostTwoDecimals, 'Points may have at most two decimals (e.g. 0.25)'),
   maxClaims: z.number().int().min(0).default(0),
   title: z.string().default(''),
   adminSignature: z.string().min(1),
@@ -71,6 +78,15 @@ router.post('/', requireAdminHandler, async (req, res, next) => {
     }
 
     const { surveyId, points, maxClaims, title } = parsed.data
+
+    if (isFractional(points) && !(await blockchain.supportsFractionalPoints())) {
+      throw new AppError(
+        409,
+        'FRACTIONAL_POINTS_UNSUPPORTED',
+        'Fractional points need the SurveyPointsV3 contract upgrade, which has not been applied yet. ' +
+          'Use a whole number of points or upgrade the contract first.',
+      )
+    }
 
     const existing = await blockchain.getSurveyInfo(surveyId)
     if (existing.points !== 0) {

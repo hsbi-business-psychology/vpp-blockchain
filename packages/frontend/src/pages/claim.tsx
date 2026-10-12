@@ -10,14 +10,14 @@ import { useWallet } from '@/hooks/use-wallet'
 import { useApi } from '@/hooks/use-api'
 import { ApiRequestError } from '@vpp/shared'
 import { getTxUrl } from '@/lib/config'
-import { cn } from '@/lib/utils'
+import { cn, formatPoints } from '@/lib/utils'
 
 type ClaimStep = 'wallet' | 'sign' | 'submit' | 'done'
 
 const steps: ClaimStep[] = ['wallet', 'sign', 'submit', 'done']
 
 export default function ClaimPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { wallet, hasWallet, sign } = useWallet()
@@ -228,9 +228,9 @@ export default function ClaimPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-lg bg-success/10 p-4 text-center">
-              <p className="text-3xl font-bold">{result.points}</p>
+              <p className="text-3xl font-bold">{formatPoints(result.points, i18n.language)}</p>
               <p className="text-sm text-muted-foreground">
-                {t('claim.success.points', { points: result.points })}
+                {t('claim.success.points', { points: formatPoints(result.points, i18n.language) })}
               </p>
             </div>
             <div className="space-y-2">

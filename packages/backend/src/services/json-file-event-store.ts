@@ -20,9 +20,30 @@ import { atomicWriteJson } from '../lib/atomic-write.js'
 import { RangeRejectedError } from '../lib/log-reader.js'
 import { logger } from '../lib/logger.js'
 import { DATA_DIR } from '../lib/paths.js'
+import { fromCentiPoints } from '../lib/points.js'
 import { readOnlyContract, queryFilterChunked, provider, getEventWindowSize } from './blockchain.js'
 import type { EventStore } from './event-store.interface.js'
 import type { EventStoreData, StoredSurveyEvent, StoredPointsEvent } from './event-store.types.js'
+
+type ChainEvent = Awaited<ReturnType<typeof queryFilterChunked>>[number]
+
+/** Merge two event lists into on-chain order (block, then log index). */
+function mergeInChainOrder(a: ChainEvent[], b: ChainEvent[]): ChainEvent[] {
+  if (b.length === 0) return a
+  return [...a, ...b].sort((x, y) => x.blockNumber - y.blockNumber || x.index - y.index)
+}
+
+/**
+ * Stored events carry points as decimal numbers. V2 events hold whole
+ * points; the V3 `*Centi` events hold hundredths of a point. Existing
+ * events.json files therefore stay valid without any migration.
+ */
+function decimalPoints(event: ChainEvent, valueArgIndex: number): number {
+  if (!('args' in event)) return 0
+  const raw = event.args[valueArgIndex]
+  const name = 'fragment' in event ? event.fragment?.name : undefined
+  return name?.endsWith('Centi') ? fromCentiPoints(raw) : Number(raw)
+}
 
 const STORE_PATH = resolve(DATA_DIR, 'events.json')
 
@@ -324,36 +345,63 @@ export class JsonFileEventStore implements EventStore {
     toBlock: number,
   ): Promise<boolean> {
     const superseded = () => generation !== this.runGeneration
-    const [surveyEvents, pointsEvents, grantEvents, revokeEvents] = await Promise.all([
+    const windowQuery = { shouldStop: superseded, singleRequest: true }
+    // Whole-point surveys/awards emit the V2 events; fractional ones (contract
+    // V3) emit the `*Centi` variants with the value in hundredths of a point.
+    const [
+      surveyEventsWhole,
+      surveyEventsCenti,
+      pointsEventsWhole,
+      pointsEventsCenti,
+      grantEvents,
+      revokeEvents,
+    ] = await Promise.all([
       queryFilterChunked(
         readOnlyContract,
         readOnlyContract.filters.SurveyRegistered(),
         fromBlock,
         toBlock,
-        { shouldStop: superseded, singleRequest: true },
+        windowQuery,
+      ),
+      queryFilterChunked(
+        readOnlyContract,
+        readOnlyContract.filters.SurveyRegisteredCenti(),
+        fromBlock,
+        toBlock,
+        windowQuery,
       ),
       queryFilterChunked(
         readOnlyContract,
         readOnlyContract.filters.PointsAwarded(),
         fromBlock,
         toBlock,
-        { shouldStop: superseded, singleRequest: true },
+        windowQuery,
+      ),
+      queryFilterChunked(
+        readOnlyContract,
+        readOnlyContract.filters.PointsAwardedCenti(),
+        fromBlock,
+        toBlock,
+        windowQuery,
       ),
       queryFilterChunked(
         readOnlyContract,
         readOnlyContract.filters.RoleGranted(adminRole),
         fromBlock,
         toBlock,
-        { shouldStop: superseded, singleRequest: true },
+        windowQuery,
       ),
       queryFilterChunked(
         readOnlyContract,
         readOnlyContract.filters.RoleRevoked(adminRole),
         fromBlock,
         toBlock,
-        { shouldStop: superseded, singleRequest: true },
+        windowQuery,
       ),
     ])
+
+    const surveyEvents = mergeInChainOrder(surveyEventsWhole, surveyEventsCenti)
+    const pointsEvents = mergeInChainOrder(pointsEventsWhole, pointsEventsCenti)
 
     const allBlockNumbers = [
       ...surveyEvents.map((e) => e.blockNumber),
@@ -370,7 +418,7 @@ export class JsonFileEventStore implements EventStore {
       if (!('args' in event)) continue
       this.store.surveyRegistered.push({
         surveyId: Number(event.args[0]),
-        points: Number(event.args[1]),
+        points: decimalPoints(event, 1),
         maxClaims: Number(event.args[2]),
         blockNumber: event.blockNumber,
         txHash: event.transactionHash,
@@ -383,7 +431,7 @@ export class JsonFileEventStore implements EventStore {
       this.store.pointsAwarded.push({
         wallet: event.args[0],
         surveyId: Number(event.args[1]),
-        points: Number(event.args[2]),
+        points: decimalPoints(event, 2),
         blockNumber: event.blockNumber,
         txHash: event.transactionHash,
         timestamp: timestamps.get(event.blockNumber) ?? 0,

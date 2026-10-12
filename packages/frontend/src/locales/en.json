@@ -439,6 +439,8 @@
       "surveyTitlePlaceholder": "e.g. Personality Test WS 2025",
       "surveyId": "Survey ID",
       "points": "Points per Claim",
+      "pointsHint": "e.g. 0.25 · 0.5 · 1 · 1.5",
+      "pointsInvalid": "Enter a value between 0.01 and 255 with at most two decimals.",
       "button": "Register",
       "success": "Survey registered. Download the template now and import it into your survey tool.",
       "error": "Failed to register survey. Check if the ID is already taken and if the backend wallet has sufficient balance.",
