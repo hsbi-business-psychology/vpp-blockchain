@@ -565,11 +565,16 @@ export async function getContractVersion(): Promise<string> {
  * Queries event logs in chunks to stay within RPC provider block-range limits.
  * Most free-tier RPCs (drpc, publicnode) cap at 10,000 blocks per request.
  * Chunk size is configurable via CHUNK_SIZE env var (default: 9000).
+ *
+ * `toBlock` is optional: when omitted the range runs up to the current chain
+ * head. The event store passes an explicit `toBlock` so it can sync one
+ * window at a time and checkpoint progress between windows.
  */
 async function queryFilterChunked(
   _ignoredContract: ethers.Contract,
   filter: ethers.ContractEventName,
   fromBlock: number,
+  toBlock?: number,
 ): Promise<(ethers.EventLog | ethers.Log)[]> {
   // Always route event queries through `eventReadOnlyContract` regardless
   // of which contract instance the caller passed in. This guarantees that
@@ -577,9 +582,11 @@ async function queryFilterChunked(
   // even if a caller still references `contract` or `readOnlyContract`.
   const evContract = eventReadOnlyContract
   const chunkSize = config.chunkSize
-  const latestBlock = await withRpcRetry(() => eventProvider.getBlockNumber(), {
-    label: 'getBlockNumber',
-  })
+  const latestBlock =
+    toBlock ??
+    (await withRpcRetry(() => eventProvider.getBlockNumber(), {
+      label: 'getBlockNumber',
+    }))
   if (latestBlock - fromBlock <= chunkSize) {
     return withRpcRetry(() => evContract.queryFilter(filter, fromBlock, latestBlock), {
       label: 'queryFilter',

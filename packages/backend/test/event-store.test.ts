@@ -227,6 +227,90 @@ describe('JsonFileEventStore — incremental sync', () => {
   })
 })
 
+describe('JsonFileEventStore — windowed catch-up', () => {
+  // CHUNK_SIZE defaults to 9000 in tests (no env override).
+
+  it('syncs a large gap in CHUNK_SIZE windows and checkpoints each one', async () => {
+    configureChainMocks({ blockNumber: 20_000 })
+    const { JsonFileEventStore } = await import('../src/services/json-file-event-store.js')
+    const store = new JsonFileEventStore()
+
+    await store.sync()
+
+    const ranges = mockBlockchain.queryFilterChunked.mock.calls
+      .filter((c) => c[1] === 'SurveyRegistered')
+      .map((c) => [c[2], c[3]])
+    expect(ranges).toEqual([
+      [0, 8_999],
+      [9_000, 17_999],
+      [18_000, 20_000],
+    ])
+    expect(store.getLastSyncedBlock()).toBe(20_000)
+    expect(JSON.parse(readFileSync(STORE_PATH, 'utf-8')).lastSyncedBlock).toBe(20_000)
+    expect(store.isStale(60_000)).toBe(false)
+  })
+
+  it('keeps progress when the time budget runs out and resumes later', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    try {
+      configureChainMocks({
+        blockNumber: 20_000,
+        surveyEvents: [
+          { args: [21n, 1n, 0n], blockNumber: 15_000, index: 0, transactionHash: '0x21' },
+        ],
+      })
+      const { JsonFileEventStore } = await import('../src/services/json-file-event-store.js')
+      const cls = JsonFileEventStore as unknown as { SYNC_BUDGET_MS: number }
+      const originalBudget = cls.SYNC_BUDGET_MS
+      cls.SYNC_BUDGET_MS = 0 // budget exhausted after the first window
+      try {
+        const store = new JsonFileEventStore()
+        await store.sync()
+
+        // First window saved to disk, but not marked fresh yet.
+        expect(store.getLastSyncedBlock()).toBe(8_999)
+        expect(JSON.parse(readFileSync(STORE_PATH, 'utf-8')).lastSyncedBlock).toBe(8_999)
+        expect(store.getSyncDebug().lastSyncError).toBeNull()
+        expect(store.isStale(60_000)).toBe(true)
+
+        // Next run resumes from the checkpoint rather than starting over.
+        mockBlockchain.queryFilterChunked.mockClear()
+        await store.sync()
+        const firstFrom = mockBlockchain.queryFilterChunked.mock.calls[0][2]
+        expect(firstFrom).toBe(9_000)
+        expect(store.getLastSyncedBlock()).toBe(17_999)
+      } finally {
+        cls.SYNC_BUDGET_MS = originalBudget
+      }
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('does not duplicate events when an abandoned run finishes late', async () => {
+    configureChainMocks({ blockNumber: 100 })
+    let release: () => void = () => {}
+    const gate = new Promise<void>((r) => (release = r))
+    mockBlockchain.queryFilterChunked.mockImplementation(async (_c, filter) => {
+      await gate
+      return filter === 'SurveyRegistered'
+        ? [{ args: [1n, 1n, 0n], blockNumber: 50, index: 0, transactionHash: '0x1' }]
+        : []
+    })
+    const { JsonFileEventStore } = await import('../src/services/json-file-event-store.js')
+    const store = new JsonFileEventStore()
+
+    // Simulate the watchdog having abandoned this run.
+    const slow = store['runSync'](store['runGeneration'])
+    store['runGeneration']++
+    release()
+    await slow
+
+    expect(store.getSurveyRegisteredEvents()).toHaveLength(0)
+    expect(store.getLastSyncedBlock()).toBe(0)
+  })
+})
+
 describe('JsonFileEventStore — sync lock', () => {
   it('returns early if a sync is already in progress and not stale', async () => {
     configureChainMocks({ blockNumber: 50 })
