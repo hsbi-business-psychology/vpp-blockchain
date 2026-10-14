@@ -136,7 +136,7 @@ export class JsonFileEventStore implements EventStore {
     this.syncing = true
     this.syncStartedAt = Date.now()
     const generation = ++this.runGeneration
-    let caughtUp = true
+    let caughtUp: boolean
     let watchdogTimer: ReturnType<typeof setTimeout> | undefined
     try {
       caughtUp = await Promise.race([
