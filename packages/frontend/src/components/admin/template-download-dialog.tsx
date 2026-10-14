@@ -99,7 +99,7 @@ export function TemplateDownloadDialog({
                 {t('admin.surveys.templateDialog.limesurvey.title')}
               </span>
               <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                .lsq
+                .lss
               </span>
             </div>
             <p className="text-xs text-muted-foreground">

@@ -393,13 +393,13 @@
         "tx": "Transaction"
       },
       "downloadTemplate": "Download template",
-      "regenerateTemplate": "Regenerate template",
+      "regenerateTemplate": "Invalidate open links",
       "regenerateConfirm": {
-        "title": "Regenerate template?",
-        "description": "A fresh template will be generated and offered for download. Important: as soon as the new template is live in SoSci/LimeSurvey, claim links from older template versions will stop working. Use this only if you suspect your old template fell into the wrong hands.",
-        "button": "Yes, regenerate",
-        "success": "Fresh template generated. Download it now and replace the old version in your survey tool.",
-        "error": "Failed to regenerate template. Please try again."
+        "title": "Invalidate open claim links?",
+        "description": "The survey gets a new key. Claim links that were handed out but not yet redeemed stop working. The template in SoSci or LimeSurvey stays the same and does not need to be replaced. Use this only if handed-out links fell into the wrong hands.",
+        "button": "Yes, invalidate links",
+        "success": "New key active. Open claim links no longer work.",
+        "error": "The key could not be renewed. Please try again."
       },
       "reactivate": {
         "button": "Reactivate",
@@ -409,8 +409,8 @@
       "deactivate": "Deactivate",
       "deactivateConfirm": {
         "title": "Deactivate Survey",
-        "description": "Once deactivated, no more points can be claimed for this survey. This action is recorded on the blockchain.",
-        "button": "Permanently deactivate",
+        "description": "Once deactivated, no more points can be claimed for this survey until you reactivate it. The change is recorded on the blockchain.",
+        "button": "Deactivate",
         "success": "Survey has been deactivated"
       },
       "templateDialog": {
@@ -418,7 +418,7 @@
         "description": "Choose the survey tool you need the template for. The template contains the claim button participants see at the end of the survey.",
         "descriptionV2": "Choose your survey tool. Download the file and import it into SoSci or LimeSurvey — done.",
         "freshHint": "Ready to go: download the template now and import it into your survey tool.",
-        "freshHintRegenerate": "Fresh template generated. Download it and replace the old version in your survey tool.",
+        "freshHintRegenerate": "New key active. The template has not changed; you do not need to replace it.",
         "sosci": {
           "title": "SoSci Survey",
           "description": "Project file (.xml) for SoSci Survey. Import it as a new survey project.",

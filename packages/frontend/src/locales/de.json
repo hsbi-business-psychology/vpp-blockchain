@@ -393,13 +393,13 @@
         "tx": "Transaktion"
       },
       "downloadTemplate": "Vorlage herunterladen",
-      "regenerateTemplate": "Vorlage neu generieren",
+      "regenerateTemplate": "Offene Links ungültig machen",
       "regenerateConfirm": {
-        "title": "Vorlage neu generieren?",
-        "description": "Es wird eine frische Vorlage erzeugt und sofort zum Download angeboten. Wichtig: Sobald die neue Vorlage in SoSci/LimeSurvey aktiv ist, funktionieren bereits ausgegebene Claim-Links aus alten Vorlagen-Versionen nicht mehr. Nutze diese Funktion nur, wenn du den Verdacht hast, dass deine alte Vorlage in falsche Hände geraten ist.",
-        "button": "Ja, neu generieren",
-        "success": "Frische Vorlage erzeugt. Lade sie jetzt herunter und ersetze sie in deinem Umfrage-Tool.",
-        "error": "Vorlage konnte nicht neu generiert werden. Bitte erneut versuchen."
+        "title": "Offene Claim-Links ungültig machen?",
+        "description": "Die Umfrage bekommt einen neuen Schlüssel. Claim-Links, die schon ausgegeben, aber noch nicht eingelöst sind, funktionieren danach nicht mehr. Die Vorlage in SoSci oder LimeSurvey bleibt gleich und muss nicht ersetzt werden. Nutze das nur, wenn ausgegebene Links in falsche Hände geraten sind.",
+        "button": "Ja, Links ungültig machen",
+        "success": "Neuer Schlüssel aktiv. Offene Claim-Links funktionieren nicht mehr.",
+        "error": "Der Schlüssel konnte nicht erneuert werden. Bitte erneut versuchen."
       },
       "reactivate": {
         "button": "Reaktivieren",
@@ -409,8 +409,8 @@
       "deactivate": "Deaktivieren",
       "deactivateConfirm": {
         "title": "Umfrage deaktivieren",
-        "description": "Nach der Deaktivierung können keine weiteren Punkte für diese Umfrage vergeben werden. Diese Aktion wird auf der Blockchain gespeichert.",
-        "button": "Endgültig deaktivieren",
+        "description": "Nach der Deaktivierung können keine weiteren Punkte für diese Umfrage vergeben werden, bis du sie wieder aktivierst. Die Änderung wird auf der Blockchain gespeichert.",
+        "button": "Deaktivieren",
         "success": "Umfrage wurde deaktiviert"
       },
       "templateDialog": {
@@ -418,7 +418,7 @@
         "description": "Wähle das Umfrage-Tool, für das du die Vorlage benötigst. Die Vorlage enthält den Claim-Button, den Teilnehmende am Ende der Umfrage sehen.",
         "descriptionV2": "Wähle dein Umfrage-Tool. Datei herunterladen, in SoSci oder LimeSurvey importieren – fertig.",
         "freshHint": "Bereit zum Loslegen: Lade jetzt die Vorlage herunter und importiere sie in dein Umfrage-Tool.",
-        "freshHintRegenerate": "Frische Vorlage erzeugt. Lade sie herunter und ersetze die alte Version in deinem Umfrage-Tool.",
+        "freshHintRegenerate": "Neuer Schlüssel aktiv. Die Vorlage hat sich nicht geändert, du musst sie nicht ersetzen.",
         "sosci": {
           "title": "SoSci Survey",
           "description": "Projektdatei (.xml) für SoSci Survey. Importiere sie als neues Befragungsprojekt.",
