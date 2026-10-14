@@ -51,6 +51,13 @@ export default [
     },
   },
   {
+    // Node build and deploy scripts
+    files: ['**/*.mjs'],
+    languageOptions: {
+      globals: { process: 'readonly', console: 'readonly' },
+    },
+  },
+  {
     files: ['**/*.test.ts', '**/*.test.tsx', '**/test/**/*.ts', '**/test/**/*.tsx'],
     rules: {
       '@typescript-eslint/no-unused-expressions': 'off',
