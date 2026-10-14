@@ -29,7 +29,7 @@ The role is re-checked on every request (cached for one minute). Writes with a c
 - Body: `adminSignature` and `adminMessage`
 - Headers: `X-Admin-Signature` and `X-Admin-Message`
 
-**Action signature.** Adding or removing an admin and reading or rotating a survey key ignore the cookie and need a signed message that names the action: it must start with `Add admin <address> `, `Remove admin <address> `, `Read survey key <id> ` or `Rotate survey key <id> `, for example `Add admin 0xAbc… by 0xDef… at 1791900000`.
+**Action signature.** Adding or removing an admin, awarding or revoking points by hand and reading or rotating a survey key ignore the cookie and need a signed message that names the action: it must start with `Add admin <address> `, `Remove admin <address> `, `Award survey <id> to <address> `, `Revoke survey <id> from <address> `, `Read survey key <id> ` or `Rotate survey key <id> `, for example `Award survey 20 to 0xAbc… by 0xDef… at 1791900000`.
 
 ## Rate Limiting
 
@@ -274,7 +274,7 @@ Re-enable a previously deactivated survey. **Admin authentication required.** Re
 
 ### POST /api/v1/surveys/:id/revoke
 
-Revoke a previously awarded claim (e.g. fraud cleanup). Removes the wallet's points for this survey on-chain. **Admin authentication required.**
+Revoke a previously awarded claim (e.g. fraud cleanup). Removes the wallet's points for this survey on-chain. **Action signature required** (`Revoke survey <id> from <address> …`).
 
 **Request Body:**
 
@@ -282,7 +282,7 @@ Revoke a previously awarded claim (e.g. fraud cleanup). Removes the wallet's poi
 {
   "student": "0xabcd...1234",
   "adminSignature": "0x...",
-  "adminMessage": "revoke:42:1710000000"
+  "adminMessage": "Revoke survey 42 from 0xabcd...1234 by 0x... at 1710000000"
 }
 ```
 
@@ -293,6 +293,46 @@ Revoke a previously awarded claim (e.g. fraud cleanup). Removes the wallet's poi
 | 400    | `INVALID_ADDRESS`  | `student` is not a valid Ethereum address        |
 | 404    | `SURVEY_NOT_FOUND` | Survey does not exist                            |
 | 409    | `NOT_CLAIMED`      | The specified wallet has not claimed this survey |
+
+---
+
+### POST /api/v1/surveys/:id/award
+
+Give a wallet the points of a survey by hand, for participants whose claim did not go through. **Action signature required** (`Award survey <id> to <address> …`); the admin area asks for it on every award.
+
+**Request Body:**
+
+```json
+{
+  "student": "0xabcd...1234",
+  "adminSignature": "0x...",
+  "adminMessage": "Award survey 42 to 0xabcd...1234 by 0x... at 1710000000"
+}
+```
+
+**Success Response (201):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "student": "0xAbCd...1234",
+    "points": 0.25,
+    "txHash": "0x...",
+    "explorerUrl": "https://basescan.org/tx/0x..."
+  }
+}
+```
+
+| Status | Error Code           | When                                                 |
+| ------ | -------------------- | ---------------------------------------------------- |
+| 400    | `VALIDATION_ERROR`   | `student` is not a valid Ethereum address            |
+| 401    | `SIGNATURE_REQUIRED` | No signature was sent                                |
+| 403    | `ACTION_MISMATCH`    | The signed message names another survey or wallet    |
+| 403    | `FORBIDDEN`          | The signer does not hold `ADMIN_ROLE`                |
+| 404    | `SURVEY_NOT_FOUND`   | Survey does not exist                                |
+| 409    | `ALREADY_CLAIMED`    | The wallet already has this survey's points          |
+| 410    | `SURVEY_INACTIVE`    | Survey is deactivated; reactivate, award, deactivate |
 
 ---
 
