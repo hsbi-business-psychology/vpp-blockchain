@@ -12,7 +12,7 @@ VPP is a three-tier system: a **React frontend** communicates with a **Node.js b
 ┌──────────────┐  Server-side    ┌──────────────────────────────────┐
 │ SoSci Survey │  PHP renders    │  VPP Web App                     │
 │ /LimeSurvey  │ ──────────────→ │                                  │
-│ (external)   │  /claim?s=&n=&t │  Frontend (React SPA)            │
+│ (external)   │  /claim#s=&n=&t │  Frontend (React SPA)            │
 └──────────────┘                 │  ├─ Wallet management            │
                                  │  ├─ Claim flow                   │
                                  │  ├─ Points dashboard             │
@@ -168,7 +168,7 @@ SoSci/LimeSurvey       Browser (Frontend)             Backend                 Bl
        │ Goodbye-page PHP runs:                          │                        │
        │  - random_bytes(16) → nonce                     │                        │
        │  - HMAC("v1|sid|nonce", surveyKey) → token      │                        │
-       │  - Render <a href="/claim?s=&n=&t="> button     │                        │
+       │  - Render <a href="/claim#s=&n=&t="> button     │                        │
        │ ──────────────────→  │                          │                        │
        │                      │ 1. User opens claim URL  │                        │
        │                      │ 2. Load/create wallet    │                        │

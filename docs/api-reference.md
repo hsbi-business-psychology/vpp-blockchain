@@ -14,12 +14,22 @@ http://localhost:3000/api/v1
 
 ## Authentication
 
-Admin endpoints require an **EIP-191 wallet signature**. The credentials can be passed either in the request body or as HTTP headers:
+Admin endpoints accept two kinds of credentials. In both cases the address must hold `ADMIN_ROLE` on the smart contract (verified on-chain).
+
+**Session (what the admin UI uses).** One wallet signature per session:
+
+1. `GET /api/v1/auth/challenge?address=0x…` returns a Sign-In-with-Ethereum (EIP-4361) message for this site, valid for 5 minutes.
+2. `POST /api/v1/auth/login` with `{ "message", "signature" }` sets an `HttpOnly; SameSite=Strict` cookie `vpp_admin` for `ADMIN_SESSION_HOURS` (default 8).
+3. `GET /api/v1/auth/session` reports the session, `POST /api/v1/auth/logout` clears it.
+
+The role is re-checked on every request (cached for one minute). Writes with a cookie are refused when the `Origin` header names another site.
+
+**Signed message.** An EIP-191 signature of a message ending in a unix timestamp at most `MAX_MESSAGE_AGE_MS` old (default 60 s):
 
 - Body: `adminSignature` and `adminMessage`
 - Headers: `X-Admin-Signature` and `X-Admin-Message`
 
-The recovered signer address must hold `ADMIN_ROLE` on the smart contract (verified on-chain).
+**Action signature.** Adding or removing an admin and reading or rotating a survey key ignore the cookie and need a signed message that names the action: it must start with `Add admin <address> `, `Remove admin <address> `, `Read survey key <id> ` or `Rotate survey key <id> `, for example `Add admin 0xAbc… by 0xDef… at 1791900000`.
 
 ## Rate Limiting
 
@@ -321,7 +331,7 @@ Returns an XML file with `Content-Type: application/xml` and `Content-Dispositio
 
 ### GET /api/v1/surveys/:id/key
 
-Retrieve the current HMAC key for a registered survey. **Admin authentication required.** Use this if you lost the key from the registration response.
+Retrieve the current HMAC key for a registered survey. **Action signature required** (`Read survey key <id> …`). Use this if you lost the key from the registration response.
 
 **Success Response (200):**
 
@@ -344,9 +354,9 @@ Retrieve the current HMAC key for a registered survey. **Admin authentication re
 
 ### POST /api/v1/surveys/:id/key/rotate
 
-Generate a fresh HMAC key for a registered survey, invalidating the previous one. **Admin authentication required.**
+Generate a fresh HMAC key for a registered survey, invalidating the previous one. **Action signature required** (`Rotate survey key <id> …`).
 
-> Rotating a key invalidates **every already-distributed claim link**. Do this only after a data-collection window has closed, or in immediate response to a leak.
+> Rotating a key invalidates claim links that were handed out but not yet redeemed. The template's launcher link stays valid and does not need to be replaced.
 
 **Success Response (200):**
 

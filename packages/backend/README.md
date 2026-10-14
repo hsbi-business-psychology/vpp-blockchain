@@ -79,6 +79,7 @@ pnpm --filter @vpp/backend test
 | `LOG_LEVEL`                  | No       | `info`                         | Pino log level (`fatal`/`error`/`warn`/`info`/`debug`/`trace`)                              |
 | `TRUST_PROXY`                | No       | `false`                        | Express trust proxy setting for reverse proxies                                             |
 | `MAX_MESSAGE_AGE_MS`         | No       | `60000`                        | Max age (ms) for signed claim/admin messages (60 s; raise carefully — widens replay window) |
+| `ADMIN_SESSION_HOURS`        | No       | `8`                            | How long one admin sign-in lasts (session cookie)                                           |
 | `SYNC_INTERVAL_MS`           | No       | `60000`                        | Event store sync interval (ms)                                                              |
 | `CACHE_TTL_MS`               | No       | `30000`                        | Survey cache TTL (ms)                                                                       |
 | `CHUNK_SIZE`                 | No       | `9000`                         | Block range per RPC query chunk                                                             |

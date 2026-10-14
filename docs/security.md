@@ -10,7 +10,7 @@ This document describes the security model of VPP Blockchain, including threat m
 ┌────────────────────────────────────────────────────────────┐
 │ Layer 1: Per-Participant HMAC Claim Token                  │
 │ → Survey server (SoSci/LimeSurvey) mints a unique URL per  │
-│   participant: /claim?s=<id>&n=<nonce>&t=<hmac>            │
+│   participant: /claim#s=<id>&n=<nonce>&t=<hmac>            │
 │ → Token = HMAC-SHA256("v1|surveyId|nonce", surveyKey)      │
 │ → Backend verifies with timingSafeEqual, rejects on mismatch│
 │ → HMAC key never reaches the participant's browser         │
@@ -141,7 +141,9 @@ is on the long-term backlog (audit F2.2).
 ### Admin Keys
 
 - Admin wallets are verified on-chain via `ADMIN_ROLE` on the smart contract.
-- Admin actions require EIP-191 signature verification of a freshly signed message (default ≤ 60 seconds old, configurable via `MAX_MESSAGE_AGE_MS`; lowered from the previous 5-minute window in audit F6.11). The 60 s window is a defence-in-depth bound on the replay surface — the primary replay protection is the per-admin server-side nonce store (`data/used-nonces.json`).
+- Admins sign in once per session: the backend issues a Sign-In-with-Ethereum message, and a valid signature of an `ADMIN_ROLE` holder yields an `HttpOnly`, `SameSite=Strict` session cookie (8 h, `ADMIN_SESSION_HOURS`). The role is re-checked with a one-minute cache, so revoking it takes effect within a minute; cookie writes from a foreign `Origin` are refused. Login nonce and session token are HMACs under `data/session-secret.json`; deleting that file signs every admin out.
+- Adding or removing admins and reading or rotating a survey key need a fresh signature whose message names the action and target. A session cookie or a signature made for another action is refused.
+- Scripts can still authenticate with a signed message ending in a timestamp (≤ `MAX_MESSAGE_AGE_MS`, default 60 s). That path checks only the timestamp, not the action.
 - Admins can register/deactivate/reactivate surveys, revoke individual claims, manage admins, and mark wallet submissions.
 - Admin role can be granted/revoked via the contract's `AccessControlUpgradeable`. The contract refuses to revoke the **last** admin (`LastAdmin` custom error + `_adminCount` invariant). Note: this guard only protects the _last_ remaining admin — a compromised admin can still demote every other admin one by one until only it remains.
 
