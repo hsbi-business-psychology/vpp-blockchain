@@ -1,0 +1,37 @@
+name: Health check
+
+# Probes the live site twice an hour. A failed run makes GitHub notify the
+# person who last changed this schedule, so a dead backend or a stalled
+# event sync is noticed within the hour instead of weeks later. Each probe
+# also lets the backend sync its event cache.
+#
+# GitHub pauses scheduled workflows after 60 days without repository
+# activity and announces that by email beforehand; re-enable it in the
+# Actions tab when that happens.
+on:
+  schedule:
+    - cron: '17,47 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ready:
+    name: /api/v1/health/ready
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      SITE_URL: ${{ vars.SITE_URL || 'https://vpstunden.hsbi.de' }}
+    steps:
+      - name: Probe (three attempts, one minute apart)
+        run: |
+          for attempt in 1 2 3; do
+            status=$(curl -s -m 30 -o body.json -w '%{http_code}' "$SITE_URL/api/v1/health/ready" || true)
+            cat body.json 2>/dev/null || true
+            echo
+            if [ "$status" = "200" ]; then exit 0; fi
+            echo "Attempt $attempt: HTTP ${status:-none}"
+            if [ "$attempt" -lt 3 ]; then sleep 60; fi
+          done
+          echo "::error::$SITE_URL is not ready (last HTTP ${status:-none})"
+          exit 1
