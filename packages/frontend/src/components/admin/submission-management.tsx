@@ -35,7 +35,12 @@ interface SearchResult {
   submitted: boolean
 }
 
-export function SubmissionManagement() {
+interface SubmissionManagementProps {
+  /** Called when a session request comes back 401. */
+  onSessionExpired?: () => void
+}
+
+export function SubmissionManagement({ onSessionExpired }: SubmissionManagementProps = {}) {
   const { t, i18n } = useTranslation()
   const { getWalletSubmissionStatus, markWalletSubmitted, unmarkWalletSubmitted } = useApi()
 
@@ -82,6 +87,10 @@ export function SubmissionManagement() {
       const updated = await getWalletSubmissionStatus(result.address)
       setResult(updated)
     } catch (err) {
+      if (err instanceof ApiRequestError && err.status === 401) {
+        onSessionExpired?.()
+        return
+      }
       const key =
         confirmAction === 'mark' ? 'admin.submissions.markError' : 'admin.submissions.unmarkError'
       toast.error(err instanceof ApiRequestError ? err.message : t(key))

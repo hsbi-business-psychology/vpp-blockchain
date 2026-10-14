@@ -142,16 +142,20 @@ export default function AdminPage() {
   }, [wallet, sign, t, getAdminSession, getLoginChallenge, adminLogin])
 
   // The cookie ran out mid-session: drop back to the gate, which signs in again.
+  const handleSessionExpired = useCallback(() => {
+    setAuthenticated(false)
+    toast.error(t('admin.auth.expired'))
+  }, [t])
+
   const reportError = useCallback(
     (err: unknown, fallbackKey: string) => {
       if (err instanceof ApiRequestError && err.status === 401) {
-        setAuthenticated(false)
-        toast.error(t('admin.auth.expired'))
+        handleSessionExpired()
         return
       }
       toast.error(err instanceof ApiRequestError ? err.message : t(fallbackKey))
     },
-    [t],
+    [t, handleSessionExpired],
   )
 
   const handleRetryAuth = useCallback(() => {
@@ -395,11 +399,17 @@ export default function AdminPage() {
       </Card>
 
       <Separator />
-      <SubmissionManagement />
+      <SubmissionManagement onSessionExpired={handleSessionExpired} />
       <Separator />
-      {wallet && <RoleManagement walletAddress={wallet.address} sign={sign} />}
+      {wallet && (
+        <RoleManagement
+          walletAddress={wallet.address}
+          sign={sign}
+          onSessionExpired={handleSessionExpired}
+        />
+      )}
       <Separator />
-      <SystemStatus />
+      <SystemStatus onSessionExpired={handleSessionExpired} />
 
       <DeactivateSurveyDialog
         survey={deactivateTarget}

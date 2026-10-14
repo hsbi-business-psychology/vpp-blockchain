@@ -25,11 +25,13 @@ import { ApiRequestError } from '@vpp/shared'
 interface RoleManagementProps {
   walletAddress: string
   sign: (message: string) => Promise<string>
+  /** Called when a session request comes back 401. */
+  onSessionExpired?: () => void
 }
 
 const MAX_LABEL_LENGTH = 64
 
-export function RoleManagement({ walletAddress, sign }: RoleManagementProps) {
+export function RoleManagement({ walletAddress, sign, onSessionExpired }: RoleManagementProps) {
   const { t } = useTranslation()
   const { addAdmin, removeAdmin, getAdmins, setAdminLabel } = useApi()
   const [address, setAddress] = useState('')
@@ -50,12 +52,13 @@ export function RoleManagement({ walletAddress, sign }: RoleManagementProps) {
     setAdminsError(false)
     try {
       setAdmins(await getAdmins())
-    } catch {
-      setAdminsError(true)
+    } catch (err) {
+      if (err instanceof ApiRequestError && err.status === 401) onSessionExpired?.()
+      else setAdminsError(true)
     } finally {
       setLoadingAdmins(false)
     }
-  }, [getAdmins])
+  }, [getAdmins, onSessionExpired])
 
   useEffect(() => {
     fetchAdmins()
@@ -120,6 +123,10 @@ export function RoleManagement({ walletAddress, sign }: RoleManagementProps) {
       toast.success(t('admin.roles.successLabel'))
       cancelEditing()
     } catch (err) {
+      if (err instanceof ApiRequestError && err.status === 401) {
+        onSessionExpired?.()
+        return
+      }
       const msg = err instanceof ApiRequestError ? err.message : t('admin.roles.errorLabel')
       toast.error(msg)
     } finally {

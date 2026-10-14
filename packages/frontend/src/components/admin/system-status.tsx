@@ -18,6 +18,7 @@ import { toast } from 'sonner'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useApi } from '@/hooks/use-api'
+import { ApiRequestError } from '@vpp/shared'
 import { config } from '@/lib/config'
 
 // The implementation the frontend and backend are built for.
@@ -46,7 +47,12 @@ interface StatusData {
   }
 }
 
-export function SystemStatus() {
+interface SystemStatusProps {
+  /** Called when the status request comes back 401. */
+  onSessionExpired?: () => void
+}
+
+export function SystemStatus({ onSessionExpired }: SystemStatusProps = {}) {
   const { t } = useTranslation()
   const { getSystemStatus } = useApi()
   const [status, setStatus] = useState<StatusData | null>(null)
@@ -63,12 +69,13 @@ export function SystemStatus() {
       if (data.lowBalance) {
         setExpanded(true)
       }
-    } catch {
-      setError(true)
+    } catch (err) {
+      if (err instanceof ApiRequestError && err.status === 401) onSessionExpired?.()
+      else setError(true)
     } finally {
       setLoading(false)
     }
-  }, [getSystemStatus])
+  }, [getSystemStatus, onSessionExpired])
 
   useEffect(() => {
     fetchStatus()

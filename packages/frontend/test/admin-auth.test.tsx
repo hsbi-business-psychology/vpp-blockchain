@@ -14,6 +14,7 @@ import React, { Suspense } from 'react'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ApiRequestError } from '@vpp/shared'
 
 const mockWalletReturn = {
   wallet: { address: '0xAdmin', privateKey: '0xPK', type: 'local' as const },
@@ -222,6 +223,19 @@ describe('AdminPage auto-auth (F5.2 regression)', () => {
     })
     expect(mockApiReturn.getLoginChallenge).toHaveBeenCalledWith('0xAdmin')
     expect(mockWalletReturn.sign).toHaveBeenCalledTimes(1)
+  })
+
+  it('signs in again when a panel finds the session expired', async () => {
+    mockWalletReturn.sign.mockResolvedValue('0xsig')
+    mockApiReturn.getAdmins.mockRejectedValueOnce(
+      new ApiRequestError('UNAUTHORIZED', 'Admin authentication required', 401),
+    )
+
+    renderAdmin()
+
+    await waitFor(() => {
+      expect(mockApiReturn.adminLogin).toHaveBeenCalledTimes(2)
+    })
   })
 
   it('offers a retry instead of "no access" when the role check fails', async () => {
