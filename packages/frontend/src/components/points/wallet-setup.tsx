@@ -83,7 +83,7 @@ export function WalletSetup({
                 <Button variant="outline" disabled size="sm" className="opacity-50 md:w-full">
                   {t('wallet.metamask.notInstalled')}
                 </Button>
-                <p className="text-center text-xs text-muted-foreground">
+                <p className="max-w-[13.5rem] text-center text-xs text-muted-foreground md:max-w-none">
                   {t('wallet.metamask.installHint')}{' '}
                   <a
                     href="https://metamask.io"
