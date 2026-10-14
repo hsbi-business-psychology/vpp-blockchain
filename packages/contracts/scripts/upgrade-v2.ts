@@ -19,6 +19,17 @@
  */
 import { ethers, network, run, upgrades } from 'hardhat'
 
+// A load-balanced RPC can still return the old implementation slot for a
+// few seconds after the upgrade transaction is mined.
+async function readNewImplementation(proxy: string, previous: string): Promise<string> {
+  for (let attempt = 0; attempt < 12; attempt++) {
+    const impl = await upgrades.erc1967.getImplementationAddress(proxy)
+    if (impl.toLowerCase() !== previous.toLowerCase()) return impl
+    await new Promise((resolve) => setTimeout(resolve, 5_000))
+  }
+  return previous
+}
+
 async function main() {
   const proxyAddress = process.env.PROXY_ADDRESS
   if (!proxyAddress || !ethers.isAddress(proxyAddress)) {
@@ -40,7 +51,7 @@ async function main() {
   const factory = await ethers.getContractFactory(implementationName, deployer)
   const upgraded = await upgrades.upgradeProxy(proxyAddress, factory)
   await upgraded.waitForDeployment()
-  const newImpl = await upgrades.erc1967.getImplementationAddress(proxyAddress)
+  const newImpl = await readNewImplementation(proxyAddress, oldImpl)
   console.log(`  New impl:       ${newImpl}`)
 
   if (oldImpl.toLowerCase() === newImpl.toLowerCase()) {
