@@ -90,6 +90,57 @@ export class JsonFileEventStore implements EventStore {
         roleChanges: [],
       }
     }
+    const removed = this.dropDuplicates()
+    if (removed > 0) {
+      logger.warn({ removed }, 'Event store contained duplicate events — removed')
+      this.save()
+    }
+  }
+
+  /**
+   * Removes repeated events, keeping the first. Before runs were fenced by
+   * runGeneration, an abandoned sync could append a window a second time;
+   * the production cache of 2026-10 held 13 duplicated claims from April,
+   * which showed up twice in students' claim history.
+   * Returns the number of entries removed.
+   */
+  private dropDuplicates(): number {
+    const unique = <T>(items: T[], key: (item: T) => string): T[] => {
+      const seen = new Set<string>()
+      return items.filter((item) => {
+        const k = key(item)
+        if (seen.has(k)) return false
+        seen.add(k)
+        return true
+      })
+    }
+    this.store.surveyRegistered ??= []
+    this.store.pointsAwarded ??= []
+    this.store.roleChanges ??= []
+    const before =
+      this.store.surveyRegistered.length +
+      this.store.pointsAwarded.length +
+      this.store.roleChanges.length
+    // String(...) so a malformed row is kept rather than crashing the load.
+    const lower = (value: unknown) => String(value ?? '').toLowerCase()
+    this.store.surveyRegistered = unique(
+      this.store.surveyRegistered,
+      (e) => `${lower(e.txHash)}:${e.surveyId}`,
+    )
+    this.store.pointsAwarded = unique(
+      this.store.pointsAwarded,
+      (e) => `${lower(e.txHash)}:${lower(e.wallet)}:${e.surveyId}`,
+    )
+    this.store.roleChanges = unique(
+      this.store.roleChanges,
+      (e) => `${e.blockNumber}:${e.logIndex}:${e.type}:${lower(e.account)}`,
+    )
+    return (
+      before -
+      this.store.surveyRegistered.length -
+      this.store.pointsAwarded.length -
+      this.store.roleChanges.length
+    )
   }
 
   private save(): void {
@@ -340,6 +391,7 @@ export class JsonFileEventStore implements EventStore {
       })
     }
 
+    this.dropDuplicates()
     this.store.lastSyncedBlock = toBlock
     this.save()
     return true

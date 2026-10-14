@@ -231,6 +231,61 @@ describe('JsonFileEventStore — incremental sync', () => {
   })
 })
 
+describe('JsonFileEventStore — duplicates', () => {
+  it('drops duplicated events on load and rewrites the file', async () => {
+    const claim = {
+      wallet: '0xAbC0000000000000000000000000000000000001',
+      surveyId: 3,
+      points: 1,
+      blockNumber: 44948901,
+      txHash: '0xclaim',
+      timestamp: 1776600000,
+    }
+    writeFileSync(
+      STORE_PATH,
+      JSON.stringify({
+        lastSyncedBlock: 44949100,
+        surveyRegistered: [],
+        pointsAwarded: [claim, { ...claim, wallet: claim.wallet.toLowerCase() }],
+        roleChanges: [],
+      }),
+      { mode: 0o600 },
+    )
+    const { JsonFileEventStore } = await import('../src/services/json-file-event-store.js')
+    const store = new JsonFileEventStore()
+    store['load']()
+
+    expect(store.getPointsAwardedByWallet(claim.wallet)).toHaveLength(1)
+    expect(JSON.parse(readFileSync(STORE_PATH, 'utf-8')).pointsAwarded).toHaveLength(1)
+  })
+
+  it('keeps a re-claim after a revoke, which has its own transaction', async () => {
+    const claim = {
+      wallet: '0xAbC0000000000000000000000000000000000002',
+      surveyId: 4,
+      points: 1,
+      blockNumber: 100,
+      txHash: '0xfirst',
+      timestamp: 1776600000,
+    }
+    writeFileSync(
+      STORE_PATH,
+      JSON.stringify({
+        lastSyncedBlock: 300,
+        surveyRegistered: [],
+        pointsAwarded: [claim, { ...claim, blockNumber: 200, txHash: '0xsecond' }],
+        roleChanges: [],
+      }),
+      { mode: 0o600 },
+    )
+    const { JsonFileEventStore } = await import('../src/services/json-file-event-store.js')
+    const store = new JsonFileEventStore()
+    store['load']()
+
+    expect(store.getPointsAwardedByWallet(claim.wallet)).toHaveLength(2)
+  })
+})
+
 describe('JsonFileEventStore — windowed catch-up', () => {
   // The blockchain mock above reports an event window of 9000 blocks.
 
