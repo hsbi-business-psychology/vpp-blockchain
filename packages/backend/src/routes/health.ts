@@ -146,6 +146,28 @@ async function probeRpc(rpcUrl: string): Promise<{
   }
 }
 
+type Probe = Awaited<ReturnType<typeof probeRpc>>
+
+// /diag is public, and every probe is a paid RPC request on the primary
+// URL. Concurrent and repeated calls share one probe round per minute.
+const PROBE_CACHE_MS = 60_000
+let probeRound: { at: number; result: Promise<[Probe[], Probe[]]> } | null = null
+
+/** Test-only: forget the cached probe round. */
+export function __resetProbeCacheForTests(): void {
+  probeRound = null
+}
+
+function probeAll(configured: string[], fallbackUrls: string[]): Promise<[Probe[], Probe[]]> {
+  if (probeRound && Date.now() - probeRound.at < PROBE_CACHE_MS) return probeRound.result
+  const result = Promise.all([
+    Promise.all(configured.map(probeRpc)),
+    Promise.all(fallbackUrls.map(probeRpc)),
+  ])
+  probeRound = { at: Date.now(), result }
+  return result
+}
+
 router.get('/diag', async (_req, res) => {
   // Probe ALL URLs that the FallbackProvider could route to — both the
   // operator-configured RPC_URL list AND the hard-coded public Base
@@ -159,10 +181,7 @@ router.get('/diag', async (_req, res) => {
   const effective = blockchain.getEffectiveRpcUrls()
   const fallbackUrls = effective.filter((u) => !configured.includes(u))
 
-  const [configuredProbes, fallbackProbes] = await Promise.all([
-    Promise.all(configured.map(probeRpc)),
-    Promise.all(fallbackUrls.map(probeRpc)),
-  ])
+  const [configuredProbes, fallbackProbes] = await probeAll(configured, fallbackUrls)
 
   // Surface the event-store internals so operators can tell whether the
   // background sync is keeping up. Added after a production incident where

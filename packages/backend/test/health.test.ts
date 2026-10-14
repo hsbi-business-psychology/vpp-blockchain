@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import request from 'supertest'
 import { createApp } from '../src/server.js'
+import { __resetProbeCacheForTests } from '../src/routes/health.js'
 import { config } from '../src/config.js'
 import * as blockchain from '../src/services/blockchain.js'
 import { getEventStore } from '../src/services/event-store.js'
@@ -170,10 +171,23 @@ describe('GET /api/v1/health/diag (operator diagnostic)', () => {
 
   beforeEach(() => {
     vi.restoreAllMocks()
+    __resetProbeCacheForTests()
     vi.mocked(blockchain.getEffectiveRpcUrls).mockReturnValue([
       'http://localhost:8545',
       'https://base.drpc.org',
     ])
+  })
+
+  it('probes each RPC once per minute however often it is called', async () => {
+    mockFetchOk()
+
+    await Promise.all([
+      request(app).get('/api/v1/health/diag'),
+      request(app).get('/api/v1/health/diag'),
+    ])
+    await request(app).get('/api/v1/health/diag')
+
+    expect(fetchSpy).toHaveBeenCalledTimes(2)
   })
 
   afterEach(() => {
