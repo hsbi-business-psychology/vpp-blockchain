@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+import type { SurveyInfo } from '@vpp/shared'
 
 // Stable like the real hook; a new `t` per render would re-run effects.
 const mockT = (key: string, opts?: Record<string, unknown>) =>
@@ -17,6 +18,20 @@ vi.mock('react-i18next', () => ({
 }))
 
 import { CollapsibleCard } from '@/components/ui/collapsible-card'
+import { SurveyTable } from '@/components/admin/survey-table'
+
+function survey(overrides: Partial<SurveyInfo>): SurveyInfo {
+  return {
+    surveyId: 1,
+    title: 'Studie',
+    points: 1,
+    maxClaims: 0,
+    claimCount: 0,
+    active: true,
+    registeredAt: '2026-10-01T10:00:00.000Z',
+    ...overrides,
+  }
+}
 
 describe('CollapsibleCard', () => {
   it('starts closed and opens with the arrow', async () => {
@@ -63,5 +78,41 @@ describe('CollapsibleCard', () => {
     )
 
     expect(screen.getByText('Tabelle')).toBeInTheDocument()
+  })
+})
+
+describe('SurveyTable', () => {
+  const noop = () => {}
+
+  it('shows only active surveys by default', () => {
+    render(
+      <SurveyTable
+        surveys={[
+          survey({ surveyId: 20, title: 'Läuft', active: true }),
+          survey({ surveyId: 21, title: 'Vorbei', active: false }),
+        ]}
+        onDownloadTemplate={noop}
+        onDeactivate={noop}
+        onReactivate={noop}
+        onRegenerateTemplate={noop}
+      />,
+    )
+
+    expect(screen.getAllByText('Läuft').length).toBeGreaterThan(0)
+    expect(screen.queryByText('Vorbei')).not.toBeInTheDocument()
+  })
+
+  it('says where older surveys are when none is active', () => {
+    render(
+      <SurveyTable
+        surveys={[survey({ surveyId: 21, title: 'Vorbei', active: false })]}
+        onDownloadTemplate={noop}
+        onDeactivate={noop}
+        onReactivate={noop}
+        onRegenerateTemplate={noop}
+      />,
+    )
+
+    expect(screen.getByText('admin.surveys.filter.noneActive')).toBeInTheDocument()
   })
 })

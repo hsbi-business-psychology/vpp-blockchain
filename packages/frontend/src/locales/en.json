@@ -440,6 +440,7 @@
         "all": "All",
         "activeOnly": "Active only",
         "inactiveOnly": "Inactive only",
+        "noneActive": "No survey is active right now. Older ones are under the filter \"All\".",
         "newestFirst": "Newest first",
         "oldestFirst": "Oldest first"
       },

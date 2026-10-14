@@ -66,7 +66,8 @@ export function SurveyTable({
 }: SurveyTableProps) {
   const { t, i18n } = useTranslation()
 
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  // Running surveys are what admins work with; older ones are one click away.
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('active')
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest')
   const [pageSize, setPageSize] = useState(10)
   const [page, setPage] = useState(0)
@@ -141,7 +142,9 @@ export function SurveyTable({
       </div>
 
       {filtered.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">{t('common.noResults')}</p>
+        <p className="py-8 text-center text-sm text-muted-foreground">
+          {statusFilter === 'active' ? t('admin.surveys.filter.noneActive') : t('common.noResults')}
+        </p>
       ) : (
         <>
           {/* Desktop table */}

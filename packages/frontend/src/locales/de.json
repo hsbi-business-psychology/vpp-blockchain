@@ -440,6 +440,7 @@
         "all": "Alle",
         "activeOnly": "Nur aktive",
         "inactiveOnly": "Nur inaktive",
+        "noneActive": "Gerade ist keine Umfrage aktiv. Ältere findest du über den Filter „Alle“.",
         "newestFirst": "Neueste zuerst",
         "oldestFirst": "Älteste zuerst"
       },
