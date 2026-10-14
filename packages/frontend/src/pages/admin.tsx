@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Loader2, LogOut } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
+import { CollapsibleCard } from '@/components/ui/collapsible-card'
 import { MetricsCards } from '@/components/admin/metrics-cards'
 import { SurveyTable } from '@/components/admin/survey-table'
 import { RegisterSurveyDialog } from '@/components/admin/register-survey-dialog'
@@ -375,13 +374,8 @@ export default function AdminPage() {
         loading={loading}
       />
 
-      <Separator />
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">{t('admin.surveys.title')}</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
+      <div className="space-y-4">
+        <CollapsibleCard title={t('admin.surveys.title')} defaultOpen contentClassName="pt-4">
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="size-6 animate-spin text-muted-foreground" />
@@ -395,21 +389,17 @@ export default function AdminPage() {
               onRegenerateTemplate={handleRegenerate}
             />
           )}
-        </CardContent>
-      </Card>
-
-      <Separator />
-      <SubmissionManagement onSessionExpired={handleSessionExpired} />
-      <Separator />
-      {wallet && (
-        <RoleManagement
-          walletAddress={wallet.address}
-          sign={sign}
-          onSessionExpired={handleSessionExpired}
-        />
-      )}
-      <Separator />
-      <SystemStatus onSessionExpired={handleSessionExpired} />
+        </CollapsibleCard>
+        <SubmissionManagement onSessionExpired={handleSessionExpired} />
+        {wallet && (
+          <RoleManagement
+            walletAddress={wallet.address}
+            sign={sign}
+            onSessionExpired={handleSessionExpired}
+          />
+        )}
+        <SystemStatus onSessionExpired={handleSessionExpired} />
+      </div>
 
       <DeactivateSurveyDialog
         survey={deactivateTarget}

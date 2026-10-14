@@ -38,6 +38,8 @@
     "search": "Search",
     "noResults": "No results found",
     "backToTop": "Back to top",
+    "expand": "Expand",
+    "collapse": "Collapse",
     "wallet": "Wallet"
   },
   "nav": {

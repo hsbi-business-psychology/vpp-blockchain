@@ -1,22 +1,12 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ethers } from 'ethers'
-import {
-  Search,
-  Loader2,
-  Info,
-  GraduationCap,
-  CheckCircle2,
-  XCircle,
-  Award,
-  Undo2,
-} from 'lucide-react'
+import { Search, Loader2, GraduationCap, CheckCircle2, XCircle, Award, Undo2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { CollapsibleCard } from '@/components/ui/collapsible-card'
 import { Badge } from '@/components/ui/badge'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   Dialog,
   DialogContent,
@@ -101,131 +91,111 @@ export function SubmissionManagement({ onSessionExpired }: SubmissionManagementP
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-lg">{t('admin.submissions.title')}</CardTitle>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    className="text-muted-foreground hover:text-foreground"
-                    aria-label={t('admin.submissions.infoLabel')}
-                  >
-                    <Info className="size-4" aria-hidden="true" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right" className="max-w-xs text-sm">
-                  {t('admin.submissions.infoTip')}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <CardDescription>{t('admin.submissions.description')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Input
-              placeholder={t('admin.submissions.searchPlaceholder')}
-              value={searchAddress}
-              onChange={(e) => setSearchAddress(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="font-mono sm:flex-1"
-              aria-label={t('admin.submissions.searchPlaceholder')}
-              autoComplete="off"
-            />
-            <Button onClick={handleSearch} disabled={searchLoading || !searchAddress.trim()}>
-              {searchLoading ? (
-                <Loader2 className="mr-2 size-4 animate-spin" />
-              ) : (
-                <Search className="mr-2 size-4" />
-              )}
-              {t('admin.submissions.search')}
-            </Button>
-          </div>
+      <CollapsibleCard
+        title={t('admin.submissions.title')}
+        description={t('admin.submissions.description')}
+        info={{ label: t('admin.submissions.infoLabel'), text: t('admin.submissions.infoTip') }}
+        contentClassName="space-y-6"
+      >
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Input
+            placeholder={t('admin.submissions.searchPlaceholder')}
+            value={searchAddress}
+            onChange={(e) => setSearchAddress(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            className="font-mono sm:flex-1"
+            aria-label={t('admin.submissions.searchPlaceholder')}
+            autoComplete="off"
+          />
+          <Button onClick={handleSearch} disabled={searchLoading || !searchAddress.trim()}>
+            {searchLoading ? (
+              <Loader2 className="mr-2 size-4 animate-spin" />
+            ) : (
+              <Search className="mr-2 size-4" />
+            )}
+            {t('admin.submissions.search')}
+          </Button>
+        </div>
 
-          {searchError && (
-            <p className="text-sm text-destructive" role="alert">
-              {searchError}
-            </p>
-          )}
+        {searchError && (
+          <p className="text-sm text-destructive" role="alert">
+            {searchError}
+          </p>
+        )}
 
-          {result && (
-            <div className="rounded-lg border border-border">
-              <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${
-                      result.submitted ? 'bg-green-500/10' : 'bg-muted'
+        {result && (
+          <div className="rounded-lg border border-border">
+            <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3 min-w-0">
+                <div
+                  className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${
+                    result.submitted ? 'bg-green-500/10' : 'bg-muted'
+                  }`}
+                >
+                  <GraduationCap
+                    className={`size-5 ${
+                      result.submitted ? 'text-green-500' : 'text-muted-foreground'
                     }`}
-                  >
-                    <GraduationCap
-                      className={`size-5 ${
-                        result.submitted ? 'text-green-500' : 'text-muted-foreground'
-                      }`}
-                    />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="truncate font-mono text-sm">{result.address}</p>
-                    <div className="mt-1 flex items-center gap-3">
-                      <span className="flex items-center gap-1 text-sm">
-                        <Award className="size-3.5 text-primary" />
-                        <span className="font-semibold">
-                          {formatPoints(result.totalPoints, i18n.language)}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {t('admin.submissions.points')}
-                        </span>
-                      </span>
-                      <Badge
-                        variant={result.submitted ? 'default' : 'secondary'}
-                        className={`text-xs ${
-                          result.submitted
-                            ? 'bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/20'
-                            : ''
-                        }`}
-                      >
-                        {result.submitted ? (
-                          <CheckCircle2 className="mr-1 size-3" />
-                        ) : (
-                          <XCircle className="mr-1 size-3" />
-                        )}
-                        {result.submitted
-                          ? t('admin.submissions.submitted')
-                          : t('admin.submissions.notSubmitted')}
-                      </Badge>
-                    </div>
-                  </div>
+                  />
                 </div>
-
-                <div className="shrink-0">
-                  {result.submitted ? (
-                    <Button variant="outline" size="sm" onClick={() => setConfirmAction('unmark')}>
-                      <Undo2 className="mr-1.5 size-3.5" />
-                      {t('admin.submissions.unmarkSubmitted')}
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      onClick={() => setConfirmAction('mark')}
-                      className="bg-green-600 hover:bg-green-700 text-white"
+                <div className="min-w-0">
+                  <p className="truncate font-mono text-sm">{result.address}</p>
+                  <div className="mt-1 flex items-center gap-3">
+                    <span className="flex items-center gap-1 text-sm">
+                      <Award className="size-3.5 text-primary" />
+                      <span className="font-semibold">
+                        {formatPoints(result.totalPoints, i18n.language)}
+                      </span>
+                      <span className="text-muted-foreground">{t('admin.submissions.points')}</span>
+                    </span>
+                    <Badge
+                      variant={result.submitted ? 'default' : 'secondary'}
+                      className={`text-xs ${
+                        result.submitted
+                          ? 'bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/20'
+                          : ''
+                      }`}
                     >
-                      <CheckCircle2 className="mr-1.5 size-3.5" />
-                      {t('admin.submissions.markSubmitted')}
-                    </Button>
-                  )}
+                      {result.submitted ? (
+                        <CheckCircle2 className="mr-1 size-3" />
+                      ) : (
+                        <XCircle className="mr-1 size-3" />
+                      )}
+                      {result.submitted
+                        ? t('admin.submissions.submitted')
+                        : t('admin.submissions.notSubmitted')}
+                    </Badge>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
 
-          {!result && !searchError && (
-            <p className="py-4 text-center text-sm text-muted-foreground">
-              {t('admin.submissions.noResults')}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+              <div className="shrink-0">
+                {result.submitted ? (
+                  <Button variant="outline" size="sm" onClick={() => setConfirmAction('unmark')}>
+                    <Undo2 className="mr-1.5 size-3.5" />
+                    {t('admin.submissions.unmarkSubmitted')}
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    onClick={() => setConfirmAction('mark')}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <CheckCircle2 className="mr-1.5 size-3.5" />
+                    {t('admin.submissions.markSubmitted')}
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!result && !searchError && (
+          <p className="py-4 text-center text-sm text-muted-foreground">
+            {t('admin.submissions.noResults')}
+          </p>
+        )}
+      </CollapsibleCard>
 
       {/* ─── Confirmation Dialog ─── */}
       <Dialog open={!!confirmAction} onOpenChange={() => setConfirmAction(null)}>
