@@ -2,7 +2,13 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { existsSync, readFileSync, renameSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-import { __resetForTests, getUsedCount, isUsed, markUsed } from '../src/services/nonce-store.js'
+import {
+  __resetForTests,
+  getUsedCount,
+  isUsed,
+  markUsed,
+  releaseNonce,
+} from '../src/services/nonce-store.js'
 
 const DATA_FILE = resolve(__dirname, '../data/used-nonces.json')
 
@@ -111,6 +117,24 @@ describe('nonce-store', () => {
 
       expect(markUsed(1, 'after-crash')).toBe(true)
       expect(existsSync(lock)).toBe(false)
+    })
+  })
+
+  describe('releaseNonce', () => {
+    it('makes a consumed nonce usable again', () => {
+      markUsed(3, 'retry')
+      releaseNonce(3, 'retry')
+
+      expect(isUsed(3, 'retry')).toBe(false)
+      expect(markUsed(3, 'retry')).toBe(true)
+    })
+
+    it('leaves other nonces alone', () => {
+      markUsed(3, 'a')
+      markUsed(3, 'b')
+      releaseNonce(3, 'a')
+
+      expect(isUsed(3, 'b')).toBe(true)
     })
   })
 })

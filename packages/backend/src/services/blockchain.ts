@@ -334,17 +334,41 @@ export function resetFractionalSupportCache(): void {
   fractionalSupport = null
 }
 
+/** Flags an error raised before the transaction was handed to the RPC. */
+function markNotSent(err: unknown): unknown {
+  if (err && typeof err === 'object') {
+    ;(err as { notSent?: boolean }).notSent = true
+    return err
+  }
+  return Object.assign(new Error(String(err)), { notSent: true })
+}
+
 /**
  * Award points to `student` for `surveyId`. V2 dropped the on-chain
  * secret parameter — proof of completion is verified off-chain by the
  * backend (HMAC token + nonce store) before this function is called.
+ *
+ * Errors carry `notSent: true` when they happened before broadcasting
+ * (balance check, fee data, gas estimate incl. contract reverts). Only
+ * then is it certain that no transaction can still be mined.
  */
 export async function awardPoints(
   student: string,
   surveyId: number,
 ): Promise<ethers.TransactionReceipt> {
-  await assertSufficientBalance()
-  const tx = await contract.awardPoints(student, surveyId, await buildTxOverrides())
+  let overrides: ethers.Overrides
+  let gasLimit: bigint
+  try {
+    await assertSufficientBalance()
+    overrides = await buildTxOverrides()
+    gasLimit = await contract.awardPoints.estimateGas(student, surveyId, overrides)
+  } catch (err) {
+    throw markNotSent(err)
+  }
+  const tx = await contract.awardPoints(student, surveyId, {
+    ...overrides,
+    gasLimit: (gasLimit * 12n) / 10n,
+  })
   const receipt = await tx.wait()
   if (!receipt) throw new Error('Transaction receipt is null')
   return receipt

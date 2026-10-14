@@ -43,6 +43,9 @@ vi.mock('../src/services/nonce-store.js', () => ({
     usedNonces.add(k)
     return true
   }),
+  releaseNonce: vi.fn((id: number, nonce: string) => {
+    usedNonces.delete(`${id}:${nonce}`)
+  }),
   getUsedCount: vi.fn(() => usedNonces.size),
   __resetForTests: vi.fn(() => usedNonces.clear()),
 }))
@@ -221,6 +224,70 @@ describe('POST /api/v1/claim', () => {
 
     expect(res.status).toBe(409)
     expect(res.body.error).toBe('NONCE_USED')
+  })
+
+  describe('when awarding fails', () => {
+    async function claimWith(nonce: string) {
+      const { message } = buildClaim(1, nonce)
+      return request(app)
+        .post('/api/v1/claim')
+        .send({
+          walletAddress: TEST_WALLET.address,
+          surveyId: 1,
+          nonce,
+          token: issueToken({ surveyId: 1, nonce, key: TEST_KEY }),
+          signature: await TEST_WALLET.signMessage(message),
+          message,
+        })
+    }
+
+    beforeEach(() => {
+      vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
+        points: 1,
+        maxClaims: 0n,
+        claimCount: 0n,
+        active: true,
+        registeredAt: 1710000000n,
+        title: '',
+      })
+      vi.mocked(blockchain.hasClaimed).mockResolvedValue(false)
+    })
+
+    it('keeps the link usable when the transaction was never sent', async () => {
+      const nonce = freshNonce()
+      vi.mocked(blockchain.awardPoints).mockRejectedValueOnce(
+        Object.assign(new Error('Minter wallet balance too low'), {
+          code: 'INSUFFICIENT_FUNDS',
+          notSent: true,
+        }),
+      )
+
+      const failed = await claimWith(nonce)
+      expect(failed.status).toBe(503)
+      expect(usedNonces.has(`1:${nonce}`)).toBe(false)
+
+      vi.mocked(blockchain.awardPoints).mockResolvedValueOnce({
+        hash: '0xretry',
+      } as unknown as ethers.TransactionReceipt)
+      const retried = await claimWith(nonce)
+      expect(retried.status).toBe(200)
+      expect(retried.body.data.txHash).toBe('0xretry')
+    })
+
+    it('keeps the link spent when the transaction may have been sent', async () => {
+      const nonce = freshNonce()
+      vi.mocked(blockchain.awardPoints).mockRejectedValueOnce(
+        new Error('timeout waiting for receipt'),
+      )
+
+      const failed = await claimWith(nonce)
+      expect(failed.status).toBeGreaterThanOrEqual(500)
+      expect(usedNonces.has(`1:${nonce}`)).toBe(true)
+
+      const retried = await claimWith(nonce)
+      expect(retried.status).toBe(409)
+      expect(retried.body.error).toBe('NONCE_USED')
+    })
   })
 
   it('should reject a double claim (wallet already claimed on-chain)', async () => {

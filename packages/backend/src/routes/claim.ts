@@ -49,7 +49,7 @@ import {
   isValidTokenShape,
   verifyToken,
 } from '../services/hmac.js'
-import { isUsed, markUsed } from '../services/nonce-store.js'
+import { isUsed, markUsed, releaseNonce } from '../services/nonce-store.js'
 import { getSurveyKey } from '../services/survey-keys.js'
 import type { ClaimResult } from '../types.js'
 
@@ -275,11 +275,10 @@ router.post('/', claimLimiter as RequestHandler, async (req, res, next) => {
       )
     }
 
-    // Mark the nonce consumed BEFORE broadcasting the on-chain TX. If the
-    // TX fails (e.g. RPC outage), the participant must reopen SoSci to
-    // get a fresh nonce — that is the cost of fail-closed replay
-    // protection. The alternative (mark on success) would let an
-    // attacker force a bunch of pending TXs and replay nonces freely.
+    // Mark the nonce consumed BEFORE broadcasting the on-chain TX, so two
+    // concurrent requests cannot both send one. It is given back only if
+    // the TX provably never left the backend; once broadcast it may still
+    // be mined, and the link must stay spent.
     if (!markUsed(surveyId, nonce)) {
       // Race: another worker consumed the nonce between isUsed and markUsed.
       throw new AppError(
@@ -289,7 +288,13 @@ router.post('/', claimLimiter as RequestHandler, async (req, res, next) => {
       )
     }
 
-    const receipt = await blockchain.awardPoints(walletAddress, surveyId)
+    let receipt: ethers.TransactionReceipt
+    try {
+      receipt = await blockchain.awardPoints(walletAddress, surveyId)
+    } catch (err) {
+      if ((err as { notSent?: boolean } | null)?.notSent) releaseNonce(surveyId, nonce)
+      throw err
+    }
     await syncWithin(getEventStore())
 
     const result: ClaimResult = {

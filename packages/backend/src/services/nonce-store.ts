@@ -119,6 +119,18 @@ export function markUsed(surveyId: number, nonce: string): boolean {
   })
 }
 
+/**
+ * Gives a consumed nonce back. Only for a claim whose transaction was
+ * never broadcast, so the participant can retry with the same link.
+ */
+export function releaseNonce(surveyId: number, nonce: string): void {
+  const key = compositeKey(surveyId, nonce)
+  withFileLock(NONCES_PATH, () => {
+    const state = load()
+    if (state.set.delete(key)) save(state)
+  })
+}
+
 export function getUsedCount(): number {
   return load().set.size
 }
