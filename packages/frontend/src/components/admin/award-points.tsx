@@ -183,7 +183,11 @@ export function AwardPoints({ surveys, walletAddress, sign, onAwarded }: AwardPo
             </SelectTrigger>
             <SelectContent>
               {options.map((s) => (
-                <SelectItem key={s.surveyId} value={String(s.surveyId)}>
+                <SelectItem
+                  key={s.surveyId}
+                  value={String(s.surveyId)}
+                  className="whitespace-normal"
+                >
                   {surveyLabel(s)}
                   {!s.active && ` (${t('admin.award.inactive')})`}
                 </SelectItem>

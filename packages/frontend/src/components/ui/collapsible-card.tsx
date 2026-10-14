@@ -104,11 +104,13 @@ export function CollapsibleCard({
           />
         </Button>
       </div>
-      {open && (
-        <div id={contentId} className={cn('border-t px-6 pb-6 pt-5', contentClassName)}>
-          {children}
-        </div>
-      )}
+      <div
+        id={contentId}
+        hidden={!open}
+        className={cn('border-t px-6 pb-6 pt-5', contentClassName)}
+      >
+        {children}
+      </div>
     </Card>
   )
 }

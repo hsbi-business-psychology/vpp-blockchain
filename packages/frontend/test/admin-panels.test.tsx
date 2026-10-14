@@ -68,12 +68,13 @@ describe('CollapsibleCard', () => {
 
     const arrow = screen.getByRole('button', { name: /Rollen: common.expand/ })
     expect(arrow).toHaveAttribute('aria-expanded', 'false')
-    expect(screen.queryByText('Inhalt')).not.toBeInTheDocument()
+    expect(screen.getByText('Inhalt')).not.toBeVisible()
     expect(screen.queryByText('Beschreibung')).not.toBeInTheDocument()
+    expect(document.getElementById(arrow.getAttribute('aria-controls')!)).not.toBeNull()
 
     await user.click(arrow)
 
-    expect(screen.getByText('Inhalt')).toBeInTheDocument()
+    expect(screen.getByText('Inhalt')).toBeVisible()
     expect(screen.getByText('Beschreibung')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Rollen: common.collapse/ })).toHaveAttribute(
       'aria-expanded',
@@ -91,7 +92,7 @@ describe('CollapsibleCard', () => {
 
     await user.click(screen.getByText('Abgaben'))
 
-    expect(screen.getByText('Inhalt')).toBeInTheDocument()
+    expect(screen.getByText('Inhalt')).toBeVisible()
   })
 
   it('can start open', () => {
