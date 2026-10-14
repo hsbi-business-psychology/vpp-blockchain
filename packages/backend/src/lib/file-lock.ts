@@ -39,7 +39,10 @@ function breakIfStale(lockPath: string): void {
   } catch {
     return
   }
-  if (statSync(grave).ino !== seen.ino) {
+  // A freed inode number is often reused at once, so a fresh lock can carry
+  // the old ino; its mtime is new, though.
+  const moved = statSync(grave)
+  if (moved.ino !== seen.ino || moved.mtimeMs !== seen.mtimeMs) {
     try {
       linkSync(grave, lockPath)
     } catch {
