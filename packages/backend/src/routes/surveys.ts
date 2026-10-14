@@ -27,6 +27,7 @@ import { requireAdminAction, requireAdminHandler } from '../middleware/auth.js'
 import * as blockchain from '../services/blockchain.js'
 import { getEventStore } from '../services/event-store.js'
 import { syncWithin } from '../lib/sync-within.js'
+import { logger } from '../lib/logger.js'
 import { getSurveysWithCache, invalidateCache } from '../services/survey-cache.js'
 import { generateSoSciTemplate, generateLimeSurveyTemplate } from '../services/template.js'
 import { parsePagination, paginate } from '../lib/pagination.js'
@@ -225,29 +226,104 @@ const revokeSchema = z.object({
   student: z.string().refine(ethers.isAddress, 'Invalid wallet address'),
 })
 
-router.post('/:id/revoke', requireAdminHandler, async (req, res, next) => {
-  try {
-    const surveyId = parseSurveyId(req.params.id)
-    const parsed = revokeSchema.safeParse(req.body)
-    if (!parsed.success) {
-      throwValidationError(parsed.error)
+router.post(
+  '/:id/revoke',
+  requireAdminAction(
+    (req) =>
+      `Revoke survey ${req.params.id} from ${String((req.body as { student?: unknown })?.student ?? '')}`,
+  ),
+  async (req, res, next) => {
+    try {
+      const surveyId = parseSurveyId(req.params.id)
+      const parsed = revokeSchema.safeParse(req.body)
+      if (!parsed.success) {
+        throwValidationError(parsed.error)
+      }
+
+      const receipt = await blockchain.revokePoints(parsed.data.student, surveyId)
+      await syncWithin(getEventStore())
+      invalidateCache()
+
+      res.json({
+        success: true,
+        data: {
+          txHash: receipt.hash,
+          explorerUrl: `${config.explorerBaseUrl}/tx/${receipt.hash}`,
+        },
+      })
+    } catch (err) {
+      next(err)
     }
+  },
+)
 
-    const receipt = await blockchain.revokePoints(parsed.data.student, surveyId)
-    await syncWithin(getEventStore())
-    invalidateCache()
-
-    res.json({
-      success: true,
-      data: {
-        txHash: receipt.hash,
-        explorerUrl: `${config.explorerBaseUrl}/tx/${receipt.hash}`,
-      },
-    })
-  } catch (err) {
-    next(err)
-  }
+const awardSchema = z.object({
+  student: z.string().refine(ethers.isAddress, 'Invalid wallet address'),
 })
+
+// POST /api/v1/surveys/:id/award — give a wallet the survey's points by hand,
+// for participants whose claim did not go through. Needs a signature that
+// names the survey and the wallet; a session cookie alone is not enough.
+router.post(
+  '/:id/award',
+  requireAdminAction(
+    (req) =>
+      `Award survey ${req.params.id} to ${String((req.body as { student?: unknown })?.student ?? '')}`,
+  ),
+  async (req, res, next) => {
+    try {
+      const surveyId = parseSurveyId(req.params.id)
+      const parsed = awardSchema.safeParse(req.body)
+      if (!parsed.success) {
+        throwValidationError(parsed.error)
+      }
+      const student = ethers.getAddress(parsed.data.student)
+
+      const info = await blockchain.getSurveyInfo(surveyId)
+      if (Number(info.registeredAt) === 0) {
+        throw new AppError(
+          404,
+          'SURVEY_NOT_FOUND',
+          'No survey found with this ID. It may not have been registered yet.',
+        )
+      }
+      if (!info.active) {
+        throw new AppError(
+          410,
+          'SURVEY_INACTIVE',
+          'This survey is deactivated. Reactivate it, award the points, then deactivate it again.',
+        )
+      }
+      if (await blockchain.hasClaimed(student, surveyId)) {
+        throw new AppError(
+          409,
+          'ALREADY_CLAIMED',
+          'This wallet already has the points for this survey.',
+        )
+      }
+
+      const receipt = await blockchain.awardPoints(student, surveyId)
+      logger.info(
+        { admin: res.locals.adminAddress, student, surveyId, txHash: receipt.hash },
+        'Points awarded by an admin',
+      )
+      await syncWithin(getEventStore())
+      invalidateCache()
+
+      res.status(201).json({
+        success: true,
+        data: {
+          student,
+          points: info.points,
+          txHash: receipt.hash,
+          explorerUrl: `${config.explorerBaseUrl}/tx/${receipt.hash}`,
+        },
+      })
+    } catch (err) {
+      next(err)
+    }
+  },
+)
 
 const templateSchema = z.object({
   format: z.enum(['sosci', 'limesurvey']).default('sosci'),

@@ -597,6 +597,138 @@ describe('POST /api/v1/surveys/:id/reactivate', () => {
   })
 })
 
+describe('POST /api/v1/surveys/:id/award', () => {
+  const student = ethers.Wallet.createRandom().address
+
+  async function awardAs(
+    wallet: ethers.Wallet | ethers.HDNodeWallet,
+    surveyId: number,
+    body: { student: string },
+    signedFor: string = body.student,
+  ) {
+    const adminMessage = `Award survey ${surveyId} to ${signedFor} by ${wallet.address} at ${Math.floor(Date.now() / 1000)}`
+    const adminSignature = await wallet.signMessage(adminMessage)
+    return request(app)
+      .post(`/api/v1/surveys/${surveyId}/award`)
+      .send({ ...body, adminSignature, adminMessage })
+  }
+
+  beforeEach(() => {
+    vi.restoreAllMocks()
+    vi.mocked(blockchain.isAdmin).mockImplementation(
+      async (address: string) => address === ADMIN_WALLET.address,
+    )
+    vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
+      points: 0.25,
+      maxClaims: 0n,
+      claimCount: 3n,
+      active: true,
+      registeredAt: 1791900000n,
+      title: 'Phubbing',
+    })
+    vi.mocked(blockchain.hasClaimed).mockResolvedValue(false)
+    vi.mocked(blockchain.awardPoints).mockResolvedValue({
+      hash: '0xawarded',
+    } as unknown as ethers.TransactionReceipt)
+  })
+
+  it('awards the points with a signature naming survey and wallet', async () => {
+    const res = await awardAs(ADMIN_WALLET, 20, { student: student.toLowerCase() })
+
+    expect(res.status).toBe(201)
+    expect(res.body.data).toMatchObject({ student, points: 0.25, txHash: '0xawarded' })
+    expect(blockchain.awardPoints).toHaveBeenCalledWith(student, 20)
+  })
+
+  it('refuses without a signature', async () => {
+    const res = await request(app).post('/api/v1/surveys/20/award').send({ student })
+
+    expect(res.status).toBe(401)
+    expect(res.body.error).toBe('SIGNATURE_REQUIRED')
+    expect(blockchain.awardPoints).not.toHaveBeenCalled()
+  })
+
+  it('refuses a signature made for another wallet', async () => {
+    const other = ethers.Wallet.createRandom().address
+
+    const res = await awardAs(ADMIN_WALLET, 20, { student }, other)
+
+    expect(res.status).toBe(403)
+    expect(res.body.error).toBe('ACTION_MISMATCH')
+    expect(blockchain.awardPoints).not.toHaveBeenCalled()
+  })
+
+  it('refuses a signature made for another survey', async () => {
+    const adminMessage = `Award survey 21 to ${student} at ${Math.floor(Date.now() / 1000)}`
+    const adminSignature = await ADMIN_WALLET.signMessage(adminMessage)
+
+    const res = await request(app)
+      .post('/api/v1/surveys/20/award')
+      .send({ student, adminSignature, adminMessage })
+
+    expect(res.status).toBe(403)
+    expect(res.body.error).toBe('ACTION_MISMATCH')
+  })
+
+  it('refuses a wallet without the admin role', async () => {
+    const res = await awardAs(ethers.Wallet.createRandom(), 20, { student })
+
+    expect(res.status).toBe(403)
+    expect(res.body.error).toBe('FORBIDDEN')
+    expect(blockchain.awardPoints).not.toHaveBeenCalled()
+  })
+
+  it('refuses an invalid wallet address', async () => {
+    const res = await awardAs(ADMIN_WALLET, 20, { student: 'not-an-address' })
+
+    expect(res.status).toBe(400)
+    expect(res.body.error).toBe('VALIDATION_ERROR')
+  })
+
+  it('reports an unknown survey', async () => {
+    vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
+      points: 0,
+      maxClaims: 0n,
+      claimCount: 0n,
+      active: false,
+      registeredAt: 0n,
+      title: '',
+    })
+
+    const res = await awardAs(ADMIN_WALLET, 999, { student })
+
+    expect(res.status).toBe(404)
+    expect(res.body.error).toBe('SURVEY_NOT_FOUND')
+  })
+
+  it('asks to reactivate a deactivated survey first', async () => {
+    vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
+      points: 1,
+      maxClaims: 0n,
+      claimCount: 3n,
+      active: false,
+      registeredAt: 1791900000n,
+      title: 'Ended',
+    })
+
+    const res = await awardAs(ADMIN_WALLET, 20, { student })
+
+    expect(res.status).toBe(410)
+    expect(res.body.error).toBe('SURVEY_INACTIVE')
+    expect(blockchain.awardPoints).not.toHaveBeenCalled()
+  })
+
+  it('refuses a wallet that already has the points', async () => {
+    vi.mocked(blockchain.hasClaimed).mockResolvedValue(true)
+
+    const res = await awardAs(ADMIN_WALLET, 20, { student })
+
+    expect(res.status).toBe(409)
+    expect(res.body.error).toBe('ALREADY_CLAIMED')
+    expect(blockchain.awardPoints).not.toHaveBeenCalled()
+  })
+})
+
 describe('POST /api/v1/surveys/:id/revoke', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
@@ -604,9 +736,9 @@ describe('POST /api/v1/surveys/:id/revoke', () => {
 
   it('should revoke a previously claimed point award', async () => {
     const timestamp = Math.floor(Date.now() / 1000)
-    const adminMessage = `revoke:1:${timestamp}`
-    const adminSignature = await ADMIN_WALLET.signMessage(adminMessage)
     const student = ethers.Wallet.createRandom().address
+    const adminMessage = `Revoke survey 1 from ${student} at ${timestamp}`
+    const adminSignature = await ADMIN_WALLET.signMessage(adminMessage)
 
     vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
     vi.mocked(blockchain.revokePoints).mockResolvedValue({
@@ -625,7 +757,7 @@ describe('POST /api/v1/surveys/:id/revoke', () => {
 
   it('should reject revoke for an invalid student address', async () => {
     const timestamp = Math.floor(Date.now() / 1000)
-    const adminMessage = `revoke:1:${timestamp}`
+    const adminMessage = `Revoke survey 1 from not-an-address at ${timestamp}`
     const adminSignature = await ADMIN_WALLET.signMessage(adminMessage)
 
     vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
