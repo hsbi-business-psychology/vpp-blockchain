@@ -137,8 +137,11 @@ export const config = {
    */
   maxMessageAgeMs: parseInt(optional('MAX_MESSAGE_AGE_MS', '60000'), 10),
 
-  /** Interval (in ms) between event store sync cycles. */
-  syncIntervalMs: parseInt(optional('SYNC_INTERVAL_MS', '60000'), 10),
+  /** Interval (in ms) between background event store syncs. Writes, admin
+   * list requests and health probes sync on demand, so the background loop
+   * only has to catch what nobody asked for. Every run costs RPC calls, which
+   * are billed on paid plans. */
+  syncIntervalMs: parseInt(optional('SYNC_INTERVAL_MS', '300000'), 10),
 
   /** Health reports degraded once the event cache trails the chain head by
    * more than this many blocks (1,800 Base blocks are about one hour). */

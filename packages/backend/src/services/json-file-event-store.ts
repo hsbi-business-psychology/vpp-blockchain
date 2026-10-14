@@ -9,7 +9,8 @@
  * limits and makes event queries near-instant.
  *
  * The store is written to `data/events.json` relative to the backend root.
- * It is loaded at startup and re-synced every 60 seconds and immediately
+ * It is loaded at startup and re-synced every SYNC_INTERVAL_MS (five
+ * minutes by default), on demand from reads and health probes, and right
  * after any write transaction.
  */
 import { readFileSync, existsSync } from 'node:fs'
