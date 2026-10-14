@@ -17,6 +17,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { config } from '../config.js'
 import { withRpcRetry } from '../lib/rpcRetry.js'
+import { AdaptiveLogReader } from '../lib/log-reader.js'
 import { BACKEND_ROOT } from '../lib/paths.js'
 
 /**
@@ -134,46 +135,51 @@ function buildReadProvider(urls: string[]): ethers.AbstractProvider {
 const provider = buildReadProvider(getEffectiveRpcUrls())
 
 /**
- * Alchemy's Free Tier caps `eth_getLogs` to a 10-block range and reports
- * the rejection as JSON-RPC error code -32600 ("Invalid Request"). ethers'
- * FallbackProvider treats -32600 as a permanent user-error (not a provider
- * outage), so it does NOT fail over to a healthier sub-provider — it
- * propagates the error to the caller. Net effect: the entire event-store
- * sync loop dies on every run as long as Alchemy Free is the primary RPC,
- * even though all three public Base RPCs would have happily served the
- * same query.
- *
- * The cleanest workaround that keeps Alchemy for what it's actually good at
- * (eth_call, getBalance, broadcastTransaction — under typical class-room
- * load this stays well inside the Free Tier compute-unit budget) is to
- * route `eth_getLogs` traffic through a SEPARATE provider chain that
- * excludes the Free-Tier Alchemy URL. Operators on Alchemy Growth/Scale
- * can opt back in by setting `EVENT_RPC_URL=<their alchemy URL>`, which
- * overrides the auto-detection.
+ * Sources for eth_getLogs, in the order they are asked: EVENT_RPC_URL when
+ * set, otherwise RPC_URL followed by the public Base fallbacks. Each source
+ * gets its own plain JsonRpcProvider; AdaptiveLogReader handles failover and
+ * the block span (see lib/log-reader.ts). With EXPECTED_CHAIN_ID set the
+ * network is static, so an unreachable source fails instead of waiting for
+ * network detection.
  */
-function isAlchemyFreeUrl(url: string): boolean {
-  try {
-    return new URL(url).hostname.endsWith('.alchemy.com')
-  } catch {
-    return false
-  }
-}
-
 function getEventRpcUrls(): string[] {
   const explicit = (config.eventRpcUrl ?? '')
     .split(',')
     .map((u) => u.trim())
     .filter(Boolean)
-  if (explicit.length > 0) return explicit
-  const filtered = getEffectiveRpcUrls().filter((u) => !isAlchemyFreeUrl(u))
-  // If the operator only configured Alchemy, fall back to the known Base
-  // mainnet RPCs explicitly so events keep flowing. Better to lose the
-  // Alchemy-quality reads on event sync than to lose event sync entirely.
-  if (filtered.length === 0) return [...KNOWN_BASE_FALLBACKS]
-  return filtered
+  return explicit.length > 0 ? explicit : getEffectiveRpcUrls()
 }
 
-const eventProvider = buildReadProvider(getEventRpcUrls())
+const eventNetwork = config.expectedChainId
+  ? ethers.Network.from(Number(config.expectedChainId))
+  : undefined
+/** Per-request deadline for one event source. Set on the FetchRequest so
+ * ethers really aborts the HTTP call instead of leaving it running. */
+const EVENT_REQUEST_TIMEOUT_MS = 10_000
+
+const eventContracts = getEventRpcUrls().map((url) => {
+  const request = new ethers.FetchRequest(url)
+  request.timeout = EVENT_REQUEST_TIMEOUT_MS
+  return new ethers.Contract(
+    config.contractAddress,
+    abi,
+    new ethers.JsonRpcProvider(request, eventNetwork, {
+      batchMaxCount: 1,
+      staticNetwork: eventNetwork,
+    }),
+  )
+})
+const logReader = new AdaptiveLogReader(eventContracts.length, {
+  maxSpan: config.chunkSize,
+  timeoutMs: EVENT_REQUEST_TIMEOUT_MS + 1_000,
+})
+
+/** Block span the next eth_getLogs request will use. The event store sizes
+ * its checkpoint windows with it, so a provider that only accepts small
+ * ranges still makes saved progress. */
+export function getEventWindowSize(): number {
+  return logReader.getSpan()
+}
 // Wallet uses the SAME FallbackProvider so write operations (addAdmin,
 // awardPoints, etc.) survive a quota-locked / down primary RPC. Without
 // this, /api/v1/admin/add returned a 500 even though reads worked,
@@ -183,9 +189,6 @@ const wallet = new ethers.Wallet(config.minterPrivateKey, provider)
 const managedSigner = new ethers.NonceManager(wallet)
 const contract = new ethers.Contract(config.contractAddress, abi, managedSigner)
 const readOnlyContract = new ethers.Contract(config.contractAddress, abi, provider)
-// Dedicated contract for queryFilter / getLogs operations. See `eventProvider`
-// above for why this is split off from `readOnlyContract`.
-const eventReadOnlyContract = new ethers.Contract(config.contractAddress, abi, eventProvider)
 
 /**
  * Hard-stop threshold: write paths refuse new transactions when balance
@@ -561,47 +564,38 @@ export async function getContractVersion(): Promise<string> {
   }
 }
 
+export interface QueryLogsOptions {
+  /** Checked before every request so an abandoned caller stops early. */
+  shouldStop?: () => boolean
+  /** Make exactly one request for the whole range. A rejected range then
+   * throws RangeRejectedError instead of being split here, so the event
+   * store can retry it as a smaller, separately checkpointed window. */
+  singleRequest?: boolean
+}
+
 /**
- * Queries event logs in chunks to stay within RPC provider block-range limits.
- * Most free-tier RPCs (drpc, publicnode) cap at 10,000 blocks per request.
- * Chunk size is configurable via CHUNK_SIZE env var (default: 9000).
- *
- * `toBlock` is optional: when omitted the range runs up to the current chain
- * head. The event store passes an explicit `toBlock` so it can sync one
- * window at a time and checkpoint progress between windows.
+ * Queries event logs for `[fromBlock, toBlock]` through the event sources,
+ * failing over between them and shrinking the block span when they reject
+ * the range. `toBlock` defaults to the chain head. Errors are not retried
+ * against the same source: the next source is the retry.
  */
 async function queryFilterChunked(
   _ignoredContract: ethers.Contract,
   filter: ethers.ContractEventName,
   fromBlock: number,
   toBlock?: number,
+  options: QueryLogsOptions = {},
 ): Promise<(ethers.EventLog | ethers.Log)[]> {
-  // Always route event queries through `eventReadOnlyContract` regardless
-  // of which contract instance the caller passed in. This guarantees that
-  // getLogs traffic uses the dedicated event-RPC chain (no Alchemy Free)
-  // even if a caller still references `contract` or `readOnlyContract`.
-  const evContract = eventReadOnlyContract
-  const chunkSize = config.chunkSize
   const latestBlock =
     toBlock ??
-    (await withRpcRetry(() => eventProvider.getBlockNumber(), {
+    (await withRpcRetry(() => provider.getBlockNumber(), {
       label: 'getBlockNumber',
     }))
-  if (latestBlock - fromBlock <= chunkSize) {
-    return withRpcRetry(() => evContract.queryFilter(filter, fromBlock, latestBlock), {
-      label: 'queryFilter',
-    })
-  }
-
-  const results: (ethers.EventLog | ethers.Log)[] = []
-  for (let start = fromBlock; start <= latestBlock; start += chunkSize + 1) {
-    const end = Math.min(start + chunkSize, latestBlock)
-    const chunk = await withRpcRetry(() => evContract.queryFilter(filter, start, end), {
-      label: 'queryFilter',
-    })
-    results.push(...chunk)
-  }
-  return results
+  const query = (index: number, from: number, to: number) =>
+    eventContracts[index].queryFilter(filter, from, to)
+  return options.singleRequest
+    ? logReader.readOnce(query, fromBlock, latestBlock, options.shouldStop)
+    : logReader.read(query, fromBlock, latestBlock, options.shouldStop)
 }
 
 /**

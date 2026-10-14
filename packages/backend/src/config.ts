@@ -143,8 +143,10 @@ export const config = {
   /** TTL (in ms) for the in-memory survey cache. */
   cacheTtlMs: parseInt(optional('CACHE_TTL_MS', '30000'), 10),
 
-  /** Block range per RPC query chunk (free-tier RPCs typically cap at 10,000). */
-  chunkSize: parseInt(optional('CHUNK_SIZE', '9000'), 10),
+  /** Largest block range per eth_getLogs request. The event reader halves
+   * it whenever every RPC rejects the range (free tiers allow 10 to 10,000
+   * blocks), so the default can stay large for providers that accept it. */
+  chunkSize: parseInt(optional('CHUNK_SIZE', '2000000'), 10),
 
   /**
    * Expected chain ID for the connected RPC.

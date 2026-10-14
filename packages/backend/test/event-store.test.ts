@@ -13,6 +13,7 @@
  *   - syncing-lock + watchdog timeout (Plesk worker hang)
  *   - getCurrentAdmins() replay of grant / revoke events in block order
  */
+import { RangeRejectedError } from '../src/lib/log-reader.js'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
@@ -31,6 +32,7 @@ const mockBlockchain = {
   getBlock: vi.fn(async (_n: number) => ({ timestamp: 1700000000 }) as { timestamp: number }),
   ADMIN_ROLE: vi.fn(async () => ADMIN_ROLE_HASH),
   queryFilterChunked: vi.fn(async (..._args: unknown[]) => [] as unknown[]),
+  getEventWindowSize: vi.fn(() => 9000),
 }
 
 vi.mock('../src/services/blockchain.js', () => {
@@ -50,6 +52,7 @@ vi.mock('../src/services/blockchain.js', () => {
       filters,
     },
     queryFilterChunked: (...a: unknown[]) => mockBlockchain.queryFilterChunked(...a),
+    getEventWindowSize: () => mockBlockchain.getEventWindowSize(),
   }
 })
 
@@ -68,6 +71,7 @@ beforeEach(() => {
   mockBlockchain.getBlock.mockReset().mockResolvedValue({ timestamp: 1700000000 })
   mockBlockchain.ADMIN_ROLE.mockReset().mockResolvedValue(ADMIN_ROLE_HASH)
   mockBlockchain.queryFilterChunked.mockReset().mockResolvedValue([])
+  mockBlockchain.getEventWindowSize.mockReset().mockReturnValue(9000)
 })
 
 afterEach(() => {
@@ -228,7 +232,7 @@ describe('JsonFileEventStore — incremental sync', () => {
 })
 
 describe('JsonFileEventStore — windowed catch-up', () => {
-  // CHUNK_SIZE defaults to 9000 in tests (no env override).
+  // The blockchain mock above reports an event window of 9000 blocks.
 
   it('syncs a large gap in CHUNK_SIZE windows and checkpoints each one', async () => {
     configureChainMocks({ blockNumber: 20_000 })
@@ -248,6 +252,49 @@ describe('JsonFileEventStore — windowed catch-up', () => {
     expect(store.getLastSyncedBlock()).toBe(20_000)
     expect(JSON.parse(readFileSync(STORE_PATH, 'utf-8')).lastSyncedBlock).toBe(20_000)
     expect(store.isStale(60_000)).toBe(false)
+  })
+
+  it('caps a checkpoint window at 50,000 blocks however wide the span is', async () => {
+    configureChainMocks({ blockNumber: 120_000 })
+    mockBlockchain.getEventWindowSize.mockReturnValue(2_000_000)
+    const { JsonFileEventStore } = await import('../src/services/json-file-event-store.js')
+    const store = new JsonFileEventStore()
+
+    await store.sync()
+
+    const ranges = mockBlockchain.queryFilterChunked.mock.calls
+      .filter((c) => c[1] === 'SurveyRegistered')
+      .map((c) => [c[2], c[3]])
+    expect(ranges).toEqual([
+      [0, 49_999],
+      [50_000, 99_999],
+      [100_000, 120_000],
+    ])
+  })
+
+  it('retries a refused range as a smaller window without losing blocks', async () => {
+    configureChainMocks({ blockNumber: 9_999 })
+    let span = 9000
+    mockBlockchain.getEventWindowSize.mockImplementation(() => span)
+    mockBlockchain.queryFilterChunked.mockImplementationOnce(async () => {
+      span = 4500
+      throw new RangeRejectedError(new Error('block range'))
+    })
+    const { JsonFileEventStore } = await import('../src/services/json-file-event-store.js')
+    const store = new JsonFileEventStore()
+
+    await store.sync()
+
+    const ranges = mockBlockchain.queryFilterChunked.mock.calls
+      .filter((c) => c[1] === 'SurveyRegistered')
+      .map((c) => [c[2], c[3]])
+    expect(ranges).toEqual([
+      [0, 8_999],
+      [0, 4_499],
+      [4_500, 8_999],
+      [9_000, 9_999],
+    ])
+    expect(store.getLastSyncedBlock()).toBe(9_999)
   })
 
   it('keeps progress when the time budget runs out and resumes later', async () => {

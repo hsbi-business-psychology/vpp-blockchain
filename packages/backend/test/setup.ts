@@ -61,6 +61,7 @@ vi.mock('../src/services/blockchain.js', () => ({
   contract: {},
   readOnlyContract: {},
   queryFilterChunked: vi.fn(),
+  getEventWindowSize: vi.fn(() => 9000),
   validateChainId: vi.fn(() => Promise.resolve()),
 }))
 

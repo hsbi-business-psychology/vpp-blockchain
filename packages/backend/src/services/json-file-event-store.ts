@@ -16,9 +16,10 @@ import { readFileSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { config } from '../config.js'
 import { atomicWriteJson } from '../lib/atomic-write.js'
+import { RangeRejectedError } from '../lib/log-reader.js'
 import { logger } from '../lib/logger.js'
 import { DATA_DIR } from '../lib/paths.js'
-import { readOnlyContract, queryFilterChunked, provider } from './blockchain.js'
+import { readOnlyContract, queryFilterChunked, provider, getEventWindowSize } from './blockchain.js'
 import type { EventStore } from './event-store.interface.js'
 import type { EventStoreData, StoredSurveyEvent, StoredPointsEvent } from './event-store.types.js'
 
@@ -62,6 +63,10 @@ export class JsonFileEventStore implements EventStore {
    * registered surveys and claims silently stopped showing up. */
   private static readonly SYNC_BUDGET_MS = 30_000
 
+  /** Largest block window saved as one checkpoint. Bounds the work lost
+   * when a request stalls, however wide a range the provider accepts. */
+  private static readonly CHECKPOINT_MAX_BLOCKS = 50_000
+
   /** Max parallel getBlock() calls when resolving event timestamps. */
   private static readonly TIMESTAMP_CONCURRENCY = 4
 
@@ -100,7 +105,10 @@ export class JsonFileEventStore implements EventStore {
     return this.adminRoleHash!
   }
 
-  private async getBlockTimestamps(blockNumbers: number[]): Promise<Map<number, number>> {
+  private async getBlockTimestamps(
+    blockNumbers: number[],
+    shouldStop: () => boolean,
+  ): Promise<Map<number, number>> {
     const unique = [...new Set(blockNumbers)]
     const map = new Map<number, number>()
     // Small fixed-size worker pool: sequential lookups were the slowest
@@ -109,6 +117,7 @@ export class JsonFileEventStore implements EventStore {
     let next = 0
     const worker = async () => {
       while (next < unique.length) {
+        if (shouldStop()) return
         const bn = unique[next++]
         const block = await provider.getBlock(bn)
         map.set(bn, block?.timestamp ?? 0)
@@ -188,11 +197,27 @@ export class JsonFileEventStore implements EventStore {
       if (fromBlock > latestBlock) return true
 
       const adminRole = await this.getAdminRoleHash()
-      const windowSize = Math.max(1, config.chunkSize)
 
       while (fromBlock <= latestBlock) {
+        // Re-read per window: the span shrinks when a provider rejects it,
+        // and the checkpoint windows must shrink with it.
+        const windowSize = Math.max(
+          1,
+          Math.min(getEventWindowSize(), JsonFileEventStore.CHECKPOINT_MAX_BLOCKS),
+        )
         const toBlock = Math.min(fromBlock + windowSize - 1, latestBlock)
-        const applied = await this.syncWindow(generation, adminRole, fromBlock, toBlock)
+        let applied: boolean
+        try {
+          applied = await this.syncWindow(generation, adminRole, fromBlock, toBlock)
+        } catch (err) {
+          // Every source refused this range and the span has shrunk: retry
+          // the same blocks as a smaller window, within this run's budget.
+          if (err instanceof RangeRejectedError && toBlock > fromBlock) {
+            if (Date.now() >= deadline) return false
+            continue
+          }
+          throw err
+        }
         if (!applied) return true // superseded by a newer run — stop quietly
 
         logger.info(
@@ -227,30 +252,35 @@ export class JsonFileEventStore implements EventStore {
     fromBlock: number,
     toBlock: number,
   ): Promise<boolean> {
+    const superseded = () => generation !== this.runGeneration
     const [surveyEvents, pointsEvents, grantEvents, revokeEvents] = await Promise.all([
       queryFilterChunked(
         readOnlyContract,
         readOnlyContract.filters.SurveyRegistered(),
         fromBlock,
         toBlock,
+        { shouldStop: superseded, singleRequest: true },
       ),
       queryFilterChunked(
         readOnlyContract,
         readOnlyContract.filters.PointsAwarded(),
         fromBlock,
         toBlock,
+        { shouldStop: superseded, singleRequest: true },
       ),
       queryFilterChunked(
         readOnlyContract,
         readOnlyContract.filters.RoleGranted(adminRole),
         fromBlock,
         toBlock,
+        { shouldStop: superseded, singleRequest: true },
       ),
       queryFilterChunked(
         readOnlyContract,
         readOnlyContract.filters.RoleRevoked(adminRole),
         fromBlock,
         toBlock,
+        { shouldStop: superseded, singleRequest: true },
       ),
     ])
 
@@ -260,7 +290,7 @@ export class JsonFileEventStore implements EventStore {
     ]
     const timestamps =
       allBlockNumbers.length > 0
-        ? await this.getBlockTimestamps(allBlockNumbers)
+        ? await this.getBlockTimestamps(allBlockNumbers, superseded)
         : new Map<number, number>()
 
     if (generation !== this.runGeneration) return false
