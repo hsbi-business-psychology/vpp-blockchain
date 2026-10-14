@@ -81,6 +81,21 @@ describe('GET /api/v1/status', () => {
     expect(res.body.data.estimates.claimsRemaining).toBe(50)
   })
 
+  it('survives a gas price of zero', async () => {
+    const { signature, message } = await signAdminMessage('System status')
+
+    vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
+    vi.mocked(blockchain.getMinterBalance).mockResolvedValue(blockchain.MIN_BALANCE_WEI * 2n)
+    vi.mocked(blockchain.getBlockNumber).mockResolvedValue(100)
+    vi.mocked(blockchain.getNetwork).mockResolvedValue('base-sepolia')
+    vi.mocked(blockchain.provider.getFeeData).mockResolvedValue({ gasPrice: 0n } as ethers.FeeData)
+
+    const res = await request(app).get('/api/v1/status').set(adminHeaders(signature, message))
+
+    expect(res.status).toBe(200)
+    expect(res.body.data.estimates.claimsRemaining).toBeGreaterThan(0)
+  })
+
   it('counts no claims once the balance is under the floor', async () => {
     const { signature, message } = await signAdminMessage('System status')
     const gasPrice = 1_000_000n

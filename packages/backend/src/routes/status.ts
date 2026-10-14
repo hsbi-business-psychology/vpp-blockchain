@@ -21,7 +21,7 @@ router.get('/', requireAdminHandler, async (_req, res, next) => {
     ])
 
     const feeData = await blockchain.provider.getFeeData()
-    const gasPrice = feeData.gasPrice ?? 1_000_000n
+    const gasPrice = feeData.gasPrice || 1_000_000n
 
     // Below MIN_BALANCE_WEI the backend refuses to send, so only the part
     // above that floor can pay for claims.
