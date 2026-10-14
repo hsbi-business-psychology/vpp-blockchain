@@ -8,8 +8,12 @@ import type { HealthResult } from '../types.js'
 const router: Router = Router()
 const startedAt = Date.now()
 
+/** Set at bundle time (git commit). The deploy polls this to confirm the
+ * new build is the one actually serving traffic. */
+const build = process.env.VPP_BUILD_ID || 'dev'
+
 router.get('/live', (_req, res) => {
-  res.json({ status: 'ok', uptime: Math.floor((Date.now() - startedAt) / 1000) })
+  res.json({ status: 'ok', uptime: Math.floor((Date.now() - startedAt) / 1000), build })
 })
 
 async function checkReady(): Promise<HealthResult> {

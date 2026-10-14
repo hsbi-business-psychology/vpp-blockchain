@@ -48,6 +48,12 @@ describe('GET /api/v1/health/live', () => {
     expect(res.body.status).toBe('ok')
     expect(res.body.uptime).toBeTypeOf('number')
   })
+
+  it('reports the build id, or "dev" when none was baked in', async () => {
+    const res = await request(app).get('/api/v1/health/live')
+
+    expect(res.body.build).toBe('dev')
+  })
 })
 
 describe('GET /api/v1/health/ready', () => {
