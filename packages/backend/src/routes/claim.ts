@@ -219,7 +219,7 @@ router.post('/', claimLimiter as RequestHandler, async (req, res, next) => {
     // so the user gets a meaningful 404 / 410 instead of a generic
     // on-chain revert.
     const surveyInfo = await blockchain.getSurveyInfo(surveyId)
-    if (surveyInfo.points === 0) {
+    if (Number(surveyInfo.registeredAt) === 0) {
       throw new AppError(
         404,
         'SURVEY_NOT_FOUND',

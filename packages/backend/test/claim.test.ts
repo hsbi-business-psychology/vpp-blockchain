@@ -109,6 +109,40 @@ describe('POST /api/v1/claim', () => {
     expect(res.body.data.explorerUrl).toContain('0xtxhash123')
   })
 
+  it('treats a survey as registered by its timestamp, not by rounded points', async () => {
+    // A 0.25-point survey reads as 0 whole points through the V2 view. That
+    // must not turn into SURVEY_NOT_FOUND if V3 detection falls back.
+    const nonce = freshNonce()
+    const { message } = buildClaim(1, nonce)
+    const signature = await TEST_WALLET.signMessage(message)
+    const token = issueToken({ surveyId: 1, nonce, key: TEST_KEY })
+
+    vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
+      points: 0,
+      maxClaims: 0n,
+      claimCount: 0n,
+      active: true,
+      registeredAt: 1791900000n,
+      title: '',
+    })
+    vi.mocked(blockchain.hasClaimed).mockResolvedValue(false)
+    vi.mocked(blockchain.awardPoints).mockResolvedValue({
+      hash: '0xtxfraction',
+    } as unknown as ethers.TransactionReceipt)
+
+    const res = await request(app).post('/api/v1/claim').send({
+      walletAddress: TEST_WALLET.address,
+      surveyId: 1,
+      nonce,
+      token,
+      signature,
+      message,
+    })
+
+    expect(res.status).toBe(200)
+    expect(res.body.data.txHash).toBe('0xtxfraction')
+  })
+
   it('should reject an invalid signature', async () => {
     const nonce = freshNonce()
     const { message } = buildClaim(1, nonce)
@@ -378,7 +412,7 @@ describe('GET /api/v1/claim/launch/:surveyId', () => {
       maxClaims: 0n,
       claimCount: 0n,
       active: true,
-      registeredAt: 0n,
+      registeredAt: 1710000000n,
       title: 'Test',
     })
     vi.mocked(blockchain.hasClaimed).mockResolvedValue(false)

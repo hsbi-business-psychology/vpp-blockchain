@@ -30,7 +30,7 @@ import { syncWithin } from '../lib/sync-within.js'
 import { getSurveysWithCache, invalidateCache } from '../services/survey-cache.js'
 import { generateSoSciTemplate, generateLimeSurveyTemplate } from '../services/template.js'
 import { parsePagination, paginate } from '../lib/pagination.js'
-import { MAX_POINTS, hasAtMostTwoDecimals, isFractional } from '../lib/points.js'
+import { MAX_POINTS, hasAtMostTwoDecimals, isFractional, toCentiPoints } from '../lib/points.js'
 import {
   createKey,
   deleteKey,
@@ -50,7 +50,8 @@ const registerSchema = z.object({
     .number()
     .positive('Points must be greater than 0')
     .max(MAX_POINTS, `Points must be at most ${MAX_POINTS}`)
-    .refine(hasAtMostTwoDecimals, 'Points may have at most two decimals (e.g. 0.25)'),
+    .refine(hasAtMostTwoDecimals, 'Points may have at most two decimals (e.g. 0.25)')
+    .refine((p) => toCentiPoints(p) > 0, 'Points must be at least 0.01'),
   maxClaims: z.number().int().min(0).default(0),
   title: z.string().default(''),
   adminSignature: z.string().min(1),
@@ -166,7 +167,7 @@ router.post('/:id/deactivate', requireAdminHandler, async (req, res, next) => {
     const surveyId = parseSurveyId(req.params.id)
 
     const info = await blockchain.getSurveyInfo(surveyId)
-    if (info.points === 0) {
+    if (Number(info.registeredAt) === 0) {
       throw new AppError(
         404,
         'SURVEY_NOT_FOUND',
@@ -198,7 +199,7 @@ router.post('/:id/reactivate', requireAdminHandler, async (req, res, next) => {
     const surveyId = parseSurveyId(req.params.id)
 
     const info = await blockchain.getSurveyInfo(surveyId)
-    if (info.points === 0) {
+    if (Number(info.registeredAt) === 0) {
       throw new AppError(
         404,
         'SURVEY_NOT_FOUND',
@@ -267,7 +268,7 @@ router.post('/:id/template', requireAdminHandler, async (req, res, next) => {
     const { format } = parsed.data
 
     const info = await blockchain.getSurveyInfo(surveyId)
-    if (info.points === 0) {
+    if (Number(info.registeredAt) === 0) {
       throw new AppError(
         404,
         'SURVEY_NOT_FOUND',
@@ -333,7 +334,7 @@ router.post('/:id/key/rotate', requireAdminHandler, async (req, res, next) => {
     const surveyId = parseSurveyId(req.params.id)
 
     const info = await blockchain.getSurveyInfo(surveyId)
-    if (info.points === 0) {
+    if (Number(info.registeredAt) === 0) {
       throw new AppError(
         404,
         'SURVEY_NOT_FOUND',

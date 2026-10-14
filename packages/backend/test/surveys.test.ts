@@ -178,7 +178,7 @@ describe('POST /api/v1/surveys', () => {
       expect(blockchain.registerSurvey).toHaveBeenCalledWith(62, 3, 0, '')
     })
 
-    it.each([0, -1, 0.125, 255.5])('rejects %s points', async (points) => {
+    it.each([0, -1, 0.125, 255.5, 1e-9])('rejects %s points', async (points) => {
       vi.mocked(blockchain.supportsFractionalPoints).mockResolvedValue(true)
 
       const res = await registerWith(63, points)
