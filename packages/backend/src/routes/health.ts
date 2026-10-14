@@ -4,6 +4,7 @@ import { config } from '../config.js'
 import * as blockchain from '../services/blockchain.js'
 import { getEventStore } from '../services/event-store.js'
 import type { HealthResult } from '../types.js'
+import { withTimeout } from '../lib/timeout.js'
 
 const router: Router = Router()
 const startedAt = Date.now()
@@ -16,40 +17,60 @@ router.get('/live', (_req, res) => {
   res.json({ status: 'ok', uptime: Math.floor((Date.now() - startedAt) / 1000), build })
 })
 
+/** How long a readiness probe waits for a sync before judging the cache. */
+const READY_SYNC_WAIT_MS = 10_000
+/** Deadline for the probe's own RPC calls, so the whole probe stays well
+ * under the 30 s an uptime monitor typically allows. */
+const READY_RPC_DEADLINE_MS = 8_000
+
 async function checkReady(): Promise<HealthResult> {
+  const eventStore = getEventStore()
+  // Plesk/Passenger pauses or stops idle Node workers, so the background
+  // sync interval can drift or skip entirely, and the first probe after a
+  // pause finds an old cache. Use the probe (typically uptime monitoring)
+  // to refresh it, and give that sync a moment so a server that just woke
+  // up is not reported as stale.
+  // Only once the background interval is due: each sync costs RPC calls.
+  if (eventStore.isStale(config.syncIntervalMs)) {
+    let timer: ReturnType<typeof setTimeout> | undefined
+    await Promise.race([
+      eventStore.sync(),
+      new Promise<void>((resolve) => {
+        timer = setTimeout(resolve, READY_SYNC_WAIT_MS)
+      }),
+    ])
+    clearTimeout(timer)
+  }
+
   let blockNumber: number | null = null
   let network: string | null = null
   let connected = false
 
   try {
-    ;[blockNumber, network] = await Promise.all([
-      blockchain.getBlockNumber(),
-      blockchain.getNetwork(),
-    ])
+    ;[blockNumber, network] = await withTimeout(
+      Promise.all([blockchain.getBlockNumber(), blockchain.getNetwork()]),
+      READY_RPC_DEADLINE_MS,
+    )
     connected = true
   } catch {
     // blockchain unreachable
   }
 
-  const eventStore = getEventStore()
-  // Plesk/Passenger pauses Node workers between requests, which means the
-  // 60s background sync interval can drift or skip entirely. Use any /ready
-  // probe (typically Uptime monitoring) as an opportunity to refresh the
-  // cache. Fire-and-forget so we don't slow down the health probe.
-  if (eventStore.isStale(60_000)) {
-    void eventStore.sync()
-  }
-
   const eventStoreReady = eventStore.isReady()
   const lastSyncedBlock = eventStore.getLastSyncedBlock()
+  const lagBlocks =
+    blockNumber !== null && eventStoreReady ? Math.max(0, blockNumber - lastSyncedBlock) : null
+  // A cache that trails the chain hides new surveys and claims from the
+  // dashboard (2026-09: a month behind while health still said ok).
+  const eventStoreFresh = lagBlocks !== null && lagBlocks <= config.maxEventLagBlocks
 
-  const ready = connected && eventStoreReady
+  const ready = connected && eventStoreReady && eventStoreFresh
 
   return {
     status: ready ? 'ok' : 'degraded',
     uptime: Math.floor((Date.now() - startedAt) / 1000),
     blockchain: { connected, network, blockNumber },
-    eventStore: { ready: eventStoreReady, lastSyncedBlock },
+    eventStore: { ready: eventStoreReady, lastSyncedBlock, lagBlocks },
   }
 }
 

@@ -150,5 +150,7 @@ export interface HealthResult {
   eventStore?: {
     ready: boolean
     lastSyncedBlock: number
+    /** Blocks between the chain head and the event cache, when known. */
+    lagBlocks?: number | null
   }
 }

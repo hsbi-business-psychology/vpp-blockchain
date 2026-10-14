@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import request from 'supertest'
 import { createApp } from '../src/server.js'
+import { config } from '../src/config.js'
 import * as blockchain from '../src/services/blockchain.js'
 import { getEventStore } from '../src/services/event-store.js'
 
@@ -114,7 +115,7 @@ describe('GET /api/v1/health/ready', () => {
     const res = await request(app).get('/api/v1/health/ready')
 
     expect(res.status).toBe(200)
-    expect(store.isStale).toHaveBeenCalledWith(60_000)
+    expect(store.isStale).toHaveBeenCalledWith(config.syncIntervalMs)
     expect(store.sync).toHaveBeenCalledTimes(1)
   })
 
@@ -129,6 +130,38 @@ describe('GET /api/v1/health/ready', () => {
     await request(app).get('/api/v1/health/ready')
 
     expect(store.sync).not.toHaveBeenCalled()
+  })
+
+  it('reports degraded when the event cache trails the chain by more than an hour', async () => {
+    vi.mocked(blockchain.getBlockNumber).mockResolvedValue(52_585_277)
+    vi.mocked(blockchain.getNetwork).mockResolvedValue('base')
+    const store = vi.mocked(getEventStore())
+    store.isReady.mockReturnValue(true)
+    store.getLastSyncedBlock.mockReturnValue(51_100_924)
+    store.isStale.mockReturnValue(false)
+
+    const res = await request(app).get('/api/v1/health/ready')
+
+    expect(res.status).toBe(503)
+    expect(res.body.status).toBe('degraded')
+    expect(res.body.eventStore.lagBlocks).toBe(1_484_353)
+  })
+
+  it('judges the cache after the sync a stale probe started', async () => {
+    vi.mocked(blockchain.getBlockNumber).mockResolvedValue(52_585_277)
+    vi.mocked(blockchain.getNetwork).mockResolvedValue('base')
+    const store = vi.mocked(getEventStore())
+    store.isReady.mockReturnValue(true)
+    store.getLastSyncedBlock.mockReturnValue(51_100_924)
+    store.isStale.mockReturnValue(true)
+    store.sync.mockImplementation(async () => {
+      store.getLastSyncedBlock.mockReturnValue(52_585_270)
+    })
+
+    const res = await request(app).get('/api/v1/health/ready')
+
+    expect(res.status).toBe(200)
+    expect(res.body.eventStore.lagBlocks).toBe(7)
   })
 })
 

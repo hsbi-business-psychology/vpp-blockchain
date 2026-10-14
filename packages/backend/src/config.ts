@@ -140,6 +140,10 @@ export const config = {
   /** Interval (in ms) between event store sync cycles. */
   syncIntervalMs: parseInt(optional('SYNC_INTERVAL_MS', '60000'), 10),
 
+  /** Health reports degraded once the event cache trails the chain head by
+   * more than this many blocks (1,800 Base blocks are about one hour). */
+  maxEventLagBlocks: parseInt(optional('MAX_EVENT_LAG_BLOCKS', '1800'), 10),
+
   /** TTL (in ms) for the in-memory survey cache. */
   cacheTtlMs: parseInt(optional('CACHE_TTL_MS', '30000'), 10),
 
