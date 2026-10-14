@@ -297,6 +297,7 @@
     "title": "My Points",
     "subtitle": "View your current points balance and all past claims. Your points are read directly from the blockchain — tamper-proof and verifiable at any time.",
     "total": "Total Points",
+    "returnToClaim": "Create your wallet first. You will then be taken straight back to claiming your points.",
     "dataError": "Blockchain data could not be loaded. This may be due to an unstable internet connection or an overloaded RPC server. Please reload the page in a few seconds.",
     "submittedBanner": {
       "title": "Points Submitted",

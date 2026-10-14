@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ApiRequestError } from '@vpp/shared'
 
@@ -91,6 +91,29 @@ describe('ClaimPage', () => {
 
     expect(screen.getByText('claim.noWallet')).toBeInTheDocument()
     expect(screen.getByText('claim.createFirst')).toBeInTheDocument()
+  })
+
+  it('takes the claim link along to wallet creation', async () => {
+    const user = userEvent.setup()
+    function PointsProbe() {
+      const location = useLocation()
+      return <div>returnTo={(location.state as { returnTo?: string } | null)?.returnTo}</div>
+    }
+    const link = `/claim#s=7&n=${VALID_NONCE}&t=${VALID_TOKEN}`
+
+    render(
+      <MemoryRouter initialEntries={[link]}>
+        <React.Suspense fallback={<div>Loading...</div>}>
+          <Routes>
+            <Route path="/claim" element={<ClaimPage />} />
+            <Route path="/points" element={<PointsProbe />} />
+          </Routes>
+        </React.Suspense>
+      </MemoryRouter>,
+    )
+    await user.click(screen.getByText('claim.createFirst'))
+
+    expect(await screen.findByText(`returnTo=${link}`)).toBeInTheDocument()
   })
 
   it('shows sign step when wallet exists', () => {

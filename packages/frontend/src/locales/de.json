@@ -297,6 +297,7 @@
     "title": "Meine Punkte",
     "subtitle": "Hier siehst du deinen aktuellen Punktestand und alle bisherigen Einlösungen. Deine Punkte werden direkt von der Blockchain gelesen – fälschungssicher und jederzeit nachvollziehbar.",
     "total": "Gesamtpunkte",
+    "returnToClaim": "Lege zuerst deine Wallet an. Danach geht es automatisch zurück zum Einlösen deiner Punkte.",
     "dataError": "Die Blockchain-Daten konnten nicht geladen werden. Das kann an einer instabilen Internetverbindung oder einem \u00fcberlasteten RPC-Server liegen. Bitte lade die Seite in einigen Sekunden neu.",
     "submittedBanner": {
       "title": "Punkte abgegeben",

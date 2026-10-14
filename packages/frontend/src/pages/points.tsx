@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useLocation, useNavigate } from 'react-router'
+import { ArrowRight } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useWallet } from '@/hooks/use-wallet'
 import { useBlockchain } from '@/hooks/use-blockchain'
@@ -38,6 +41,19 @@ export default function PointsPage() {
   } = useWallet()
   const { isWalletSubmitted: checkSubmitted } = useBlockchain()
   const { getPointsData } = useApi()
+  const navigate = useNavigate()
+  const location = useLocation()
+  // Set by the claim page when a student without a wallet comes from a claim
+  // link; only same-site claim paths are followed.
+  const returnTo = (location.state as { returnTo?: unknown } | null)?.returnTo
+  const claimReturn =
+    typeof returnTo === 'string' && returnTo.startsWith('/claim') ? returnTo : null
+
+  // The wallet only exists once its backup was verified, so going back to
+  // the claim here never cuts the backup short.
+  useEffect(() => {
+    if (hasWallet && claimReturn) navigate(claimReturn, { replace: true })
+  }, [hasWallet, claimReturn, navigate])
 
   const [totalPoints, setTotalPoints] = useState<number | null>(null)
   const [walletSubmitted, setWalletSubmitted] = useState(false)
@@ -196,6 +212,13 @@ export default function PointsPage() {
         <h1 className="text-2xl font-bold">{t('points.title')}</h1>
         <p className="mt-1 text-sm text-muted-foreground sm:text-base">{t('points.subtitle')}</p>
       </div>
+
+      {claimReturn && !hasWallet && (
+        <Alert>
+          <ArrowRight className="size-4" />
+          <AlertDescription>{t('points.returnToClaim')}</AlertDescription>
+        </Alert>
+      )}
 
       {!hasWallet ? (
         <WalletSetup
