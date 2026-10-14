@@ -24,13 +24,11 @@
  *   if every consumed nonce is remembered forever.
  */
 import { readFileSync, existsSync } from 'node:fs'
-import { resolve, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
 import { atomicWriteJson } from '../lib/atomic-write.js'
 import { logger } from '../lib/logger.js'
+import { DATA_DIR } from '../lib/paths.js'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const DATA_DIR = resolve(__dirname, '../../data')
 const NONCES_PATH = resolve(DATA_DIR, 'used-nonces.json')
 
 interface NonceFile {

@@ -18,9 +18,8 @@
 import express, { type Express } from 'express'
 import helmet from 'helmet'
 import cors from 'cors'
-import { resolve, dirname } from 'node:path'
+import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 import { config } from './config.js'
 import { logger } from './lib/logger.js'
 import { apiLimiter } from './middleware/rateLimit.js'
@@ -30,8 +29,7 @@ import { createApiRouter } from './routes/index.js'
 import { getEventStore } from './services/event-store.js'
 import { validateChainId } from './services/blockchain.js'
 import { startBalanceMonitor } from './services/balance-monitor.js'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
+import { PUBLIC_DIR } from './lib/paths.js'
 
 export function createApp(): Express {
   const app = express()
@@ -102,7 +100,7 @@ export function createApp(): Express {
   app.use(errorHandler)
 
   // Serve frontend in production (static SPA files next to the backend)
-  const publicDir = resolve(__dirname, '../public')
+  const publicDir = PUBLIC_DIR
   if (existsSync(publicDir)) {
     app.use(express.static(publicDir))
     app.get('*', (_req, res) => {

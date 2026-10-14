@@ -26,14 +26,12 @@
  *   HMAC-SHA256 but cheap and future-proof.
  */
 import { readFileSync, existsSync } from 'node:fs'
-import { resolve, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
 import { randomBytes } from 'node:crypto'
 import { atomicWriteJson } from '../lib/atomic-write.js'
 import { logger } from '../lib/logger.js'
+import { DATA_DIR } from '../lib/paths.js'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const DATA_DIR = resolve(__dirname, '../../data')
 const KEYS_PATH = resolve(DATA_DIR, 'survey-keys.json')
 
 interface SurveyKeyRecord {

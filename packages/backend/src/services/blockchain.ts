@@ -14,12 +14,10 @@
  */
 import { ethers } from 'ethers'
 import { readFileSync } from 'node:fs'
-import { resolve, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
 import { config } from '../config.js'
 import { withRpcRetry } from '../lib/rpcRetry.js'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
+import { BACKEND_ROOT } from '../lib/paths.js'
 
 /**
  * Loads the SurveyPointsV2 ABI from the contracts package artifacts. The V2
@@ -31,8 +29,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
  */
 function loadContractABI(): ethers.InterfaceAbi {
   const artifactPath = resolve(
-    __dirname,
-    '../../../contracts/artifacts/contracts/SurveyPointsV2.sol/SurveyPointsV2.json',
+    BACKEND_ROOT,
+    '../contracts/artifacts/contracts/SurveyPointsV2.sol/SurveyPointsV2.json',
   )
   const artifact = JSON.parse(readFileSync(artifactPath, 'utf-8'))
   return artifact.abi

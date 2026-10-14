@@ -13,17 +13,15 @@
  * after any write transaction.
  */
 import { readFileSync, existsSync } from 'node:fs'
-import { resolve, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
 import { config } from '../config.js'
 import { atomicWriteJson } from '../lib/atomic-write.js'
 import { logger } from '../lib/logger.js'
+import { DATA_DIR } from '../lib/paths.js'
 import { readOnlyContract, queryFilterChunked, provider } from './blockchain.js'
 import type { EventStore } from './event-store.interface.js'
 import type { EventStoreData, StoredSurveyEvent, StoredPointsEvent } from './event-store.types.js'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const DATA_DIR = resolve(__dirname, '../../data')
 const STORE_PATH = resolve(DATA_DIR, 'events.json')
 
 export class JsonFileEventStore implements EventStore {
