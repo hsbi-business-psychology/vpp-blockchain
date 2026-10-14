@@ -648,7 +648,7 @@ describe('GET /api/v1/surveys/:id/key', () => {
 
   it('returns the HMAC key for an existing survey', async () => {
     const timestamp = Math.floor(Date.now() / 1000)
-    const message = `key:1:${timestamp}`
+    const message = `Read survey key 1 at ${timestamp}`
     const signature = await ADMIN_WALLET.signMessage(message)
     mockKeys[1] = { key: 'secret-key-1', createdAt: 1710000000000 }
 
@@ -665,7 +665,7 @@ describe('GET /api/v1/surveys/:id/key', () => {
 
   it('returns 404 when no key exists', async () => {
     const timestamp = Math.floor(Date.now() / 1000)
-    const message = `key:99:${timestamp}`
+    const message = `Read survey key 99 at ${timestamp}`
     const signature = await ADMIN_WALLET.signMessage(message)
 
     vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
@@ -687,7 +687,7 @@ describe('POST /api/v1/surveys/:id/key/rotate', () => {
 
   it('rotates an existing key and returns the new value', async () => {
     const timestamp = Math.floor(Date.now() / 1000)
-    const message = `rotate:1:${timestamp}`
+    const message = `Rotate survey key 1 at ${timestamp}`
     const signature = await ADMIN_WALLET.signMessage(message)
     mockKeys[1] = { key: 'old-key', createdAt: Date.now() }
 
@@ -713,7 +713,7 @@ describe('POST /api/v1/surveys/:id/key/rotate', () => {
 
   it('creates the first key for a legacy survey lacking one', async () => {
     const timestamp = Math.floor(Date.now() / 1000)
-    const message = `rotate:1:${timestamp}`
+    const message = `Rotate survey key 1 at ${timestamp}`
     const signature = await ADMIN_WALLET.signMessage(message)
 
     vi.mocked(blockchain.isAdmin).mockResolvedValue(true)

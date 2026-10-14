@@ -16,7 +16,7 @@ import { ethers } from 'ethers'
 import { config } from '../config.js'
 import { AppError } from '../middleware/errorHandler.js'
 import { throwValidationError } from '../lib/validation.js'
-import { requireAdminHandler } from '../middleware/auth.js'
+import { requireAdminAction, requireAdminHandler } from '../middleware/auth.js'
 import * as blockchain from '../services/blockchain.js'
 import { getEventStore } from '../services/event-store.js'
 import { syncWithin } from '../lib/sync-within.js'
@@ -30,11 +30,17 @@ const roleSchema = z.object({
   adminMessage: z.string().min(1),
 })
 
+// Role changes need a signature naming the target; a session cookie
+// alone is not enough.
+function roleAction(verb: string) {
+  return requireAdminAction(
+    (req) => `${verb} admin ${String((req.body as { address?: unknown })?.address ?? '')}`,
+  )
+}
+
 const labelSchema = z.object({
   address: z.string().refine(ethers.isAddress, 'Invalid Ethereum address'),
   label: z.string().max(MAX_LABEL_LENGTH, `Label exceeds ${MAX_LABEL_LENGTH} characters`),
-  adminSignature: z.string().min(1),
-  adminMessage: z.string().min(1),
 })
 
 interface AdminEntry {
@@ -87,7 +93,7 @@ router.get('/', requireAdminHandler, async (_req, res, next) => {
   }
 })
 
-router.post('/add', requireAdminHandler, async (req, res, next) => {
+router.post('/add', roleAction('Add'), async (req, res, next) => {
   try {
     const parsed = roleSchema.safeParse(req.body)
     if (!parsed.success) {
@@ -118,7 +124,7 @@ router.post('/add', requireAdminHandler, async (req, res, next) => {
   }
 })
 
-router.post('/remove', requireAdminHandler, async (req, res, next) => {
+router.post('/remove', roleAction('Remove'), async (req, res, next) => {
   try {
     const parsed = roleSchema.safeParse(req.body)
     if (!parsed.success) {

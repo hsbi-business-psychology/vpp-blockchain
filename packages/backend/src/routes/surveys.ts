@@ -23,7 +23,7 @@ import { ethers } from 'ethers'
 import { config } from '../config.js'
 import { AppError } from '../middleware/errorHandler.js'
 import { throwValidationError } from '../lib/validation.js'
-import { requireAdminHandler } from '../middleware/auth.js'
+import { requireAdminAction, requireAdminHandler } from '../middleware/auth.js'
 import * as blockchain from '../services/blockchain.js'
 import { getEventStore } from '../services/event-store.js'
 import { syncWithin } from '../lib/sync-within.js'
@@ -54,8 +54,6 @@ const registerSchema = z.object({
     .refine((p) => toCentiPoints(p) > 0, 'Points must be at least 0.01'),
   maxClaims: z.number().int().min(0).default(0),
   title: z.string().default(''),
-  adminSignature: z.string().min(1),
-  adminMessage: z.string().min(1),
 })
 
 function parseSurveyId(raw: unknown): number {
@@ -225,8 +223,6 @@ router.post('/:id/reactivate', requireAdminHandler, async (req, res, next) => {
 
 const revokeSchema = z.object({
   student: z.string().refine(ethers.isAddress, 'Invalid wallet address'),
-  adminSignature: z.string().min(1),
-  adminMessage: z.string().min(1),
 })
 
 router.post('/:id/revoke', requireAdminHandler, async (req, res, next) => {
@@ -304,64 +300,72 @@ router.post('/:id/template', requireAdminHandler, async (req, res, next) => {
 // GET /api/v1/surveys/:id/key — return current HMAC key (admin only).
 // Used when the admin lost the key from the registration response and
 // needs it again for SoSci config without rotating.
-router.get('/:id/key', requireAdminHandler, async (req, res, next) => {
-  try {
-    const surveyId = parseSurveyId(req.params.id)
-    const key = getSurveyKey(surveyId)
-    if (!key) {
-      throw new AppError(
-        404,
-        'KEY_NOT_FOUND',
-        'No HMAC key on file for this survey. Use POST /key/rotate to create one.',
-      )
+router.get(
+  '/:id/key',
+  requireAdminAction((req) => `Read survey key ${req.params.id}`),
+  async (req, res, next) => {
+    try {
+      const surveyId = parseSurveyId(req.params.id)
+      const key = getSurveyKey(surveyId)
+      if (!key) {
+        throw new AppError(
+          404,
+          'KEY_NOT_FOUND',
+          'No HMAC key on file for this survey. Use POST /key/rotate to create one.',
+        )
+      }
+      const createdAt = getKeyCreatedAt(surveyId)
+      res.json({
+        success: true,
+        data: {
+          surveyId,
+          key,
+          createdAt: createdAt ? new Date(createdAt).toISOString() : null,
+        },
+      })
+    } catch (err) {
+      next(err)
     }
-    const createdAt = getKeyCreatedAt(surveyId)
-    res.json({
-      success: true,
-      data: {
-        surveyId,
-        key,
-        createdAt: createdAt ? new Date(createdAt).toISOString() : null,
-      },
-    })
-  } catch (err) {
-    next(err)
-  }
-})
+  },
+)
 
-router.post('/:id/key/rotate', requireAdminHandler, async (req, res, next) => {
-  try {
-    const surveyId = parseSurveyId(req.params.id)
+router.post(
+  '/:id/key/rotate',
+  requireAdminAction((req) => `Rotate survey key ${req.params.id}`),
+  async (req, res, next) => {
+    try {
+      const surveyId = parseSurveyId(req.params.id)
 
-    const info = await blockchain.getSurveyInfo(surveyId)
-    if (Number(info.registeredAt) === 0) {
-      throw new AppError(
-        404,
-        'SURVEY_NOT_FOUND',
-        'No survey found with this ID. Cannot rotate a key for an unregistered survey.',
-      )
+      const info = await blockchain.getSurveyInfo(surveyId)
+      if (Number(info.registeredAt) === 0) {
+        throw new AppError(
+          404,
+          'SURVEY_NOT_FOUND',
+          'No survey found with this ID. Cannot rotate a key for an unregistered survey.',
+        )
+      }
+
+      let key: string
+      if (hasKey(surveyId)) {
+        key = rotateKey(surveyId)
+      } else {
+        // First-ever key — happens when an admin registered a V1 survey and
+        // the V2 backend never had a key for it. Treat as a regular create
+        // so the admin gets a key without having to re-register.
+        key = createKey(surveyId)
+      }
+      res.json({
+        success: true,
+        data: {
+          surveyId,
+          key,
+          createdAt: new Date(getKeyCreatedAt(surveyId) ?? Date.now()).toISOString(),
+        },
+      })
+    } catch (err) {
+      next(err)
     }
-
-    let key: string
-    if (hasKey(surveyId)) {
-      key = rotateKey(surveyId)
-    } else {
-      // First-ever key — happens when an admin registered a V1 survey and
-      // the V2 backend never had a key for it. Treat as a regular create
-      // so the admin gets a key without having to re-register.
-      key = createKey(surveyId)
-    }
-    res.json({
-      success: true,
-      data: {
-        surveyId,
-        key,
-        createdAt: new Date(getKeyCreatedAt(surveyId) ?? Date.now()).toISOString(),
-      },
-    })
-  } catch (err) {
-    next(err)
-  }
-})
+  },
+)
 
 export default router

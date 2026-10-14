@@ -239,7 +239,7 @@ describe('POST /api/v1/admin/add', () => {
     })
 
     expect(res.status).toBe(401)
-    expect(res.body.error).toBe('UNAUTHORIZED')
+    expect(res.body.error).toBe('SIGNATURE_REQUIRED')
   })
 
   it('should reject an expired admin signature', async () => {
@@ -261,7 +261,7 @@ describe('POST /api/v1/admin/add', () => {
 
   it('should reject with invalid address', async () => {
     const timestamp = Math.floor(Date.now() / 1000)
-    const message = `Add admin invalid at ${timestamp}`
+    const message = `Add admin not-a-valid-address at ${timestamp}`
     const signature = await ADMIN_WALLET.signMessage(message)
 
     vi.mocked(blockchain.isAdmin).mockResolvedValue(true)

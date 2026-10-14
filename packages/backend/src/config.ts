@@ -137,6 +137,11 @@ export const config = {
    */
   maxMessageAgeMs: parseInt(optional('MAX_MESSAGE_AGE_MS', '60000'), 10),
 
+  /** How long an admin stays signed in after one wallet signature. The
+   * cookie grants every admin action except role changes, which still
+   * need their own signature. */
+  adminSessionHours: parseInt(optional('ADMIN_SESSION_HOURS', '8'), 10),
+
   /** Interval (in ms) between background event store syncs. Writes, admin
    * list requests and health probes sync on demand, so the background loop
    * only has to catch what nobody asked for. Every run costs RPC calls, which
