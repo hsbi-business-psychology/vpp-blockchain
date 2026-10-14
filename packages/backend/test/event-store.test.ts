@@ -428,6 +428,31 @@ describe('JsonFileEventStore — sync lock', () => {
     expect(mockBlockchain.getBlockNumber).not.toHaveBeenCalled()
   })
 
+  it('lets a second caller wait for the sync that is already running', async () => {
+    configureChainMocks({ blockNumber: 60 })
+    let release: () => void = () => {}
+    const gate = new Promise<void>((r) => (release = r))
+    mockBlockchain.queryFilterChunked.mockImplementation(async () => {
+      await gate
+      return []
+    })
+    const { JsonFileEventStore } = await import('../src/services/json-file-event-store.js')
+    const store = new JsonFileEventStore()
+
+    const first = store.sync()
+    let secondDone = false
+    const second = store.sync().then(() => {
+      secondDone = true
+    })
+    await new Promise((r) => setTimeout(r, 10))
+    expect(secondDone).toBe(false)
+
+    release()
+    await Promise.all([first, second])
+    expect(store.getLastSyncedBlock()).toBe(60)
+    expect(mockBlockchain.getBlockNumber).toHaveBeenCalledTimes(1)
+  })
+
   it('force-releases a stale sync lock and runs anyway', async () => {
     configureChainMocks({ blockNumber: 75 })
     const { JsonFileEventStore } = await import('../src/services/json-file-event-store.js')

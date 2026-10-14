@@ -77,6 +77,12 @@ export class JsonFileEventStore implements EventStore {
    * a newer run. */
   private runGeneration = 0
 
+  /** Generation of the run that holds the `syncing` lock, and its promise.
+   * Only that run may release the lock, and concurrent callers wait for it
+   * instead of returning before anything was synced. */
+  private lockHolder = 0
+  private inFlight: Promise<void> | null = null
+
   private load(): void {
     if (!existsSync(STORE_PATH)) return
     try {
@@ -183,20 +189,27 @@ export class JsonFileEventStore implements EventStore {
   /** Public-facing sync that callers can fire-and-forget from request
    * handlers. Wraps `runSync` in a watchdog so a single hung RPC call
    * cannot freeze the cache forever. */
-  async sync(): Promise<void> {
+  sync(): Promise<void> {
     if (this.syncing) {
       // If a previous sync has been running for longer than the timeout,
       // the watchdog should have already released the lock. If we still
       // see syncing=true with a stale start time, force-release as a last
       // resort so we don't get stuck for the lifetime of the worker.
       const ageMs = Date.now() - this.syncStartedAt
-      if (ageMs < JsonFileEventStore.SYNC_TIMEOUT_MS) return
+      if (ageMs < JsonFileEventStore.SYNC_TIMEOUT_MS) return this.inFlight ?? Promise.resolve()
       logger.warn({ ageMs }, 'Sync lock was held longer than SYNC_TIMEOUT_MS — force-releasing')
       this.syncing = false
     }
     this.syncing = true
     this.syncStartedAt = Date.now()
     const generation = ++this.runGeneration
+    this.lockHolder = generation
+    const run = this.runLocked(generation)
+    this.inFlight = run
+    return run
+  }
+
+  private async runLocked(generation: number): Promise<void> {
     let caughtUp: boolean
     let watchdogTimer: ReturnType<typeof setTimeout> | undefined
     try {
@@ -221,7 +234,11 @@ export class JsonFileEventStore implements EventStore {
       logger.error({ err }, 'Event store sync failed (watchdog)')
     } finally {
       clearTimeout(watchdogTimer)
-      this.syncing = false
+      // A force-released lock may already belong to a newer run.
+      if (this.lockHolder === generation) {
+        this.syncing = false
+        this.inFlight = null
+      }
     }
 
     if (!caughtUp) {
@@ -270,7 +287,9 @@ export class JsonFileEventStore implements EventStore {
           }
           throw err
         }
-        if (!applied) return true // superseded by a newer run — stop quietly
+        // Superseded by a newer run, which owns the progress from here.
+        // Not "caught up": that would mark the cache fresh.
+        if (!applied) return false
 
         logger.info(
           { fromBlock, toBlock, behind: latestBlock - toBlock },
