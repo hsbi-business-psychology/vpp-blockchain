@@ -87,7 +87,7 @@ pm2 start packages/backend/dist/server.js --name vpp-backend
 
 ### Option C: Plesk (Recommended for HSBI)
 
-Plesk with the Node.js extension (Phusion Passenger) runs the backend and serves the frontend from the same domain. A GitHub Actions workflow deploys after CI has passed on `main`.
+Plesk with the Node.js extension (Phusion Passenger) runs the backend and serves the frontend from the same domain. Deploys upload only changed files over FTPS from the HSBI network (see below).
 
 #### Initial Setup (one-time)
 
@@ -122,11 +122,11 @@ Plesk with the Node.js extension (Phusion Passenger) runs the backend and serves
 
 `scripts/deploy-ftp.sh` then uploads only files whose hash differs from the manifest on the server, in this order: assets, backend, Passenger restart (`tmp/restart.txt`), `index.html`, manifest. Files dropped from a build are deleted one deploy later, so browsers that still hold the previous `index.html` can load its chunks. Finally it waits until `/api/v1/health/live` reports the new build and checks that `index.html` loads its entry chunk. `packages/backend/data/` is never part of the upload and is never deleted.
 
-#### GitHub Actions Deployment
+#### Deploying from the HSBI network
 
-`.github/workflows/deploy.yml` runs when the CI workflow succeeds for a push to `main`. Deploys queue instead of cancelling each other. A typical code change uploads a handful of files and takes two to three minutes including the build.
+`hosting.hsbi.de` completes the FTPS handshake only for clients inside the HSBI network or VPN. From elsewhere, GitHub-hosted runners included, the server answers the greeting and `FEAT` but never `AUTH TLS` (measured on 2026-10-14). Plain FTP would send the password unencrypted, so deploys run from a machine in the HSBI network or VPN. With the bundled backend that takes about a minute.
 
-Set these **GitHub Secrets** (Repository → Settings → Secrets and variables → Actions):
+`.github/workflows/deploy.yml` does the same build and upload but is started by hand only (`gh workflow run deploy.yml -f ref=<sha-or-tag>`). It fails within minutes if the runner cannot reach the host. It needs these **GitHub Secrets**:
 
 | Secret         | Value                   |
 | -------------- | ----------------------- |
@@ -135,15 +135,9 @@ Set these **GitHub Secrets** (Repository → Settings → Secrets and variables 
 
 The frontend settings (`VITE_*`) come from the committed `packages/frontend/.env.production`; they are public anyway because they end up in the browser bundle. `VITE_RPC_URL` may list several RPCs separated by commas.
 
-To deploy a specific commit or tag, for example as a rollback:
-
-```bash
-gh workflow run deploy.yml -f ref=<sha-or-tag>
-```
-
 #### Manual Deployment
 
-From a laptop with `lftp` installed (FTP on port 21 is reachable from outside the HSBI network):
+From a machine in the HSBI network or VPN with `lftp` installed, after checking out the commit to deploy (usually `main`):
 
 ```bash
 # Build and show what would be uploaded

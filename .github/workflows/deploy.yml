@@ -1,12 +1,12 @@
 name: Deploy to Plesk
 
-# Runs after CI has passed on main, or by hand for a given ref (rollback:
-# `gh workflow run deploy.yml -f ref=<sha-or-tag>`).
+# Manual only. hosting.hsbi.de completes the FTPS handshake only for clients
+# inside the HSBI network or VPN; GitHub-hosted runners get the greeting but
+# no answer to AUTH TLS (measured 2026-10-14). Until that changes, deploy with
+# `bash scripts/build-deploy.sh` from the HSBI network or VPN. This workflow
+# stays for a runner that can reach the host, and fails within minutes
+# instead of hanging.
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
-    branches: [main]
   workflow_dispatch:
     inputs:
       ref:
@@ -14,8 +14,6 @@ on:
         type: string
         default: main
 
-# A deploy that is cut off halfway leaves the server with a mix of old and
-# new files. Queue instead of cancelling.
 concurrency:
   group: deploy
   cancel-in-progress: false
@@ -24,15 +22,12 @@ jobs:
   deploy:
     name: Build & Deploy
     runs-on: ubuntu-latest
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.event == 'push')
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha || inputs.ref }}
+          ref: ${{ inputs.ref }}
 
       - uses: pnpm/action-setup@v4
 

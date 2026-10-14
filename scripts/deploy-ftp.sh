@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # Uploads deploy/ to the Plesk host over FTPS, changed files only.
 #
+# hosting.hsbi.de completes the FTPS handshake (AUTH TLS) only for clients
+# inside the HSBI network or VPN. From elsewhere, GitHub-hosted runners
+# included, it answers FEAT but never AUTH TLS (measured 2026-10-14), so run
+# this from the HSBI network or VPN.
+#
 #   FTP_USERNAME, FTP_PASSWORD   required
 #   FTP_HOST      default hosting.hsbi.de
 #   FTP_ROOT      default /httpdocs
@@ -27,6 +32,17 @@ DEPLOY="$ROOT/deploy"
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
 
+# Time limit for one command: GNU timeout on Linux, perl on macOS.
+limit() {
+  local seconds=$1
+  shift
+  if command -v timeout >/dev/null 2>&1; then
+    timeout "$seconds" "$@"
+  else
+    perl -e 'alarm shift; exec @ARGV' "$seconds" "$@"
+  fi
+}
+
 if [ -z "${FTP_CA_FILE:-}" ]; then
   # hosting.hsbi.de chains up to a HARICA root that the usual bundles carry.
   # The presented chain is added in case an intermediate is missing there.
@@ -34,8 +50,8 @@ if [ -z "${FTP_CA_FILE:-}" ]; then
   for bundle in /etc/ssl/certs/ca-certificates.crt /etc/ssl/cert.pem; do
     if [ -s "$bundle" ]; then cat "$bundle" > "$FTP_CA_FILE"; break; fi
   done
-  openssl s_client -connect "$FTP_HOST:21" -starttls ftp -showcerts -servername "$FTP_HOST" \
-    </dev/null 2>/dev/null \
+  limit 20 openssl s_client -connect "$FTP_HOST:21" -starttls ftp -showcerts \
+    -servername "$FTP_HOST" </dev/null 2>/dev/null \
     | sed -n '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/p' >> "$FTP_CA_FILE" || true
 fi
 if [ ! -s "$FTP_CA_FILE" ]; then
@@ -44,7 +60,7 @@ if [ ! -s "$FTP_CA_FILE" ]; then
 fi
 
 SETTINGS="set ftp:ssl-allow yes; set ftp:ssl-force yes; set ftp:ssl-protect-data yes;"
-SETTINGS+=" set ftp:passive-mode yes; set net:timeout 30; set net:max-retries 3;"
+SETTINGS+=" set ftp:passive-mode yes; set net:timeout 30; set net:max-retries 2;"
 SETTINGS+=" set net:reconnect-interval-base 5;"
 SETTINGS+=" set ssl:verify-certificate yes; set ssl:ca-file $FTP_CA_FILE;"
 export LFTP_PASSWORD="$FTP_PASSWORD"
@@ -61,6 +77,7 @@ if ! ftp "cat $FTP_ROOT/.deploy-manifest.json" > "$STAGE/remote.json" 2> "$STAGE
     echo '{}' > "$STAGE/remote.json"
   else
     echo "::error::Could not read the server manifest: $(tr '\n' ' ' < "$STAGE/cat.err")"
+    echo "If this is a timeout: FTPS to $FTP_HOST only works from the HSBI network or VPN."
     exit 1
   fi
 fi

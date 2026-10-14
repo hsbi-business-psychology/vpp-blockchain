@@ -147,14 +147,9 @@ cd <repo>
 git checkout main
 git pull
 
-# Manueller Deploy via GHA:
-gh workflow run deploy.yml -f ref=main
-
-# Watch:
-gh run watch
 ```
 
-ODER manuell aus lokalem Build (lftp nötig, FTP ist auch von außerhalb der HSBI erreichbar):
+Deploy aus dem HSBI-Netz oder VPN (lftp nötig; GitHub-Runner bekommen auf `AUTH TLS` keine Antwort):
 
 ```bash
 pnpm install --frozen-lockfile

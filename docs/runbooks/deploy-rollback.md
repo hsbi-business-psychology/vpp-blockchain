@@ -67,24 +67,15 @@ cd <repo>
 git fetch
 git checkout last-known-good   # oder: git checkout <SHA>
 
-# GHA-Deploy von diesem Commit triggern:
-gh workflow run deploy.yml -f ref=<SHA-or-tag-name>
+# Aus dem HSBI-Netz oder VPN deployen (GitHub-Runner erreichen FTPS nicht):
+FTP_USERNAME=<FTP_USER> FTP_PASSWORD=<FTP_PASS> bash scripts/build-deploy.sh
 ```
 
-**Wichtig:** `ref` zeigt auf den Commit, nicht auf `main`. Der Workflow kommt aus `main`, gebaut und hochgeladen wird der ältere Stand. Hochgeladen werden nur Dateien, die sich vom Server-Manifest unterscheiden.
+**Wichtig:** Gebaut und hochgeladen wird der ausgecheckte Stand. Hochgeladen werden nur Dateien, die sich vom Server-Manifest unterscheiden.
 
-**Watch:**
-
-```bash
-gh run watch
-# Alternativ:
-gh run list --workflow=deploy.yml --limit 1 --json status,conclusion
-```
-
-**Verifikation nach Deploy:**
+**Verifikation nach Deploy:** Das Skript wartet selbst, bis `/api/v1/health/live` den neuen Build meldet. Danach:
 
 ```bash
-sleep 15
 curl -sS https://<VPP_INSTANCE>/api/v1/health/ready | jq
 ```
 
