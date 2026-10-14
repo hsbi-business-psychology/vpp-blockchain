@@ -199,19 +199,24 @@ server {
 
 ### Backend
 
-| Variable                     | Required | Description                                                                 |
-| ---------------------------- | -------- | --------------------------------------------------------------------------- |
-| `PORT`                       | No       | Server port (default: `3000`)                                               |
-| `RPC_URL`                    | Yes      | Base RPC endpoint                                                           |
-| `CONTRACT_ADDRESS`           | Yes      | Deployed SurveyPoints address                                               |
-| `MINTER_PRIVATE_KEY`         | Yes      | Backend wallet private key (MINTER_ROLE)                                    |
-| `CONTRACT_DEPLOY_BLOCK`      | No       | Block number at contract deployment (speeds up event queries; default: `0`) |
-| `EXPLORER_BASE_URL`          | Yes      | Block explorer URL                                                          |
-| `FRONTEND_URL`               | Yes      | Frontend URL (CORS + template redirects)                                    |
-| `CLAIM_RATE_LIMIT_WINDOW_MS` | No       | Rate limit window for claims (default: `60000`)                             |
-| `CLAIM_RATE_LIMIT_MAX`       | No       | Max claims per window (default: `5`)                                        |
-| `API_RATE_LIMIT_WINDOW_MS`   | No       | Rate limit window for API (default: `60000`)                                |
-| `API_RATE_LIMIT_MAX`         | No       | Max API requests per window (default: `100`)                                |
+| Variable                     | Required | Description                                                                                   |
+| ---------------------------- | -------- | --------------------------------------------------------------------------------------------- |
+| `PORT`                       | No       | Server port (default: `3000`)                                                                 |
+| `RPC_URL`                    | Yes      | Base RPC endpoint                                                                             |
+| `CONTRACT_ADDRESS`           | Yes      | Deployed SurveyPoints address                                                                 |
+| `MINTER_PRIVATE_KEY`         | Yes      | Backend wallet private key (MINTER_ROLE)                                                      |
+| `CONTRACT_DEPLOY_BLOCK`      | No       | Block number at contract deployment (speeds up event queries; default: `0`)                   |
+| `EVENT_RPC_URL`              | No       | RPC URL(s) for `eth_getLogs`, comma-separated (default: `RPC_URL` + public fallbacks)         |
+| `CHUNK_SIZE`                 | No       | Largest block range per `eth_getLogs`; halves automatically when refused (default: `2000000`) |
+| `SYNC_INTERVAL_MS`           | No       | Background event sync interval (default: `300000`, five minutes)                              |
+| `MAX_EVENT_LAG_BLOCKS`       | No       | Health reports degraded beyond this event-cache lag (default: `1800`, ~1 h)                   |
+| `EXPECTED_CHAIN_ID`          | No       | Refuse to start on a different chain; also skips network detection                            |
+| `EXPLORER_BASE_URL`          | Yes      | Block explorer URL                                                                            |
+| `FRONTEND_URL`               | Yes      | Frontend URL (CORS + template redirects)                                                      |
+| `CLAIM_RATE_LIMIT_WINDOW_MS` | No       | Rate limit window for claims (default: `60000`)                                               |
+| `CLAIM_RATE_LIMIT_MAX`       | No       | Max claims per window (default: `5`)                                                          |
+| `API_RATE_LIMIT_WINDOW_MS`   | No       | Rate limit window for API (default: `60000`)                                                  |
+| `API_RATE_LIMIT_MAX`         | No       | Max API requests per window (default: `100`)                                                  |
 
 ### Frontend
 
@@ -244,7 +249,7 @@ server {
 ### Health Check
 
 ```bash
-curl https://vpp.your-university.edu/api/health
+curl https://vpp.your-university.edu/api/v1/health/ready
 ```
 
 Expected response:
@@ -253,13 +258,18 @@ Expected response:
 {
   "status": "ok",
   "uptime": 3600,
-  "blockchain": {
-    "connected": true,
-    "network": "base",
-    "blockNumber": 12345678
-  }
+  "blockchain": { "connected": true, "network": "base", "blockNumber": 52585277 },
+  "eventStore": { "ready": true, "lastSyncedBlock": 52585270, "lagBlocks": 7 }
 }
 ```
+
+`/ready` answers `503` with `"status": "degraded"` when the RPC is unreachable or the event cache trails the chain by more than `MAX_EVENT_LAG_BLOCKS`. `/api/v1/health/live` only says the process is up and reports the deployed `build`. `/api/v1/health/diag` probes every configured RPC and shows the event-sync state.
+
+The workflow `.github/workflows/health.yml` probes `/ready` twice an hour. A failed run makes GitHub notify whoever last changed its schedule. GitHub pauses scheduled workflows after 60 days without repository activity and sends an email first; re-enable it in the Actions tab.
+
+### RPC provider
+
+Reads (`eth_call`) work on any public Base RPC. Event history needs `eth_getLogs` over old blocks, which the free public endpoints refuse (October 2026: publicnode wants a token, drpc's free plan caps the range, mainnet.base.org rate-limits; Alchemy Free allows 10 blocks per call). Put an endpoint that accepts wide ranges first in `RPC_URL` (or in `EVENT_RPC_URL`). On Alchemy Pay-as-you-go one call covers any range up to 10,000 logs; with the five-minute sync, VPP uses roughly 2-3 million compute units a month, about 1-2 USD. Set a usage limit in the Alchemy dashboard. If every source refuses a range, the backend halves it and keeps going, so a free endpoint still works, only slower to catch up.
 
 ### Backend Wallet Balance
 
