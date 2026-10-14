@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import request from 'supertest'
 import { ethers } from 'ethers'
 import { createApp } from '../src/server.js'
+import { __resetActionSignaturesForTests } from '../src/middleware/auth.js'
 import * as blockchain from '../src/services/blockchain.js'
 import { getEventStore } from '../src/services/event-store.js'
 import * as adminLabels from '../src/services/admin-labels.js'
@@ -15,6 +16,10 @@ const ADMIN_WALLET = new ethers.Wallet(
 const TARGET_ADDRESS = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
 // Matches getMinterAddress() mock in test/setup.ts.
 const MINTER_ADDRESS = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
+
+beforeEach(() => {
+  __resetActionSignaturesForTests()
+})
 
 describe('GET /api/v1/admin', () => {
   beforeEach(() => {

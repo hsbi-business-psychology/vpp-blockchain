@@ -95,11 +95,32 @@ async function requireAdmin(req: Request, res: Response, next: NextFunction): Pr
   await verifySignedRequest(adminMessage, adminSignature, res, next)
 }
 
+// Action signatures are single-use: without this, a signed award could be
+// replayed after a revoke while still inside the age window.
+const usedActionSignatures = new Map<string, number>()
+
+function consumeActionSignature(signature: string): boolean {
+  const now = Date.now()
+  for (const [sig, expires] of usedActionSignatures) {
+    if (expires < now) usedActionSignatures.delete(sig)
+  }
+  const key = signature.toLowerCase()
+  if (usedActionSignatures.has(key)) return false
+  usedActionSignatures.set(key, now + config.maxMessageAgeMs + 120_000)
+  return true
+}
+
+/** Test-only: forget consumed action signatures. */
+export function __resetActionSignaturesForTests(): void {
+  usedActionSignatures.clear()
+}
+
 async function verifySignedRequest(
   adminMessage: string,
   adminSignature: string,
   res: Response,
   next: NextFunction,
+  singleUse = false,
 ): Promise<void> {
   // Step 1: recover signer address from the signed message. ONLY signature
   // problems should produce a 401 here — RPC / blockchain failures must not
@@ -169,6 +190,15 @@ async function verifySignedRequest(
     return
   }
 
+  if (singleUse && !consumeActionSignature(adminSignature)) {
+    res.status(409).json({
+      success: false,
+      error: 'SIGNATURE_USED',
+      message: 'This confirmation was already used. Please confirm the action again.',
+    })
+    return
+  }
+
   res.locals.adminAddress = recoveredAddress
   next()
 }
@@ -203,6 +233,6 @@ export function requireAdminAction(describe: (req: Request) => string): RequestH
       })
       return
     }
-    verifySignedRequest(adminMessage, adminSignature, res, next).catch(next)
+    verifySignedRequest(adminMessage, adminSignature, res, next, true).catch(next)
   }
 }

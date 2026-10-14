@@ -4,6 +4,7 @@ import { ethers } from 'ethers'
 import { existsSync, rmSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { createApp } from '../src/server.js'
+import { __resetActionSignaturesForTests } from '../src/middleware/auth.js'
 import * as blockchain from '../src/services/blockchain.js'
 import { __resetForTests as resetSessions } from '../src/services/admin-session.js'
 import { __resetRoleCacheForTests } from '../src/middleware/auth.js'
@@ -56,6 +57,10 @@ beforeEach(() => {
 
 afterAll(() => {
   if (existsSync(SECRET_FILE)) rmSync(SECRET_FILE)
+})
+
+beforeEach(() => {
+  __resetActionSignaturesForTests()
 })
 
 describe('admin sign-in', () => {

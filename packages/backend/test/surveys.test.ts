@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import request from 'supertest'
 import { ethers } from 'ethers'
 import { createApp } from '../src/server.js'
+import { __resetActionSignaturesForTests } from '../src/middleware/auth.js'
 import * as blockchain from '../src/services/blockchain.js'
 import { getEventStore } from '../src/services/event-store.js'
 import { invalidateCache } from '../src/services/survey-cache.js'
@@ -51,6 +52,10 @@ const ADMIN_WALLET = new ethers.Wallet(
 
 beforeEach(() => {
   for (const k of Object.keys(mockKeys)) delete mockKeys[k as unknown as number]
+})
+
+beforeEach(() => {
+  __resetActionSignaturesForTests()
 })
 
 describe('POST /api/v1/surveys', () => {
@@ -716,6 +721,40 @@ describe('POST /api/v1/surveys/:id/award', () => {
     expect(res.status).toBe(410)
     expect(res.body.error).toBe('SURVEY_INACTIVE')
     expect(blockchain.awardPoints).not.toHaveBeenCalled()
+  })
+
+  it('accepts each signed award only once', async () => {
+    const adminMessage = `Award survey 20 to ${student} by ${ADMIN_WALLET.address} at ${Math.floor(Date.now() / 1000)}`
+    const adminSignature = await ADMIN_WALLET.signMessage(adminMessage)
+    const send = () =>
+      request(app).post('/api/v1/surveys/20/award').send({ student, adminSignature, adminMessage })
+
+    expect((await send()).status).toBe(201)
+    const replay = await send()
+
+    expect(replay.status).toBe(409)
+    expect(replay.body.error).toBe('SIGNATURE_USED')
+    expect(blockchain.awardPoints).toHaveBeenCalledTimes(1)
+  })
+
+  it.each(['20abc', '020', '20.0', '2e1'])('refuses the survey id %s', async (id) => {
+    const adminMessage = `Award survey ${id} to ${student} at ${Math.floor(Date.now() / 1000)}`
+    const adminSignature = await ADMIN_WALLET.signMessage(adminMessage)
+
+    const res = await request(app)
+      .post(`/api/v1/surveys/${id}/award`)
+      .send({ student, adminSignature, adminMessage })
+
+    expect(res.status).toBe(400)
+    expect(res.body.error).toBe('INVALID_SURVEY_ID')
+    expect(blockchain.awardPoints).not.toHaveBeenCalled()
+  })
+
+  it('refuses the zero address', async () => {
+    const res = await awardAs(ADMIN_WALLET, 20, { student: ethers.ZeroAddress })
+
+    expect(res.status).toBe(400)
+    expect(res.body.error).toBe('VALIDATION_ERROR')
   })
 
   it('refuses a wallet that already has the points', async () => {

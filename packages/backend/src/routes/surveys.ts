@@ -57,9 +57,12 @@ const registerSchema = z.object({
   title: z.string().default(''),
 })
 
+// Strict on purpose: action signatures name the id as written in the URL,
+// so "20abc" or "020" must not quietly act on survey 20.
 function parseSurveyId(raw: unknown): number {
-  const id = parseInt(String(raw), 10)
-  if (isNaN(id) || id <= 0) {
+  const text = String(raw)
+  const id = /^[1-9][0-9]{0,8}$/.test(text) ? Number(text) : NaN
+  if (isNaN(id)) {
     throw new AppError(
       400,
       'INVALID_SURVEY_ID',
@@ -258,7 +261,10 @@ router.post(
 )
 
 const awardSchema = z.object({
-  student: z.string().refine(ethers.isAddress, 'Invalid wallet address'),
+  student: z
+    .string()
+    .refine(ethers.isAddress, 'Invalid wallet address')
+    .refine((a) => a !== ethers.ZeroAddress, 'The zero address cannot receive points'),
 })
 
 // POST /api/v1/surveys/:id/award — give a wallet the survey's points by hand,
