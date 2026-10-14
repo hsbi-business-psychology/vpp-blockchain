@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { rmSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { rmSync, existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 // We deliberately import the module fresh inside each test so the
@@ -108,5 +108,42 @@ describe('survey-keys store', () => {
     createKey(99)
     expect(existsSync(join(DATA_FILE + '.tmp'))).toBe(false)
     expect(existsSync(DATA_FILE)).toBe(true)
+  })
+
+  describe('with another process writing the same file', () => {
+    function writeFromOtherProcess(keys: Record<string, { key: string; createdAt: number }>) {
+      writeFileSync(`${DATA_FILE}.other`, JSON.stringify({ schemaVersion: 1, keys }))
+      renameSync(`${DATA_FILE}.other`, DATA_FILE)
+    }
+
+    it('finds a key the other process created', () => {
+      const mine = createKey(1)
+      writeFromOtherProcess({
+        '1': { key: mine, createdAt: 1 },
+        '2': { key: 'theirs', createdAt: 2 },
+      })
+
+      expect(getSurveyKey(2)).toBe('theirs')
+    })
+
+    it('uses the key the other process rotated', () => {
+      createKey(1)
+      writeFromOtherProcess({ '1': { key: 'rotated-elsewhere', createdAt: 3 } })
+
+      expect(getSurveyKey(1)).toBe('rotated-elsewhere')
+    })
+
+    it('keeps the other process’s keys when it creates its own', () => {
+      createKey(1)
+      writeFromOtherProcess({
+        '1': { key: 'one', createdAt: 1 },
+        '2': { key: 'two', createdAt: 2 },
+      })
+
+      createKey(3)
+
+      const raw = JSON.parse(readFileSync(DATA_FILE, 'utf-8'))
+      expect(Object.keys(raw.keys).sort()).toEqual(['1', '2', '3'])
+    })
   })
 })

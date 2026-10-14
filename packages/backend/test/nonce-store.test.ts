@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, renameSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 import { __resetForTests, getUsedCount, isUsed, markUsed } from '../src/services/nonce-store.js'
@@ -77,5 +77,40 @@ describe('nonce-store', () => {
     expect(raw.schemaVersion).toBe(1)
     // Sorted lexicographically as composite "<id>:<nonce>"
     expect(raw.used).toEqual(['1:a', '2:a', '2:b'])
+  })
+
+  describe('with another process writing the same file', () => {
+    function writeFromOtherProcess(used: string[]) {
+      writeFileSync(`${DATA_FILE}.other`, JSON.stringify({ schemaVersion: 1, used }))
+      renameSync(`${DATA_FILE}.other`, DATA_FILE)
+    }
+
+    it('sees a nonce the other process consumed', () => {
+      markUsed(1, 'mine')
+      writeFromOtherProcess(['1:mine', '1:theirs'])
+
+      expect(isUsed(1, 'theirs')).toBe(true)
+      expect(markUsed(1, 'theirs')).toBe(false)
+    })
+
+    it('keeps the other process’s nonces when it writes its own', () => {
+      markUsed(1, 'mine')
+      writeFromOtherProcess(['1:mine', '1:theirs'])
+
+      expect(markUsed(1, 'next')).toBe(true)
+
+      const raw = JSON.parse(readFileSync(DATA_FILE, 'utf-8'))
+      expect(raw.used).toEqual(['1:mine', '1:next', '1:theirs'])
+    })
+
+    it('breaks a lock left behind by a crashed process', () => {
+      const lock = `${DATA_FILE}.lock`
+      writeFileSync(lock, '')
+      const old = new Date(Date.now() - 60_000)
+      utimesSync(lock, old, old)
+
+      expect(markUsed(1, 'after-crash')).toBe(true)
+      expect(existsSync(lock)).toBe(false)
+    })
   })
 })

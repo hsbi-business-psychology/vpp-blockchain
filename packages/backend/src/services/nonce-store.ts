@@ -13,9 +13,9 @@
  *   Composite key: `${surveyId}:${nonce}`.
  *
  *   The file holds an array of strings, in-memory it is also kept as a
- *   Set for O(1) lookup. We reload from disk only on first access; every
- *   `markUsed` call updates both the in-memory set and the on-disk file
- *   so a Plesk worker restart never loses an already-consumed nonce.
+ *   Set for O(1) lookup. The cache is reloaded whenever the file changed
+ *   on disk, and `markUsed` re-reads and writes under a file lock, so
+ *   several Passenger processes share one consistent set.
  *
  * Size budget:
  *   Per nonce on disk: ~38 bytes ("8453:abc..." + JSON quoting). At
@@ -26,6 +26,7 @@
 import { readFileSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { atomicWriteJson } from '../lib/atomic-write.js'
+import { fileVersion, withFileLock } from '../lib/file-lock.js'
 import { logger } from '../lib/logger.js'
 import { DATA_DIR } from '../lib/paths.js'
 
@@ -38,6 +39,7 @@ interface NonceFile {
 
 interface CacheState {
   set: Set<string>
+  version: string | null
 }
 
 let cache: CacheState | null = null
@@ -53,9 +55,10 @@ function compositeKey(surveyId: number, nonce: string): string {
 }
 
 function load(): CacheState {
-  if (cache) return cache
+  const version = fileVersion(NONCES_PATH)
+  if (cache && cache.version === version) return cache
   if (!existsSync(NONCES_PATH)) {
-    cache = { set: new Set() }
+    cache = { set: new Set(), version: null }
     return cache
   }
   try {
@@ -66,7 +69,7 @@ function load(): CacheState {
     for (const item of arr) {
       if (typeof item === 'string' && item.includes(':')) set.add(item)
     }
-    cache = { set }
+    cache = { set, version }
     return cache
   } catch (err) {
     // We cannot proceed safely if the nonce file is unreadable — that
@@ -88,6 +91,7 @@ function save(state: CacheState): void {
     used: Array.from(state.set).sort(),
   }
   atomicWriteJson(NONCES_PATH, file)
+  state.version = fileVersion(NONCES_PATH)
 }
 
 export function isUsed(surveyId: number, nonce: string): boolean {
@@ -100,20 +104,19 @@ export function isUsed(surveyId: number, nonce: string): boolean {
  * (i.e. the nonce was already used).
  *
  * The check-then-set is intentionally NOT exposed as two separate
- * functions: callers MUST commit through this single entry point so
- * the in-process check + disk write are sequenced safely. Node.js is
- * single-threaded per worker, so within a worker this is atomic. Across
- * workers (Plesk Phusion Passenger spawns multiple), the on-chain
- * `awardPoints` call rejects double-claims with `AlreadyClaimed`, so
- * the worst-case race is a single wasted on-chain TX — acceptable.
+ * functions: callers MUST commit through this single entry point. The
+ * file lock makes it atomic across Passenger processes too; without it
+ * two processes could hand the same link to two different wallets.
  */
 export function markUsed(surveyId: number, nonce: string): boolean {
-  const state = load()
   const key = compositeKey(surveyId, nonce)
-  if (state.set.has(key)) return false
-  state.set.add(key)
-  save(state)
-  return true
+  return withFileLock(NONCES_PATH, () => {
+    const state = load()
+    if (state.set.has(key)) return false
+    state.set.add(key)
+    save(state)
+    return true
+  })
 }
 
 export function getUsedCount(): number {

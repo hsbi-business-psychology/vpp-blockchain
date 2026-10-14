@@ -29,6 +29,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { randomBytes } from 'node:crypto'
 import { atomicWriteJson } from '../lib/atomic-write.js'
+import { fileVersion, withFileLock } from '../lib/file-lock.js'
 import { logger } from '../lib/logger.js'
 import { DATA_DIR } from '../lib/paths.js'
 
@@ -47,13 +48,18 @@ interface SurveyKeyFile {
 }
 
 let cache: SurveyKeyFile | null = null
+let cacheVersion: string | null = null
 
 function emptyFile(): SurveyKeyFile {
   return { schemaVersion: 1, keys: {} }
 }
 
+// Reloads when another Passenger process rewrote the file, so a key it
+// created or rotated is seen here on the next request.
 function load(): SurveyKeyFile {
-  if (cache) return cache
+  const version = fileVersion(KEYS_PATH)
+  if (cache && cacheVersion === version) return cache
+  cacheVersion = version
   if (!existsSync(KEYS_PATH)) {
     cache = emptyFile()
     return cache
@@ -90,6 +96,7 @@ function load(): SurveyKeyFile {
 
 function save(file: SurveyKeyFile): void {
   atomicWriteJson(KEYS_PATH, file)
+  cacheVersion = fileVersion(KEYS_PATH)
 }
 
 function toKey(surveyId: number): string {
@@ -143,15 +150,17 @@ export function listKeyedSurveyIds(): number[] {
  * is intentional.
  */
 export function createKey(surveyId: number): string {
-  const file = load()
   const k = toKey(surveyId)
-  if (file.keys[k]) {
-    throw new Error(`Survey ${surveyId} already has a key — use rotateKey to override`)
-  }
-  const key = generateKeyMaterial()
-  file.keys[k] = { key, createdAt: Date.now() }
-  save(file)
-  return key
+  return withFileLock(KEYS_PATH, () => {
+    const file = load()
+    if (file.keys[k]) {
+      throw new Error(`Survey ${surveyId} already has a key — use rotateKey to override`)
+    }
+    const key = generateKeyMaterial()
+    file.keys[k] = { key, createdAt: Date.now() }
+    save(file)
+    return key
+  })
 }
 
 /**
@@ -160,15 +169,17 @@ export function createKey(surveyId: number): string {
  * existing links will silently fail to verify.
  */
 export function rotateKey(surveyId: number): string {
-  const file = load()
   const k = toKey(surveyId)
-  if (!file.keys[k]) {
-    throw new Error(`Survey ${surveyId} has no key to rotate — use createKey instead`)
-  }
-  const key = generateKeyMaterial()
-  file.keys[k] = { key, createdAt: Date.now() }
-  save(file)
-  return key
+  return withFileLock(KEYS_PATH, () => {
+    const file = load()
+    if (!file.keys[k]) {
+      throw new Error(`Survey ${surveyId} has no key to rotate — use createKey instead`)
+    }
+    const key = generateKeyMaterial()
+    file.keys[k] = { key, createdAt: Date.now() }
+    save(file)
+    return key
+  })
 }
 
 /**
@@ -179,15 +190,18 @@ export function rotateKey(surveyId: number): string {
  * Returns true if a key was removed, false if there was nothing to remove.
  */
 export function deleteKey(surveyId: number): boolean {
-  const file = load()
   const k = toKey(surveyId)
-  if (!file.keys[k]) return false
-  delete file.keys[k]
-  save(file)
-  return true
+  return withFileLock(KEYS_PATH, () => {
+    const file = load()
+    if (!file.keys[k]) return false
+    delete file.keys[k]
+    save(file)
+    return true
+  })
 }
 
 /** Test-only: drop the in-memory cache. */
 export function __resetForTests(): void {
   cache = null
+  cacheVersion = null
 }
