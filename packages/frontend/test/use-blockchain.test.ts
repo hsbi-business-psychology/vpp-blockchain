@@ -10,10 +10,16 @@ const mockContract = {
   isAdmin: vi.fn(),
 }
 
+const contractsByUrl = new Map<string, Partial<typeof mockContract>>()
+
 vi.mock('ethers', () => ({
   ethers: {
-    JsonRpcProvider: vi.fn(() => ({})),
-    Contract: vi.fn(() => mockContract),
+    JsonRpcProvider: vi.fn((url: string) => ({ url })),
+    Contract: vi.fn(
+      (_address: string, _abi: unknown, provider: { url: string }) =>
+        contractsByUrl.get(provider.url) ?? mockContract,
+    ),
+    isError: (error: { code?: string } | null, code: string) => error?.code === code,
   },
 }))
 
@@ -31,6 +37,7 @@ vi.mock('@/lib/config', () => ({
 describe('useBlockchain', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
+    contractsByUrl.clear()
     // Reset cached singleton between tests
     vi.resetModules()
   })
@@ -38,6 +45,14 @@ describe('useBlockchain', () => {
   async function getHook() {
     const mod = await import('@/hooks/use-blockchain')
     return renderHook(() => mod.useBlockchain())
+  }
+
+  async function getHookWithRpcs(rpcUrl: string) {
+    vi.doMock('@/lib/config', () => ({
+      config: { rpcUrl, contractAddress: '0xContractAddr' },
+    }))
+    vi.resetModules()
+    return getHook()
   }
 
   it('getTotalPoints returns number from bigint', async () => {
@@ -129,6 +144,48 @@ describe('useBlockchain', () => {
     const { result } = await getHook()
 
     await expect(result.current.getTotalPoints('0xAddr')).rejects.toThrow('RPC timeout')
+  })
+
+  it('moves on to the next RPC when the first one fails', async () => {
+    const down = { totalPoints: vi.fn().mockRejectedValue(new Error('403 Forbidden')) }
+    const up = { totalPoints: vi.fn().mockResolvedValue(BigInt(7)) }
+    contractsByUrl.set('https://a.test', down)
+    contractsByUrl.set('https://b.test', up)
+
+    const { result } = await getHookWithRpcs('https://a.test, https://b.test')
+
+    await expect(result.current.getTotalPoints('0xAddr')).resolves.toBe(7)
+    await expect(result.current.getTotalPoints('0xAddr')).resolves.toBe(7)
+    // The second read starts with the RPC that answered the first one.
+    expect(down.totalPoints).toHaveBeenCalledTimes(1)
+  })
+
+  it('moves on when an RPC stalls', async () => {
+    contractsByUrl.set('https://a.test', { totalPoints: vi.fn(() => new Promise<never>(() => {})) })
+    contractsByUrl.set('https://b.test', { totalPoints: vi.fn().mockResolvedValue(BigInt(3)) })
+    const { result } = await getHookWithRpcs('https://a.test,https://b.test')
+
+    vi.useFakeTimers()
+    try {
+      const points = result.current.getTotalPoints('0xAddr')
+      await vi.advanceTimersByTimeAsync(8_000)
+      await expect(points).resolves.toBe(3)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('returns a contract revert without asking the next RPC', async () => {
+    const revert = Object.assign(new Error('execution reverted'), { code: 'CALL_EXCEPTION' })
+    const first = { isAdmin: vi.fn().mockRejectedValue(revert) }
+    const second = { isAdmin: vi.fn().mockResolvedValue(true) }
+    contractsByUrl.set('https://a.test', first)
+    contractsByUrl.set('https://b.test', second)
+
+    const { result } = await getHookWithRpcs('https://a.test,https://b.test')
+
+    await expect(result.current.isAdmin('0xAddr')).rejects.toBe(revert)
+    expect(second.isAdmin).not.toHaveBeenCalled()
   })
 
   it('throws when contract address is empty', async () => {
