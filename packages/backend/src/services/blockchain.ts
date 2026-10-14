@@ -389,11 +389,13 @@ export async function registerSurvey(
 }
 
 export interface SurveyInfoRaw {
-  /** Decimal points (0.25, 1, 1.5). 0 means the survey does not exist. */
+  /** Decimal points (0.25, 1, 1.5). Reads 0 for a fractional survey when
+   * only the V2 view is available, so it cannot tell whether a survey exists. */
   points: number
   maxClaims: bigint
   claimCount: bigint
   active: boolean
+  /** 0 exactly when the survey id was never registered. */
   registeredAt: bigint
   title: string
 }
