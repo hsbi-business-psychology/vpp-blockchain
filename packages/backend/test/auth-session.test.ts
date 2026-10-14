@@ -188,6 +188,30 @@ describe('admin session cookie', () => {
     expect(res.status).toBe(403)
   })
 
+  it('ends when the secret file is replaced', async () => {
+    const cookie = cookieOf(await login())
+    rmSync(SECRET_FILE)
+
+    const res = await request(app).get('/api/v1/auth/session').set('Cookie', cookie)
+
+    expect(res.status).toBe(401)
+  })
+
+  it('treats a cookie with odd characters as no session', async () => {
+    const res = await request(app)
+      .get('/api/v1/auth/session')
+      .set('Cookie', `vpp_admin=${ADMIN.address.toLowerCase()}.9999999999.${'ä'.repeat(64)}`)
+
+    expect(res.status).toBe(401)
+  })
+
+  it('refuses a logout from another site', async () => {
+    const res = await request(app).post('/api/v1/auth/logout').set('Origin', 'https://evil.example')
+
+    expect(res.status).toBe(403)
+    expect(res.headers['set-cookie']).toBeUndefined()
+  })
+
   it('is cleared by logout', async () => {
     const res = await request(app).post('/api/v1/auth/logout')
 

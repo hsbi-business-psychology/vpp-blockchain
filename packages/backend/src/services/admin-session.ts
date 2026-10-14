@@ -18,7 +18,7 @@ import { resolve } from 'node:path'
 import { ethers } from 'ethers'
 import { config } from '../config.js'
 import { atomicWriteJson } from '../lib/atomic-write.js'
-import { withFileLock } from '../lib/file-lock.js'
+import { fileVersion, withFileLock } from '../lib/file-lock.js'
 import { DATA_DIR } from '../lib/paths.js'
 import { AppError } from '../middleware/errorHandler.js'
 
@@ -31,11 +31,14 @@ const RAND_HEX = 16
 const MAC_HEX = 24
 const DEFAULT_CHAIN_ID = '8453'
 
-let secret: Buffer | null = null
+let secret: { value: Buffer; version: string | null } | null = null
 
+// Re-read whenever the file changed, so replacing or deleting it signs
+// every admin out in every process, not only after a restart.
 function getSecret(): Buffer {
-  if (secret) return secret
-  secret = withFileLock(SECRET_PATH, () => {
+  const version = fileVersion(SECRET_PATH)
+  if (secret && version !== null && secret.version === version) return secret.value
+  const value = withFileLock(SECRET_PATH, () => {
     if (existsSync(SECRET_PATH)) {
       const parsed = JSON.parse(readFileSync(SECRET_PATH, 'utf-8')) as { secret?: string }
       if (typeof parsed.secret === 'string' && parsed.secret.length >= 43) {
@@ -46,7 +49,8 @@ function getSecret(): Buffer {
     atomicWriteJson(SECRET_PATH, { schemaVersion: 1, secret: fresh.toString('base64url') })
     return fresh
   })
-  return secret
+  secret = { value, version: fileVersion(SECRET_PATH) }
+  return value
 }
 
 function mac(...parts: string[]): string {
@@ -54,7 +58,9 @@ function mac(...parts: string[]): string {
 }
 
 function sameHex(a: string, b: string): boolean {
-  return a.length === b.length && timingSafeEqual(Buffer.from(a), Buffer.from(b))
+  const x = Buffer.from(a)
+  const y = Buffer.from(b)
+  return x.length === y.length && timingSafeEqual(x, y)
 }
 
 function site(): URL {

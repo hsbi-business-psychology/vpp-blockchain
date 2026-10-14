@@ -13,7 +13,7 @@ import { z } from 'zod'
 import { ethers } from 'ethers'
 import { AppError } from '../middleware/errorHandler.js'
 import { throwValidationError } from '../lib/validation.js'
-import { requireAdminHandler } from '../middleware/auth.js'
+import { originAllowed, requireAdminHandler } from '../middleware/auth.js'
 import * as blockchain from '../services/blockchain.js'
 import {
   clearedSessionCookie,
@@ -77,7 +77,15 @@ router.get('/session', requireAdminHandler, (req, res) => {
   res.json({ success: true, data: session })
 })
 
-router.post('/logout', (_req, res) => {
+router.post('/logout', (req, res) => {
+  if (!originAllowed(req)) {
+    res.status(403).json({
+      success: false,
+      error: 'BAD_ORIGIN',
+      message: 'This request did not come from the VPP website and was rejected.',
+    })
+    return
+  }
   res.setHeader('Set-Cookie', clearedSessionCookie())
   res.json({ success: true, data: null })
 })

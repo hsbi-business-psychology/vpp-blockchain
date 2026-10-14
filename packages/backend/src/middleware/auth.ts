@@ -37,7 +37,7 @@ export function __resetRoleCacheForTests(): void {
 
 // SameSite=Strict already keeps the cookie off cross-site requests; a
 // foreign Origin on a write is refused as a second line.
-function originAllowed(req: Request): boolean {
+export function originAllowed(req: Request): boolean {
   if (req.method === 'GET' || req.method === 'HEAD') return true
   const origin = req.headers.origin
   return !origin || origin === new URL(config.frontendUrl).origin
