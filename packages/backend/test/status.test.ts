@@ -29,7 +29,8 @@ describe('GET /api/v1/status', () => {
   it('should return system status with sufficient balance', async () => {
     const { signature, message } = await signAdminMessage('System status')
     const gasPrice = 1_000_000n
-    const balance = gasPrice * 55_000n * 200n // enough for 200 claims
+    // 200 claims above the floor below which the backend stops sending
+    const balance = blockchain.MIN_BALANCE_WEI + gasPrice * 100_000n * 200n
 
     vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
     vi.mocked(blockchain.getMinterBalance).mockResolvedValue(balance)
@@ -62,8 +63,8 @@ describe('GET /api/v1/status', () => {
   it('should flag lowBalance when balance is below threshold', async () => {
     const { signature, message } = await signAdminMessage('System status')
     const gasPrice = 1_000_000n
-    // Below threshold: < 100 claims worth of gas
-    const balance = gasPrice * 55_000n * 50n
+    // Fewer than 100 claims left above the floor
+    const balance = blockchain.MIN_BALANCE_WEI + gasPrice * 100_000n * 50n
 
     vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
     vi.mocked(blockchain.getMinterBalance).mockResolvedValue(balance)
@@ -78,6 +79,25 @@ describe('GET /api/v1/status', () => {
     expect(res.status).toBe(200)
     expect(res.body.data.lowBalance).toBe(true)
     expect(res.body.data.estimates.claimsRemaining).toBe(50)
+  })
+
+  it('counts no claims once the balance is under the floor', async () => {
+    const { signature, message } = await signAdminMessage('System status')
+    const gasPrice = 1_000_000n
+
+    vi.mocked(blockchain.isAdmin).mockResolvedValue(true)
+    vi.mocked(blockchain.getMinterBalance).mockResolvedValue(blockchain.MIN_BALANCE_WEI / 2n)
+    vi.mocked(blockchain.getBlockNumber).mockResolvedValue(100)
+    vi.mocked(blockchain.getNetwork).mockResolvedValue('base-sepolia')
+    vi.mocked(blockchain.provider.getFeeData).mockResolvedValue({
+      gasPrice,
+    } as ethers.FeeData)
+
+    const res = await request(app).get('/api/v1/status').set(adminHeaders(signature, message))
+
+    expect(res.body.data.estimates.claimsRemaining).toBe(0)
+    expect(res.body.data.belowMin).toBe(true)
+    expect(res.body.data.lowBalance).toBe(true)
   })
 
   it('should handle null gasPrice from provider', async () => {

@@ -5,8 +5,10 @@ import * as blockchain from '../services/blockchain.js'
 
 const router: Router = Router()
 
-const AVG_GAS_PER_CLAIM = 55_000n
-const AVG_GAS_PER_REGISTER = 80_000n
+// Measured on Base mainnet in October 2026: awardPoints 93.6k gas (110.7k
+// for a wallet's first claim), registerSurvey about 127k.
+const AVG_GAS_PER_CLAIM = 100_000n
+const AVG_GAS_PER_REGISTER = 130_000n
 
 // GET /api/status — system status with wallet balance (admin only)
 router.get('/', requireAdminHandler, async (_req, res, next) => {
@@ -21,8 +23,11 @@ router.get('/', requireAdminHandler, async (_req, res, next) => {
     const feeData = await blockchain.provider.getFeeData()
     const gasPrice = feeData.gasPrice ?? 1_000_000n
 
-    const estimatedClaimsRemaining = Number(balance / (AVG_GAS_PER_CLAIM * gasPrice))
-    const estimatedRegistrationsRemaining = Number(balance / (AVG_GAS_PER_REGISTER * gasPrice))
+    // Below MIN_BALANCE_WEI the backend refuses to send, so only the part
+    // above that floor can pay for claims.
+    const usable = balance > blockchain.MIN_BALANCE_WEI ? balance - blockchain.MIN_BALANCE_WEI : 0n
+    const estimatedClaimsRemaining = Number(usable / (AVG_GAS_PER_CLAIM * gasPrice))
+    const estimatedRegistrationsRemaining = Number(usable / (AVG_GAS_PER_REGISTER * gasPrice))
     const costPerClaim = ethers.formatEther(AVG_GAS_PER_CLAIM * gasPrice)
     const costPerRegistration = ethers.formatEther(AVG_GAS_PER_REGISTER * gasPrice)
 
@@ -33,7 +38,7 @@ router.get('/', requireAdminHandler, async (_req, res, next) => {
     // explicit operator-configurable hard/soft thresholds set up in
     // services/blockchain.ts (audit F2.4) so an external runbook /
     // monitor can read the same numbers the backend uses.
-    const lowBalance = balance < AVG_GAS_PER_CLAIM * gasPrice * 100n
+    const lowBalance = usable < AVG_GAS_PER_CLAIM * gasPrice * 100n
     const belowWarn = balance < blockchain.WARN_BALANCE_WEI
     const belowMin = balance < blockchain.MIN_BALANCE_WEI
 
