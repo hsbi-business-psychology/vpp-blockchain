@@ -36,6 +36,7 @@ export function RoleManagement({ walletAddress, sign }: RoleManagementProps) {
   const [loading, setLoading] = useState(false)
   const [admins, setAdmins] = useState<AdminEntry[]>([])
   const [loadingAdmins, setLoadingAdmins] = useState(true)
+  const [adminsError, setAdminsError] = useState(false)
 
   // Per-row inline edit state. We track at most one edit at a time so the
   // user can't accidentally start editing a second row before the first
@@ -46,18 +47,15 @@ export function RoleManagement({ walletAddress, sign }: RoleManagementProps) {
 
   const fetchAdmins = useCallback(async () => {
     setLoadingAdmins(true)
+    setAdminsError(false)
     try {
-      const timestamp = Math.floor(Date.now() / 1000)
-      const message = `List admins by ${walletAddress} at ${timestamp}`
-      const signature = await sign(message)
-      const adminList = await getAdmins(signature, message)
-      setAdmins(adminList)
-    } catch (err) {
-      console.error('Failed to fetch admins:', err)
+      setAdmins(await getAdmins())
+    } catch {
+      setAdminsError(true)
     } finally {
       setLoadingAdmins(false)
     }
-  }, [getAdmins, walletAddress, sign])
+  }, [getAdmins])
 
   useEffect(() => {
     fetchAdmins()
@@ -117,11 +115,7 @@ export function RoleManagement({ walletAddress, sign }: RoleManagementProps) {
   const saveLabel = async (addr: string) => {
     setSavingLabel(true)
     try {
-      const timestamp = Math.floor(Date.now() / 1000)
-      const message = `Set admin label ${addr} at ${timestamp}`
-      const signature = await sign(message)
-
-      const result = await setAdminLabel(addr, editValue, signature, message)
+      const result = await setAdminLabel(addr, editValue)
       setAdmins((prev) => prev.map((a) => (a.address === addr ? { ...a, label: result.label } : a)))
       toast.success(t('admin.roles.successLabel'))
       cancelEditing()
@@ -190,6 +184,13 @@ export function RoleManagement({ walletAddress, sign }: RoleManagementProps) {
             <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
               <Loader2 className="size-4 animate-spin" />
               {t('admin.roles.checking')}
+            </div>
+          ) : adminsError ? (
+            <div className="flex items-center gap-3 py-4 text-sm text-muted-foreground">
+              <span>{t('admin.roles.loadError')}</span>
+              <Button variant="outline" size="sm" onClick={() => void fetchAdmins()}>
+                {t('admin.gate.retry')}
+              </Button>
             </div>
           ) : admins.length === 0 ? (
             <p className="py-4 text-sm text-muted-foreground">{t('admin.roles.noAdmins')}</p>

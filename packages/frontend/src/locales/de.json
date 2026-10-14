@@ -336,13 +336,25 @@
     "logout": "Abmelden",
     "auth": {
       "title": "Admin-Authentifizierung",
-      "description": "Signiere eine Nachricht mit deinem Admin-Wallet, um auf das Dashboard zuzugreifen.",
+      "description": "Bestätige die Anmeldung einmal in deinem Wallet. Danach bleibst du 8 Stunden angemeldet.",
       "button": "Anmelden",
       "rejected": {
         "title": "Signatur abgebrochen",
         "description": "Die Signatur wurde im Wallet abgelehnt oder abgebrochen. Du kannst es erneut versuchen oder zur Startseite zur\u00fcckkehren.",
         "retry": "Erneut signieren"
-      }
+      },
+      "expired": "Deine Anmeldung ist abgelaufen. Bitte bestätige sie erneut im Wallet.",
+      "loggedOut": "Du bist abgemeldet."
+    },
+    "gate": {
+      "title": "Anmeldung für Lehrende",
+      "description": "Verbinde die Wallet, mit der du als Admin eingetragen bist. In der Regel ist das MetaMask.",
+      "connectMetaMask": "Mit MetaMask verbinden",
+      "installMetaMask": "MetaMask installieren",
+      "importWallet": "Andere Wallet importieren",
+      "checkFailedTitle": "Rolle konnte nicht geprüft werden",
+      "checkFailedDescription": "Die Blockchain war gerade nicht erreichbar. Das liegt nicht an deiner Berechtigung. Versuche es in ein paar Sekunden erneut.",
+      "retry": "Erneut versuchen"
     },
     "accessDenied": {
       "title": "Kein Zugriff",
@@ -489,6 +501,7 @@
       "addAdmin": "Als Admin hinzufügen",
       "removeAdmin": "Admin entfernen",
       "currentAdmins": "Aktuelle Admins",
+      "loadError": "Die Admin-Liste konnte nicht geladen werden.",
       "noAdmins": "Keine Admins gefunden. Das kann an einer langsamen RPC-Verbindung liegen \u2013 bitte lade die Seite neu.",
       "successAdd": "Admin-Rolle erfolgreich vergeben!",
       "successRemove": "Admin-Rolle erfolgreich entzogen!",

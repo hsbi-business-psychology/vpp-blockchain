@@ -26,7 +26,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useApi } from '@/hooks/use-api'
-import { useWallet } from '@/hooks/use-wallet'
 import { ApiRequestError } from '@vpp/shared'
 import { formatPoints } from '@/lib/utils'
 
@@ -38,7 +37,6 @@ interface SearchResult {
 
 export function SubmissionManagement() {
   const { t, i18n } = useTranslation()
-  const { wallet, sign } = useWallet()
   const { getWalletSubmissionStatus, markWalletSubmitted, unmarkWalletSubmitted } = useApi()
 
   const [searchAddress, setSearchAddress] = useState('')
@@ -68,19 +66,14 @@ export function SubmissionManagement() {
   }
 
   const handleConfirm = async () => {
-    if (!result || !wallet || !confirmAction) return
+    if (!result || !confirmAction) return
     setActionLoading(true)
     try {
-      const timestamp = Math.floor(Date.now() / 1000)
-      const verb = confirmAction === 'mark' ? 'Mark' : 'Unmark'
-      const message = `${verb} wallet ${result.address} by ${wallet.address} at ${timestamp}`
-      const signature = await sign(message)
-
       if (confirmAction === 'mark') {
-        await markWalletSubmitted(result.address, signature, message)
+        await markWalletSubmitted(result.address)
         toast.success(t('admin.submissions.markSuccess'))
       } else {
-        await unmarkWalletSubmitted(result.address, signature, message)
+        await unmarkWalletSubmitted(result.address)
         toast.success(t('admin.submissions.unmarkSuccess'))
       }
 

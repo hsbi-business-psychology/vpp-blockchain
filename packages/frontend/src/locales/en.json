@@ -336,13 +336,25 @@
     "logout": "Sign out",
     "auth": {
       "title": "Admin Authentication",
-      "description": "Sign a message with your admin wallet to access the dashboard.",
+      "description": "Confirm the sign-in once in your wallet. You then stay signed in for 8 hours.",
       "button": "Sign In",
       "rejected": {
         "title": "Signature cancelled",
         "description": "The signature was rejected or cancelled in your wallet. You can try again or return to the home page.",
         "retry": "Sign again"
-      }
+      },
+      "expired": "Your sign-in has expired. Please confirm it again in your wallet.",
+      "loggedOut": "You are signed out."
+    },
+    "gate": {
+      "title": "Sign-in for staff",
+      "description": "Connect the wallet that is registered as an admin. Usually this is MetaMask.",
+      "connectMetaMask": "Connect MetaMask",
+      "installMetaMask": "Install MetaMask",
+      "importWallet": "Import another wallet",
+      "checkFailedTitle": "Could not check your role",
+      "checkFailedDescription": "The blockchain could not be reached just now. This is not about your permissions. Please try again in a few seconds.",
+      "retry": "Try again"
     },
     "accessDenied": {
       "title": "Access Denied",
@@ -489,6 +501,7 @@
       "addAdmin": "Add as Admin",
       "removeAdmin": "Remove Admin",
       "currentAdmins": "Current Admins",
+      "loadError": "The admin list could not be loaded.",
       "noAdmins": "No admins found. This may be due to a slow RPC connection \u2013 please reload the page.",
       "successAdd": "Admin role granted successfully!",
       "successRemove": "Admin role revoked successfully!",

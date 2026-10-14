@@ -23,7 +23,7 @@ import type { SurveyInfo } from '@vpp/shared'
 
 export default function AdminPage() {
   const { t } = useTranslation()
-  const { wallet, hasWallet, sign } = useWallet()
+  const { wallet, hasWallet, hasMetaMask, connectMetaMask, sign } = useWallet()
   const {
     getSurveys,
     registerSurvey,
@@ -31,10 +31,15 @@ export default function AdminPage() {
     deactivateSurvey,
     reactivateSurvey,
     rotateSurveyKey,
+    getAdminSession,
+    getLoginChallenge,
+    adminLogin,
+    adminLogout,
   } = useApi()
   const { isAdmin: checkIsAdmin } = useBlockchain()
 
-  const [adminCheck, setAdminCheck] = useState<'loading' | 'admin' | 'denied'>('loading')
+  const [adminCheck, setAdminCheck] = useState<'loading' | 'admin' | 'denied' | 'error'>('loading')
+  const [adminCheckAttempt, setAdminCheckAttempt] = useState(0)
   const [authenticated, setAuthenticated] = useState(false)
   const [authLoading, setAuthLoading] = useState(false)
   const [loggedOut, setLoggedOut] = useState(false)
@@ -44,10 +49,6 @@ export default function AdminPage() {
   // of the tab. Reset to false when the admin clicks "Sign again". See
   // audit F5.2 / M9.
   const [authFailed, setAuthFailed] = useState(false)
-  const [authCredentials, setAuthCredentials] = useState<{
-    signature: string
-    message: string
-  } | null>(null)
   const [surveys, setSurveys] = useState<SurveyInfo[]>([])
   const [loading, setLoading] = useState(false)
 
@@ -77,14 +78,20 @@ export default function AdminPage() {
         const result = await checkIsAdmin(wallet.address)
         if (!cancelled) setAdminCheck(result ? 'admin' : 'denied')
       } catch {
-        if (!cancelled) setAdminCheck('denied')
+        // An unreachable RPC is not a missing role; let the admin retry.
+        if (!cancelled) setAdminCheck('error')
       }
     }
     check()
     return () => {
       cancelled = true
     }
-  }, [wallet, checkIsAdmin])
+  }, [wallet, checkIsAdmin, adminCheckAttempt])
+
+  // A session belongs to one wallet; switching wallets needs a new sign-in.
+  useEffect(() => {
+    setAuthenticated(false)
+  }, [wallet?.address])
 
   // ── Auth ───────────────────────────────────────────────────────────────
   // Treat any error from the wallet `sign()` call that mentions "user",
@@ -107,15 +114,19 @@ export default function AdminPage() {
     return false
   }
 
+  // One signature per session: reuse a running session for this wallet,
+  // otherwise sign the server's Sign-In-with-Ethereum message once.
   const handleAuth = useCallback(async () => {
     if (!wallet) return
     setAuthLoading(true)
     setAuthFailed(false)
     try {
-      const timestamp = Math.floor(Date.now() / 1000)
-      const message = `Admin login ${wallet.address} at ${timestamp}`
-      const signature = await sign(message)
-      setAuthCredentials({ signature, message })
+      const session = await getAdminSession()
+      if (session?.address.toLowerCase() !== wallet.address.toLowerCase()) {
+        const message = await getLoginChallenge(wallet.address)
+        const signature = await sign(message)
+        await adminLogin(message, signature)
+      }
       setAuthenticated(true)
     } catch (err) {
       // Either user rejection or any other failure: latch authFailed to
@@ -128,10 +139,24 @@ export default function AdminPage() {
     } finally {
       setAuthLoading(false)
     }
-  }, [wallet, sign, t])
+  }, [wallet, sign, t, getAdminSession, getLoginChallenge, adminLogin])
+
+  // The cookie ran out mid-session: drop back to the gate, which signs in again.
+  const reportError = useCallback(
+    (err: unknown, fallbackKey: string) => {
+      if (err instanceof ApiRequestError && err.status === 401) {
+        setAuthenticated(false)
+        toast.error(t('admin.auth.expired'))
+        return
+      }
+      toast.error(err instanceof ApiRequestError ? err.message : t(fallbackKey))
+    },
+    [t],
+  )
 
   const handleRetryAuth = useCallback(() => {
     setAuthFailed(false)
+    setLoggedOut(false)
     void handleAuth()
   }, [handleAuth])
 
@@ -148,11 +173,11 @@ export default function AdminPage() {
       const data = await getSurveys()
       setSurveys(data)
     } catch (err) {
-      toast.error(err instanceof ApiRequestError ? err.message : t('common.error'))
+      reportError(err, 'common.error')
     } finally {
       setLoading(false)
     }
-  }, [getSurveys, t])
+  }, [getSurveys, reportError])
 
   useEffect(() => {
     if (authenticated) fetchSurveys()
@@ -165,17 +190,8 @@ export default function AdminPage() {
     maxClaims: number
     title: string
   }) => {
-    if (!authCredentials) return
     try {
-      const timestamp = Math.floor(Date.now() / 1000)
-      const message = `Register survey ${data.surveyId} by ${wallet!.address} at ${timestamp}`
-      const signature = await sign(message)
-
-      const result = await registerSurvey({
-        ...data,
-        adminSignature: signature,
-        adminMessage: message,
-      })
+      const result = await registerSurvey(data)
 
       toast.success(t('admin.register.success'))
       await fetchSurveys()
@@ -193,42 +209,33 @@ export default function AdminPage() {
       // flow if ever needed.
       void result
     } catch (err) {
-      toast.error(err instanceof ApiRequestError ? err.message : t('admin.register.error'))
+      reportError(err, 'admin.register.error')
       throw err
     }
   }
 
   const handleDeactivateConfirm = async () => {
-    if (!deactivateTarget || !wallet) return
+    if (!deactivateTarget) return
     setDeactivateLoading(true)
     try {
-      const timestamp = Math.floor(Date.now() / 1000)
-      const message = `Deactivate survey ${deactivateTarget.surveyId} by ${wallet.address} at ${timestamp}`
-      const signature = await sign(message)
-      await deactivateSurvey(deactivateTarget.surveyId, signature, message)
+      await deactivateSurvey(deactivateTarget.surveyId)
       toast.success(t('admin.surveys.deactivateConfirm.success'))
       setDeactivateTarget(null)
       await fetchSurveys()
     } catch (err) {
-      toast.error(err instanceof ApiRequestError ? err.message : t('common.error'))
+      reportError(err, 'common.error')
     } finally {
       setDeactivateLoading(false)
     }
   }
 
   const handleReactivate = async (surveyId: number) => {
-    if (!wallet) return
     try {
-      const timestamp = Math.floor(Date.now() / 1000)
-      const message = `Reactivate survey ${surveyId} by ${wallet.address} at ${timestamp}`
-      const signature = await sign(message)
-      await reactivateSurvey(surveyId, signature, message)
+      await reactivateSurvey(surveyId)
       toast.success(t('admin.surveys.reactivate.success'))
       await fetchSurveys()
     } catch (err) {
-      toast.error(
-        err instanceof ApiRequestError ? err.message : t('admin.surveys.reactivate.error'),
-      )
+      reportError(err, 'admin.surveys.reactivate.error')
     }
   }
 
@@ -236,12 +243,7 @@ export default function AdminPage() {
     if (!templateTarget) return
     setTemplateLoading(true)
     try {
-      const timestamp = Math.floor(Date.now() / 1000)
-      const message = `Download template ${templateTarget.surveyId} by ${
-        wallet!.address
-      } at ${timestamp}`
-      const signature = await sign(message)
-      const blob = await downloadTemplate(templateTarget.surveyId, format, signature, message)
+      const blob = await downloadTemplate(templateTarget.surveyId, format)
       const ext = format === 'limesurvey' ? 'lss' : 'xml'
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -254,8 +256,8 @@ export default function AdminPage() {
           ? t('admin.surveys.templateDialog.sosci.title')
           : t('admin.surveys.templateDialog.limesurvey.title'),
       )
-    } catch {
-      toast.error(t('common.error'))
+    } catch (err) {
+      reportError(err, 'common.error')
     } finally {
       setTemplateLoading(false)
     }
@@ -301,19 +303,21 @@ export default function AdminPage() {
       setTemplateTarget(target)
       setTemplateFreshMode('regenerated')
     } catch (err) {
-      toast.error(
-        err instanceof ApiRequestError ? err.message : t('admin.surveys.regenerateConfirm.error'),
-      )
+      reportError(err, 'admin.surveys.regenerateConfirm.error')
     } finally {
       setRegenerateLoading(false)
     }
-  }, [wallet, regenerateTarget, sign, rotateSurveyKey, t])
+  }, [wallet, regenerateTarget, sign, rotateSurveyKey, t, reportError])
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setAuthenticated(false)
-    setAuthCredentials(null)
     setSurveys([])
     setLoggedOut(true)
+    try {
+      await adminLogout()
+    } catch {
+      // The cookie expires on its own; nothing else to undo.
+    }
   }
 
   // ── Auth gate (early returns) ──────────────────────────────────────────
@@ -321,10 +325,14 @@ export default function AdminPage() {
     return (
       <AdminAuthGate
         hasWallet={hasWallet}
+        hasMetaMask={hasMetaMask}
+        onConnectMetaMask={connectMetaMask}
         adminCheck={adminCheck}
+        onRetryAdminCheck={() => setAdminCheckAttempt((n) => n + 1)}
         authenticated={authenticated}
         walletAddress={wallet?.address}
         authFailed={authFailed}
+        loggedOut={loggedOut}
         onRetry={handleRetryAuth}
       />
     )
@@ -391,12 +399,7 @@ export default function AdminPage() {
       <Separator />
       {wallet && <RoleManagement walletAddress={wallet.address} sign={sign} />}
       <Separator />
-      {authCredentials && (
-        <SystemStatus
-          adminSignature={authCredentials.signature}
-          adminMessage={authCredentials.message}
-        />
-      )}
+      <SystemStatus />
 
       <DeactivateSurveyDialog
         survey={deactivateTarget}

@@ -47,21 +47,27 @@ const mockApiReturn = {
   addAdmin: vi.fn(),
   removeAdmin: vi.fn(),
   setAdminLabel: vi.fn(),
+  getAdminSession: vi.fn<() => Promise<{ address: string; expiresAt: number } | null>>(),
+  getLoginChallenge: vi.fn<(address: string) => Promise<string>>(),
+  adminLogin: vi.fn(),
+  adminLogout: vi.fn(),
 }
 
 const mockBlockchain = {
   isAdmin: vi.fn<(addr: string) => Promise<boolean>>().mockResolvedValue(true),
 }
 
+// Stable like the real hook: a new `t` per render would re-run every
+// effect that lists it as a dependency.
+const mockT = (key: string, opts?: { returnObjects?: boolean } | string) => {
+  if (typeof opts === 'object' && opts?.returnObjects) return []
+  if (typeof opts === 'string') return opts
+  return key
+}
+const mockI18n = { language: 'en', changeLanguage: vi.fn() }
+
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, opts?: { returnObjects?: boolean } | string) => {
-      if (typeof opts === 'object' && opts?.returnObjects) return []
-      if (typeof opts === 'string') return opts
-      return key
-    },
-    i18n: { language: 'en', changeLanguage: vi.fn() },
-  }),
+  useTranslation: () => ({ t: mockT, i18n: mockI18n }),
   Trans: ({ children }: { children: React.ReactNode }) => children,
   initReactI18next: { type: '3rdParty', init: vi.fn() },
 }))
@@ -102,6 +108,9 @@ describe('AdminPage auto-auth (F5.2 regression)', () => {
     mockBlockchain.isAdmin.mockResolvedValue(true)
     mockApiReturn.getSurveys.mockResolvedValue([])
     mockApiReturn.getAdmins.mockResolvedValue([])
+    mockApiReturn.getAdminSession.mockResolvedValue(null)
+    mockApiReturn.getLoginChallenge.mockResolvedValue('server login message')
+    mockApiReturn.adminLogin.mockResolvedValue({ address: '0xAdmin', expiresAt: 1 })
     const mod = await import('@/pages/admin')
     AdminPage = mod.default
   })
@@ -186,5 +195,49 @@ describe('AdminPage auto-auth (F5.2 regression)', () => {
 
     // The retry button is back, ready for another manual attempt.
     expect(screen.getByText('admin.auth.rejected.retry')).toBeInTheDocument()
+  })
+
+  it('reuses a running session without asking the wallet', async () => {
+    mockApiReturn.getAdminSession.mockResolvedValue({ address: '0xADMIN', expiresAt: 1 })
+
+    renderAdmin()
+
+    await waitFor(() => {
+      expect(mockApiReturn.getSurveys).toHaveBeenCalled()
+    })
+    expect(mockWalletReturn.sign).not.toHaveBeenCalled()
+    expect(mockApiReturn.adminLogin).not.toHaveBeenCalled()
+  })
+
+  it('signs the server message once and needs no further signature', async () => {
+    mockWalletReturn.sign.mockResolvedValue('0xsig')
+
+    renderAdmin()
+
+    await waitFor(() => {
+      expect(mockApiReturn.adminLogin).toHaveBeenCalledWith('server login message', '0xsig')
+    })
+    await waitFor(() => {
+      expect(mockApiReturn.getAdmins).toHaveBeenCalled()
+    })
+    expect(mockApiReturn.getLoginChallenge).toHaveBeenCalledWith('0xAdmin')
+    expect(mockWalletReturn.sign).toHaveBeenCalledTimes(1)
+  })
+
+  it('offers a retry instead of "no access" when the role check fails', async () => {
+    mockBlockchain.isAdmin.mockRejectedValueOnce(new Error('RPC unreachable'))
+
+    renderAdmin()
+
+    const retry = await screen.findByText('admin.gate.retry')
+    expect(screen.queryByText('admin.accessDenied.title')).not.toBeInTheDocument()
+
+    await act(async () => {
+      fireEvent.click(retry.closest('button')!)
+    })
+
+    await waitFor(() => {
+      expect(mockBlockchain.isAdmin).toHaveBeenCalledTimes(2)
+    })
   })
 })

@@ -156,8 +156,6 @@ describe('useApi', () => {
         surveyId: 1,
         points: 5,
         title: 'My Survey',
-        adminSignature: 'sig',
-        adminMessage: 'msg',
       })
 
       expect(res).toEqual(data)
@@ -195,29 +193,72 @@ describe('useApi', () => {
   })
 
   describe('reactivateSurvey + revokePoints', () => {
-    it('POST /api/v1/surveys/:id/reactivate with admin headers', async () => {
+    it('POST /api/v1/surveys/:id/reactivate on the session cookie', async () => {
       vi.stubGlobal('fetch', mockFetchSuccess({ txHash: '0xtx' }))
 
       const { result } = renderHook(() => useApi())
-      await result.current.reactivateSurvey(1, 'sig', 'msg')
+      await result.current.reactivateSurvey(1)
 
       const [url, opts] = vi.mocked(fetch).mock.calls[0]
       expect(url).toBe(`${BASE_URL}/api/v1/surveys/1/reactivate`)
       expect(opts?.method).toBe('POST')
-      expect((opts?.headers as Record<string, string>)['x-admin-signature']).toBe('sig')
+      expect(opts?.credentials).toBe('include')
+      expect((opts?.headers as Record<string, string>)['x-admin-signature']).toBeUndefined()
     })
 
-    it('POST /api/v1/surveys/:id/revoke with wallet address in body', async () => {
+    it('POST /api/v1/surveys/:id/revoke with the student address in body', async () => {
       vi.stubGlobal('fetch', mockFetchSuccess({ txHash: '0xtx' }))
 
       const { result } = renderHook(() => useApi())
-      await result.current.revokePoints(1, '0xWallet', 'sig', 'msg')
+      await result.current.revokePoints(1, '0xWallet')
 
       const [url, opts] = vi.mocked(fetch).mock.calls[0]
       expect(url).toBe(`${BASE_URL}/api/v1/surveys/1/revoke`)
       expect(opts?.method).toBe('POST')
       const body = JSON.parse(opts?.body as string)
-      expect(body.walletAddress).toBe('0xWallet')
+      expect(body.student).toBe('0xWallet')
+    })
+  })
+
+  describe('admin session', () => {
+    it('reports no session on 401', async () => {
+      vi.stubGlobal('fetch', mockFetchError('UNAUTHORIZED', 'Admin authentication required', 401))
+
+      const { result } = renderHook(() => useApi())
+
+      await expect(result.current.getAdminSession()).resolves.toBeNull()
+    })
+
+    it('passes other errors on', async () => {
+      vi.stubGlobal('fetch', mockFetchError('INTERNAL_ERROR', 'boom', 500))
+
+      const { result } = renderHook(() => useApi())
+
+      await expect(result.current.getAdminSession()).rejects.toBeInstanceOf(ApiRequestError)
+    })
+
+    it('fetches the sign-in message for an address', async () => {
+      vi.stubGlobal('fetch', mockFetchSuccess({ message: 'sign me' }))
+
+      const { result } = renderHook(() => useApi())
+      const message = await result.current.getLoginChallenge('0xAbC')
+
+      expect(message).toBe('sign me')
+      expect(vi.mocked(fetch).mock.calls[0][0]).toBe(
+        `${BASE_URL}/api/v1/auth/challenge?address=0xAbC`,
+      )
+    })
+
+    it('posts the signed message to log in', async () => {
+      vi.stubGlobal('fetch', mockFetchSuccess({ address: '0xAbC', expiresAt: 1 }))
+
+      const { result } = renderHook(() => useApi())
+      await result.current.adminLogin('sign me', '0xsig')
+
+      const [url, opts] = vi.mocked(fetch).mock.calls[0]
+      expect(url).toBe(`${BASE_URL}/api/v1/auth/login`)
+      expect(opts?.credentials).toBe('include')
+      expect(JSON.parse(opts?.body as string)).toEqual({ message: 'sign me', signature: '0xsig' })
     })
   })
 
@@ -246,7 +287,7 @@ describe('useApi', () => {
       )
 
       const { result } = renderHook(() => useApi())
-      const res = await result.current.downloadTemplate(1, 'sosci', 'sig', 'msg')
+      const res = await result.current.downloadTemplate(1, 'sosci')
 
       expect(res).toEqual(mockBlob)
 
@@ -270,7 +311,7 @@ describe('useApi', () => {
 
       const { result } = renderHook(() => useApi())
 
-      await expect(result.current.downloadTemplate(1, 'sosci', 'sig', 'msg')).rejects.toThrow(
+      await expect(result.current.downloadTemplate(1, 'sosci')).rejects.toThrow(
         'Failed to download template',
       )
     })

@@ -20,9 +20,11 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useApi } from '@/hooks/use-api'
 import { config } from '@/lib/config'
 
-interface SystemStatusProps {
-  adminSignature: string
-  adminMessage: string
+// The implementation the frontend and backend are built for.
+const CURRENT_CONTRACT_MAJOR = 3
+
+function isCurrentContract(version: string): boolean {
+  return parseInt(version.split('.')[0], 10) >= CURRENT_CONTRACT_MAJOR
 }
 
 interface StatusData {
@@ -44,7 +46,7 @@ interface StatusData {
   }
 }
 
-export function SystemStatus({ adminSignature, adminMessage }: SystemStatusProps) {
+export function SystemStatus() {
   const { t } = useTranslation()
   const { getSystemStatus } = useApi()
   const [status, setStatus] = useState<StatusData | null>(null)
@@ -53,11 +55,10 @@ export function SystemStatus({ adminSignature, adminMessage }: SystemStatusProps
   const [error, setError] = useState(false)
 
   const fetchStatus = useCallback(async () => {
-    if (!adminSignature || !adminMessage) return
     setLoading(true)
     setError(false)
     try {
-      const data = await getSystemStatus(adminSignature, adminMessage)
+      const data = await getSystemStatus()
       setStatus(data)
       if (data.lowBalance) {
         setExpanded(true)
@@ -67,7 +68,7 @@ export function SystemStatus({ adminSignature, adminMessage }: SystemStatusProps
     } finally {
       setLoading(false)
     }
-  }, [adminSignature, adminMessage, getSystemStatus])
+  }, [getSystemStatus])
 
   useEffect(() => {
     fetchStatus()
@@ -219,12 +220,12 @@ export function SystemStatus({ adminSignature, adminMessage }: SystemStatusProps
                 label={t('admin.systemStatus.contractVersion')}
                 value={status.blockchain.contractVersion}
                 badge={
-                  status.blockchain.contractVersion.startsWith('2.')
+                  isCurrentContract(status.blockchain.contractVersion)
                     ? t('admin.systemStatus.versionUpToDate')
                     : t('admin.systemStatus.versionLegacy')
                 }
                 badgeColor={
-                  status.blockchain.contractVersion.startsWith('2.') ? 'emerald' : 'amber'
+                  isCurrentContract(status.blockchain.contractVersion) ? 'emerald' : 'amber'
                 }
               />
               <div className="flex items-center gap-3 rounded-md bg-muted/50 p-3">
