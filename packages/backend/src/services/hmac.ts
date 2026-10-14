@@ -82,6 +82,10 @@ export function verifyToken(opts: {
  * triple. Accepts the public origin (e.g. https://vpstunden.hsbi.de)
  * so the same primitive renders both production and dev URLs without
  * embedding any environment lookup.
+ *
+ * The parameters go into the fragment (`/claim#s=…&n=…&t=…`). Browsers
+ * never send the fragment to the server, so unredeemed links do not end
+ * up in the web server's access log.
  */
 export function buildClaimUrl(opts: {
   origin: string
@@ -93,9 +97,7 @@ export function buildClaimUrl(opts: {
   const path = opts.path ?? '/claim'
   const token = issueToken({ surveyId: opts.surveyId, nonce: opts.nonce, key: opts.key })
   const url = new URL(path, opts.origin)
-  url.searchParams.set('s', String(opts.surveyId))
-  url.searchParams.set('n', opts.nonce)
-  url.searchParams.set('t', token)
+  url.hash = new URLSearchParams({ s: String(opts.surveyId), n: opts.nonce, t: token }).toString()
   return url.toString()
 }
 

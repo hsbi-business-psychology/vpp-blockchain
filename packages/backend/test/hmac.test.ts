@@ -78,9 +78,11 @@ describe('hmac.buildClaimUrl', () => {
     const parsed = new URL(url)
     expect(parsed.origin).toBe('https://vpstunden.hsbi.de')
     expect(parsed.pathname).toBe('/claim')
-    expect(parsed.searchParams.get('s')).toBe('42')
-    expect(parsed.searchParams.get('n')).toBe(NONCE)
-    const token = parsed.searchParams.get('t')!
+    const fragment = new URLSearchParams(parsed.hash.slice(1))
+    expect(parsed.search).toBe('')
+    expect(fragment.get('s')).toBe('42')
+    expect(fragment.get('n')).toBe(NONCE)
+    const token = fragment.get('t')!
     expect(verifyToken({ surveyId: 42, nonce: NONCE, key: KEY, token })).toBe(true)
   })
 

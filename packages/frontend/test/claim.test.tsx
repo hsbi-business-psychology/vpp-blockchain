@@ -136,6 +136,26 @@ describe('ClaimPage', () => {
     )
   })
 
+  it('reads the link from the fragment the launcher redirects to', async () => {
+    const user = userEvent.setup()
+    mockWalletReturn.wallet = { address: '0xMyWallet', privateKey: '0xPK', type: 'local' }
+    mockWalletReturn.hasWallet = true
+    mockApiReturn.claimPoints.mockResolvedValue({
+      txHash: '0xTxFragment',
+      points: 0.25,
+      explorerUrl: 'https://explorer.test/tx/0xTxFragment',
+    })
+
+    renderClaim(`#s=7&n=${VALID_NONCE}&t=${VALID_TOKEN}`)
+    await user.click(screen.getByText('common.submit'))
+
+    await waitFor(() => {
+      expect(mockApiReturn.claimPoints).toHaveBeenCalledWith(
+        expect.objectContaining({ surveyId: 7, nonce: VALID_NONCE, token: VALID_TOKEN }),
+      )
+    })
+  })
+
   it('shows ALREADY_CLAIMED error with translated message', async () => {
     const user = userEvent.setup()
     mockWalletReturn.wallet = { address: '0xMyWallet', privateKey: '0xPK', type: 'local' }

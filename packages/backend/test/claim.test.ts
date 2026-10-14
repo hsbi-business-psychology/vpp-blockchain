@@ -461,13 +461,13 @@ describe('GET /api/v1/claim/launch/:surveyId', () => {
     mockKeyStore[42] = TEST_KEY
   })
 
-  it('redirects (302) to /claim?s=&n=&t= for a registered survey', async () => {
+  it('redirects (302) to /claim#s=&n=&t= for a registered survey', async () => {
     const res = await request(app).get('/api/v1/claim/launch/42')
 
     expect(res.status).toBe(302)
     const location = res.headers['location'] as string
     expect(location).toBeDefined()
-    expect(location).toMatch(/\/claim\?s=42&n=[A-Za-z0-9_-]+&t=[A-Za-z0-9_-]+$/)
+    expect(location).toMatch(/\/claim#s=42&n=[A-Za-z0-9_-]+&t=[A-Za-z0-9_-]+$/)
   })
 
   it('produces a token that POST /claim subsequently accepts', async () => {
@@ -491,9 +491,9 @@ describe('GET /api/v1/claim/launch/:surveyId', () => {
     expect(launchRes.status).toBe(302)
 
     const location = launchRes.headers['location'] as string
-    const url = new URL(location, 'http://localhost')
-    const nonce = url.searchParams.get('n')!
-    const token = url.searchParams.get('t')!
+    const fragment = new URLSearchParams(new URL(location, 'http://localhost').hash.slice(1))
+    const nonce = fragment.get('n')!
+    const token = fragment.get('t')!
 
     const { message } = buildClaim(1, nonce)
     const signature = await TEST_WALLET.signMessage(message)

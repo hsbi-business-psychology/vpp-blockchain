@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams, useNavigate } from 'react-router'
+import { useLocation, useSearchParams, useNavigate } from 'react-router'
 import { CheckCircle2, ExternalLink, Loader2, AlertCircle, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -20,14 +20,16 @@ export default function ClaimPage() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const location = useLocation()
   const { wallet, hasWallet, sign } = useWallet()
   const { claimPoints } = useApi()
 
-  // V2 URL params produced by the SoSci/LimeSurvey PHP snippet:
-  //   /claim?s=<surveyId>&n=<nonce>&t=<token>
-  const surveyId = searchParams.get('s')
-  const nonce = searchParams.get('n')
-  const token = searchParams.get('t')
+  // The launcher redirects to /claim#s=<surveyId>&n=<nonce>&t=<token>; the
+  // fragment keeps the token out of server logs. Older links used the query.
+  const fragment = new URLSearchParams(location.hash.slice(1))
+  const surveyId = fragment.get('s') ?? searchParams.get('s')
+  const nonce = fragment.get('n') ?? searchParams.get('n')
+  const token = fragment.get('t') ?? searchParams.get('t')
 
   const [currentStep, setCurrentStep] = useState<ClaimStep>('wallet')
   const [loading, setLoading] = useState(false)
