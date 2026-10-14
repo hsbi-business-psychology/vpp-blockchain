@@ -17,6 +17,7 @@ import {
   getKeyCreatedAt,
   getSurveyKey,
   hasKey,
+  listKeyedSurveyIds,
   rotateKey,
 } from '../src/services/survey-keys.js'
 
@@ -86,6 +87,14 @@ describe('survey-keys store', () => {
     const key = createKey(11)
     __resetForTests()
     expect(getSurveyKey(11)).toBe(key)
+  })
+
+  it('lists the ids of all stored keys in ascending order', () => {
+    createKey(12)
+    createKey(4)
+    const ids = listKeyedSurveyIds()
+    expect(ids).toEqual(expect.arrayContaining([4, 12]))
+    expect(ids).toEqual([...ids].sort((a, b) => a - b))
   })
 
   it('rejects invalid surveyIds', () => {

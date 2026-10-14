@@ -13,6 +13,7 @@ vi.mock('../src/services/survey-keys.js', () => ({
   getSurveyKey: vi.fn((id: number) => mockKeys[id]?.key ?? null),
   getKeyCreatedAt: vi.fn((id: number) => mockKeys[id]?.createdAt ?? null),
   hasKey: vi.fn((id: number) => mockKeys[id] != null),
+  listKeyedSurveyIds: vi.fn(() => Object.keys(mockKeys).map(Number)),
   createKey: vi.fn((id: number) => {
     if (mockKeys[id]) throw new Error('already exists')
     const key = `survey-${id}-key`
@@ -184,6 +185,48 @@ describe('GET /api/v1/surveys', () => {
     expect(res.body.data).toHaveLength(1)
     expect(res.body.data[0].surveyId).toBe(1)
     expect(res.body.data[0].claimCount).toBe(37)
+  })
+
+  it('lists a survey that has a stored key but no event in the cache yet', async () => {
+    vi.mocked(getEventStore()).getSurveyRegisteredEvents.mockReturnValue([])
+    vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
+      points: 1,
+      maxClaims: 0n,
+      claimCount: 0n,
+      active: true,
+      registeredAt: 1791000000n,
+      title: 'Study 21',
+    })
+    mockKeys[21] = { key: 'survey-21-key', createdAt: Date.now() }
+    try {
+      const res = await request(app).get('/api/v1/surveys')
+
+      expect(res.status).toBe(200)
+      expect(res.body.data.map((s: { surveyId: number }) => s.surveyId)).toContain(21)
+    } finally {
+      delete mockKeys[21]
+    }
+  })
+
+  it('skips a stored key whose registration never reached the chain', async () => {
+    vi.mocked(getEventStore()).getSurveyRegisteredEvents.mockReturnValue([])
+    vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
+      points: 0,
+      maxClaims: 0n,
+      claimCount: 0n,
+      active: false,
+      registeredAt: 0n,
+      title: '',
+    })
+    mockKeys[22] = { key: 'survey-22-key', createdAt: Date.now() }
+    try {
+      const res = await request(app).get('/api/v1/surveys')
+
+      expect(res.status).toBe(200)
+      expect(res.body.data.map((s: { surveyId: number }) => s.surveyId)).not.toContain(22)
+    } finally {
+      delete mockKeys[22]
+    }
   })
 
   it('should return empty list when no surveys exist', async () => {

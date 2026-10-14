@@ -14,6 +14,7 @@ vi.mock('../src/services/survey-keys.js', () => ({
   getSurveyKey: vi.fn((id: number) => mockKeyStore[id] ?? null),
   getKeyCreatedAt: vi.fn(() => Date.now()),
   hasKey: vi.fn((id: number) => id in mockKeyStore),
+  listKeyedSurveyIds: vi.fn(() => Object.keys(mockKeyStore).map(Number)),
   createKey: vi.fn((id: number) => {
     if (mockKeyStore[id]) throw new Error('exists')
     mockKeyStore[id] = `test-key-${id}`

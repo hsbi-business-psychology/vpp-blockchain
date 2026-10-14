@@ -126,6 +126,15 @@ export function hasKey(surveyId: number): boolean {
   return getSurveyKey(surveyId) !== null
 }
 
+/** Ids of all surveys with a stored key, i.e. registered through this
+ * backend. Lets the survey list find them without the event cache. */
+export function listKeyedSurveyIds(): number[] {
+  return Object.keys(load().keys)
+    .map(Number)
+    .filter((id) => Number.isInteger(id) && id > 0)
+    .sort((a, b) => a - b)
+}
+
 /**
  * Generates and stores a fresh HMAC key for the given survey. Throws
  * if a key already exists — overwriting an existing key would silently
