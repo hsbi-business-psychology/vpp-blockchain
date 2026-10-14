@@ -186,6 +186,25 @@ describe('POST /api/v1/surveys', () => {
       expect(res.status).toBe(400)
       expect(blockchain.registerSurvey).not.toHaveBeenCalled()
     })
+
+    it('refuses an id whose fractional survey reads as 0 whole points', async () => {
+      vi.mocked(blockchain.supportsFractionalPoints).mockResolvedValue(false)
+      vi.mocked(blockchain.getSurveyInfo).mockResolvedValue({
+        points: 0,
+        maxClaims: 0n,
+        claimCount: 0n,
+        active: true,
+        registeredAt: 1791900000n,
+        title: 'quarter',
+      })
+
+      const res = await registerWith(64, 2)
+
+      expect(res.status).toBe(409)
+      expect(res.body.error).toBe('SURVEY_EXISTS')
+      expect(blockchain.registerSurvey).not.toHaveBeenCalled()
+      expect(mockKeys[64]).toBeUndefined()
+    })
   })
 
   it('should reject a request from a non-admin wallet', async () => {

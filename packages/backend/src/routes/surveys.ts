@@ -90,7 +90,7 @@ router.post('/', requireAdminHandler, async (req, res, next) => {
     }
 
     const existing = await blockchain.getSurveyInfo(surveyId)
-    if (existing.points !== 0) {
+    if (Number(existing.registeredAt) !== 0) {
       throw new AppError(
         409,
         'SURVEY_EXISTS',
