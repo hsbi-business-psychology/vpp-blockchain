@@ -42,6 +42,7 @@ import { throwValidationError } from '../lib/validation.js'
 import { claimLimiter } from '../middleware/rateLimit.js'
 import * as blockchain from '../services/blockchain.js'
 import { getEventStore } from '../services/event-store.js'
+import { syncWithin } from '../lib/sync-within.js'
 import {
   buildClaimUrl,
   isValidNonceShape,
@@ -289,7 +290,7 @@ router.post('/', claimLimiter as RequestHandler, async (req, res, next) => {
     }
 
     const receipt = await blockchain.awardPoints(walletAddress, surveyId)
-    await getEventStore().sync()
+    await syncWithin(getEventStore())
 
     const result: ClaimResult = {
       txHash: receipt.hash,

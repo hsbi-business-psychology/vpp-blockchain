@@ -19,6 +19,7 @@ import { throwValidationError } from '../lib/validation.js'
 import { requireAdminHandler } from '../middleware/auth.js'
 import * as blockchain from '../services/blockchain.js'
 import { getEventStore } from '../services/event-store.js'
+import { syncWithin } from '../lib/sync-within.js'
 import { getAllLabels, setLabel, MAX_LABEL_LENGTH } from '../services/admin-labels.js'
 
 const router: Router = Router()
@@ -62,13 +63,14 @@ router.get('/', requireAdminHandler, async (_req, res, next) => {
     // Plesk/Passenger occasionally pauses the worker between requests,
     // which means the background sync interval might not have fired in
     // a while. Refresh opportunistically:
-    //  - very stale (>5 min): await the sync so the caller sees the
-    //    current list right now (this is the path that fixes the
-    //    "I just added an admin and they don't show up" UX)
+    //  - very stale (>5 min): wait for the sync, at most a few seconds,
+    //    so the caller usually sees the current list right now (this is
+    //    the path that fixes the "I just added an admin and they don't
+    //    show up" UX)
     //  - moderately stale (>30s): kick off a background sync, return
     //    cached data, next request will see the update
     if (store.isStale(300_000)) {
-      await store.sync()
+      await syncWithin(store)
     } else if (store.isStale(30_000)) {
       void store.sync()
     }
@@ -102,7 +104,7 @@ router.post('/add', requireAdminHandler, async (req, res, next) => {
     }
 
     const receipt = await blockchain.addAdmin(parsed.data.address)
-    await getEventStore().sync()
+    await syncWithin(getEventStore())
 
     res.status(201).json({
       success: true,
@@ -147,7 +149,7 @@ router.post('/remove', requireAdminHandler, async (req, res, next) => {
     }
 
     const receipt = await blockchain.removeAdmin(parsed.data.address)
-    await getEventStore().sync()
+    await syncWithin(getEventStore())
 
     res.json({
       success: true,

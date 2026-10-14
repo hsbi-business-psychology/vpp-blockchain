@@ -26,6 +26,7 @@ import { throwValidationError } from '../lib/validation.js'
 import { requireAdminHandler } from '../middleware/auth.js'
 import * as blockchain from '../services/blockchain.js'
 import { getEventStore } from '../services/event-store.js'
+import { syncWithin } from '../lib/sync-within.js'
 import { getSurveysWithCache, invalidateCache } from '../services/survey-cache.js'
 import { generateSoSciTemplate, generateLimeSurveyTemplate } from '../services/template.js'
 import { parsePagination, paginate } from '../lib/pagination.js'
@@ -109,7 +110,7 @@ router.post('/', requireAdminHandler, async (req, res, next) => {
       deleteKey(surveyId)
       throw err
     }
-    await getEventStore().sync()
+    await syncWithin(getEventStore())
 
     invalidateCache()
 
@@ -161,7 +162,7 @@ router.post('/:id/deactivate', requireAdminHandler, async (req, res, next) => {
     }
 
     const receipt = await blockchain.deactivateSurvey(surveyId)
-    await getEventStore().sync()
+    await syncWithin(getEventStore())
     invalidateCache()
 
     res.json({
@@ -190,7 +191,7 @@ router.post('/:id/reactivate', requireAdminHandler, async (req, res, next) => {
     }
 
     const receipt = await blockchain.reactivateSurvey(surveyId)
-    await getEventStore().sync()
+    await syncWithin(getEventStore())
     invalidateCache()
 
     res.json({
@@ -220,7 +221,7 @@ router.post('/:id/revoke', requireAdminHandler, async (req, res, next) => {
     }
 
     const receipt = await blockchain.revokePoints(parsed.data.student, surveyId)
-    await getEventStore().sync()
+    await syncWithin(getEventStore())
     invalidateCache()
 
     res.json({
