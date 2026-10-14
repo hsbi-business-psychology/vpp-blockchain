@@ -35,3 +35,35 @@ jobs:
           done
           echo "::error::$SITE_URL is not ready (last HTTP ${status:-none})"
           exit 1
+
+  minter-balance:
+    name: Minter balance
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      MINTER: ${{ vars.MINTER_ADDRESS || '0x17345F2c11109812F819aEE4c5d3bE7a223d351D' }}
+      # The backend refuses to send below MIN_BALANCE_ETH (0.002 ETH). Warn
+      # at 0.0025 ETH, which still leaves several hundred claims.
+      WARN_WEI: ${{ vars.MINTER_WARN_WEI || '2500000000000000' }}
+    steps:
+      - name: Read the balance from a public Base RPC
+        run: |
+          payload="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_getBalance\",\"params\":[\"$MINTER\",\"latest\"]}"
+          for rpc in https://mainnet.base.org https://base-rpc.publicnode.com https://base.drpc.org; do
+            hex=$(curl -s -m 20 -X POST -H 'content-type: application/json' --data "$payload" "$rpc" \
+              | python3 -c 'import json,sys; print(json.load(sys.stdin)["result"])' 2>/dev/null || true)
+            if [ -n "$hex" ]; then break; fi
+          done
+          if [ -z "$hex" ]; then
+            echo "::warning::No public RPC answered; balance not checked this time."
+            exit 0
+          fi
+          python3 - "$hex" "$WARN_WEI" "$MINTER" <<'EOF'
+          import sys
+          wei, warn, minter = int(sys.argv[1], 16), int(sys.argv[2]), sys.argv[3]
+          print(f"Minter {minter}: {wei / 1e18:.6f} ETH")
+          if wei < warn:
+              print(f"::error::Minter balance {wei / 1e18:.6f} ETH is below {warn / 1e18} ETH. "
+                    f"Claims stop at 0.002 ETH. Send ETH on Base to {minter}.")
+              sys.exit(1)
+          EOF
