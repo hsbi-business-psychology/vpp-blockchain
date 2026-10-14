@@ -87,23 +87,23 @@ pm2 start packages/backend/dist/server.js --name vpp-backend
 
 ### Option C: Plesk (Recommended for HSBI)
 
-Plesk with the Node.js extension runs the backend and serves the frontend from the same domain. A GitHub Actions workflow deploys automatically on every push to `main`.
+Plesk with the Node.js extension (Phusion Passenger) runs the backend and serves the frontend from the same domain. A GitHub Actions workflow deploys after CI has passed on `main`.
 
 #### Initial Setup (one-time)
 
 1. Log in to your Plesk panel (e.g., `https://hosting.hsbi.de:8443/`)
 2. Go to your domain → **Node.js**
 3. Configure:
-   - **Node.js-Version**: 21+ (or highest available)
-   - **Package Manager**: npm
-   - **Application root**: `/httpdocs`
+   - **Node.js-Version**: 20 or newer
+   - **Application root**: `/httpdocs/packages/backend`
+   - **Document root**: `/httpdocs/packages/backend/public`
    - **Application startup file**: `app.js`
    - **Application mode**: production
-4. Set **environment variables** in the Plesk Node.js panel (see `.env.production.example`):
+4. Set **environment variables** in the Plesk Node.js panel (see `.env.production.example`). Do not set `PORT`; Passenger assigns it.
    - `NODE_ENV` = `production`
-   - `PORT` = `3000`
    - `RPC_URL` = your Base RPC endpoint
    - `CONTRACT_ADDRESS` = your deployed contract
+   - `CONTRACT_DEPLOY_BLOCK` = block of the contract deployment
    - `MINTER_PRIVATE_KEY` = your backend wallet key
    - `EXPLORER_BASE_URL` = `https://basescan.org`
    - `FRONTEND_URL` = `https://vpstunden.hsbi.de`
@@ -114,38 +114,46 @@ Plesk with the Node.js extension runs the backend and serves the frontend from t
      distinguish students.
    - `EXPECTED_CHAIN_ID` = `8453` (Base Mainnet) or `84532` (Sepolia) —
      fail-fast guard against an `RPC_URL` that points at the wrong chain.
-5. Click **Enable Node.js** and then **NPM Install**
+5. Click **Enable Node.js**. No **NPM install** is needed: the deployed backend is a single bundled file without dependencies.
+
+#### What gets deployed
+
+`scripts/build-deploy-ci.sh` assembles `deploy/` in the layout of `/httpdocs`: the backend bundled into `packages/backend/dist/server.mjs` (esbuild, no `node_modules`), the frontend in `packages/backend/public/` without source maps, the contract ABI, a CommonJS `app.js` launcher for Passenger and `.deploy-manifest.json` with a hash of every file. About 40 files in total.
+
+`scripts/deploy-ftp.sh` then uploads only files whose hash differs from the manifest on the server, in this order: assets, backend, Passenger restart (`tmp/restart.txt`), `index.html`, manifest. Files dropped from a build are deleted one deploy later, so browsers that still hold the previous `index.html` can load its chunks. Finally it waits until `/api/v1/health/live` reports the new build and checks that `index.html` loads its entry chunk. `packages/backend/data/` is never part of the upload and is never deleted.
 
 #### GitHub Actions Deployment
 
-The repository includes a `.github/workflows/deploy.yml` workflow that:
-
-1. Builds contracts, backend, and frontend
-2. Assembles everything into a deploy folder
-3. Uploads via FTP to the Plesk server
+`.github/workflows/deploy.yml` runs when the CI workflow succeeds for a push to `main`. Deploys queue instead of cancelling each other. A typical code change uploads a handful of files and takes two to three minutes including the build.
 
 Set these **GitHub Secrets** (Repository → Settings → Secrets and variables → Actions):
 
-| Secret                       | Value                          |
-| ---------------------------- | ------------------------------ |
-| `FTP_USERNAME`               | Your Plesk FTP username        |
-| `FTP_PASSWORD`               | Your Plesk FTP password        |
-| `VITE_RPC_URL`               | `https://mainnet.base.org`     |
-| `VITE_CONTRACT_ADDRESS`      | Your deployed contract address |
-| `VITE_CONTRACT_DEPLOY_BLOCK` | Block number at deployment     |
-| `VITE_EXPLORER_URL`          | `https://basescan.org`         |
+| Secret         | Value                   |
+| -------------- | ----------------------- |
+| `FTP_USERNAME` | Your Plesk FTP username |
+| `FTP_PASSWORD` | Your Plesk FTP password |
 
-The workflow runs on every push to `main` and can also be triggered manually via the Actions tab.
+The frontend settings (`VITE_*`) come from the committed `packages/frontend/.env.production`; they are public anyway because they end up in the browser bundle. `VITE_RPC_URL` may list several RPCs separated by commas.
+
+To deploy a specific commit or tag, for example as a rollback:
+
+```bash
+gh workflow run deploy.yml -f ref=<sha-or-tag>
+```
 
 #### Manual Deployment
 
-```bash
-# Build everything into deploy/ folder
-bash scripts/build-deploy.sh
+From a laptop with `lftp` installed (FTP on port 21 is reachable from outside the HSBI network):
 
-# Upload deploy/ contents to /httpdocs/ via FTP or Plesk File Manager
-# Then restart the Node.js app in the Plesk panel
+```bash
+# Build and show what would be uploaded
+FTP_USERNAME=... FTP_PASSWORD=... DRY_RUN=1 bash scripts/build-deploy.sh
+
+# Build and upload
+FTP_USERNAME=... FTP_PASSWORD=... bash scripts/build-deploy.sh
 ```
+
+Never mirror `deploy/` with `--delete`: it would remove `packages/backend/data/`, which holds the survey HMAC keys.
 
 ## 3. Deploy the Frontend
 

@@ -147,36 +147,21 @@ cd <repo>
 git checkout main
 git pull
 
-# Manueller Deploy via GHA (force_full=true für saubere Komplettbasis):
-gh workflow run deploy.yml --ref main -f force_full=true
+# Manueller Deploy via GHA:
+gh workflow run deploy.yml -f ref=main
 
 # Watch:
 gh run watch
 ```
 
-ODER manuell aus lokalem Build:
+ODER manuell aus lokalem Build (lftp nötig, FTP ist auch von außerhalb der HSBI erreichbar):
 
 ```bash
-# Lokal bauen:
 pnpm install --frozen-lockfile
-pnpm contracts:build
-pnpm contracts:export-abi
-pnpm backend:build
-pnpm frontend:build
-
-# Deploy-Bundle erstellen:
-bash scripts/build-deploy-ci.sh
-
-# Manuelle FTP-Upload (wenn GHA nicht geht):
-# Siehe deploy.yml für lftp-Commands. Kurz:
-lftp -u <FTP_USER>,<FTP_PASS> -e "
-  set ftp:ssl-allow yes; set ftp:ssl-force yes;
-  set ssl:verify-certificate no;  # NUR im Notfall
-  mirror --reverse --delete deploy/ /httpdocs/;
-  put /dev/null -o /httpdocs/packages/backend/tmp/restart.txt;
-  quit;
-" "$HOSTING_PANEL_HOST"
+FTP_USERNAME=<FTP_USER> FTP_PASSWORD=<FTP_PASS> bash scripts/build-deploy.sh
 ```
+
+Das Skript baut, lädt nur geänderte Dateien hoch und prüft danach `/api/v1/health/live`. Niemals `mirror --delete` auf `/httpdocs/` ausführen: `packages/backend/data/` (Umfrage-Schlüssel) liegt nicht im Deploy-Ordner und würde gelöscht.
 
 Verifikation:
 

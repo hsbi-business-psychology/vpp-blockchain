@@ -53,7 +53,7 @@ Notiere den SHA des letzten erfolgreichen Deploys (= Rollback-Ziel).
 
 | Methode                                                 | Wann nutzen                                      | Vor-/Nachteile                                     |
 | ------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------------- |
-| **A: Re-Deploy aus altem Commit**                       | Standard-Fall                                    | Sauber, deterministisch. ~10 min.                  |
+| **A: Re-Deploy aus altem Commit**                       | Standard-Fall                                    | Sauber, deterministisch. ~3 min.                   |
 | **B: Git Revert + Push**                                | Wenn der kaputte Commit klar identifizierbar ist | Trail im Git-History bleibt sauber. ~15 min.       |
 | **C: Manueller Plesk-Disable + warten auf Forward-Fix** | Wenn beide Optionen oben nicht funktionieren     | Service down, aber wenigstens nicht crash-loopend. |
 
@@ -68,10 +68,10 @@ git fetch
 git checkout last-known-good   # oder: git checkout <SHA>
 
 # GHA-Deploy von diesem Commit triggern:
-gh workflow run deploy.yml --ref <SHA-or-tag-name> -f force_full=true
+gh workflow run deploy.yml -f ref=<SHA-or-tag-name>
 ```
 
-**Wichtig:** `--ref` zeigt auf den Commit, nicht auf `main`. GHA deployed dann den älteren Stand.
+**Wichtig:** `ref` zeigt auf den Commit, nicht auf `main`. Der Workflow kommt aus `main`, gebaut und hochgeladen wird der ältere Stand. Hochgeladen werden nur Dateien, die sich vom Server-Manifest unterscheiden.
 
 **Watch:**
 
