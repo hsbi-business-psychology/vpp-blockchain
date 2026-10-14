@@ -114,6 +114,7 @@
       "title": "MetaMask",
       "tag": "Sicherer",
       "short": "Für die MetaMask-Erweiterung im Browser am Computer.",
+      "installButton": "MetaMask installieren",
       "description": "MetaMask ist eine Browser-Erweiterung, die deinen Private Key verschlüsselt verwaltet. Du behältst dein Wallet auch nach dem Löschen des Browserverlaufs.",
       "button": "MetaMask verbinden",
       "notInstalled": "MetaMask nicht installiert",

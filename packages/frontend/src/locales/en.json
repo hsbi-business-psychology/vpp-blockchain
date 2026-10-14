@@ -114,6 +114,7 @@
       "title": "MetaMask",
       "tag": "More secure",
       "short": "For the MetaMask browser extension on a computer.",
+      "installButton": "Install MetaMask",
       "description": "MetaMask is a browser extension that manages your private key securely with encryption. Your wallet persists even after clearing browser data.",
       "button": "Connect MetaMask",
       "notInstalled": "MetaMask not installed",

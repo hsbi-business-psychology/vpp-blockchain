@@ -80,10 +80,20 @@ export function WalletSetup({
               </Button>
             ) : (
               <div className="space-y-1.5">
-                <Button variant="outline" disabled size="sm" className="opacity-50 md:w-full">
+                <Button
+                  variant="outline"
+                  disabled
+                  size="sm"
+                  className="hidden opacity-50 md:inline-flex md:w-full"
+                >
                   {t('wallet.metamask.notInstalled')}
                 </Button>
-                <p className="max-w-[13.5rem] text-center text-xs text-muted-foreground md:max-w-none">
+                <Button variant="outline" size="sm" asChild className="md:hidden">
+                  <a href="https://metamask.io/download/" target="_blank" rel="noopener noreferrer">
+                    {t('wallet.metamask.installButton')}
+                  </a>
+                </Button>
+                <p className="hidden text-center text-xs text-muted-foreground md:block">
                   {t('wallet.metamask.installHint')}{' '}
                   <a
                     href="https://metamask.io"
