@@ -536,7 +536,7 @@ export async function getPointsAwardedEvents(walletAddress: string): Promise<Poi
 
   const results: PointsAwardedEvent[] = []
   for (const event of events) {
-    if (!('args' in event)) continue
+    if (!(event instanceof ethers.EventLog)) continue
     const block = await event.getBlock()
     results.push({
       wallet: event.args[0],
@@ -574,7 +574,7 @@ export async function getSurveyRegisteredEvents(): Promise<SurveyRegisteredEvent
 
   const results: SurveyRegisteredEvent[] = []
   for (const event of events) {
-    if (!('args' in event)) continue
+    if (!(event instanceof ethers.EventLog)) continue
     const block = await event.getBlock()
     results.push({
       surveyId: Number(event.args[0]),
