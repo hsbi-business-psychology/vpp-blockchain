@@ -15,10 +15,18 @@ try {
   // localStorage may be unavailable (privacy mode); ignore.
 }
 
-initI18n().then(() => {
-  createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-      <App />
-    </StrictMode>,
-  )
-})
+// No rendering inside a frame: a framing page could trick a student into
+// revealing the wallet phrase. The /points, /claim and /admin responses
+// also send frame-ancestors, but "/" comes straight from nginx.
+if (window.top !== window.self) {
+  document.getElementById('root')!.textContent =
+    'Bitte öffne vpstunden.hsbi.de direkt im Browser. / Please open vpstunden.hsbi.de directly.'
+} else {
+  initI18n().then(() => {
+    createRoot(document.getElementById('root')!).render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    )
+  })
+}
