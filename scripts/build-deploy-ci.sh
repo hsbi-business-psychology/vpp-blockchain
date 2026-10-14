@@ -12,7 +12,7 @@
 #   deploy/packages/backend/package.json
 #   deploy/packages/backend/dist/server.mjs       bundled backend
 #   deploy/packages/backend/public/               frontend, without source maps
-#   deploy/packages/contracts/artifacts/…/SurveyPointsV2.json   ABI
+#   deploy/packages/contracts/artifacts/…/SurveyPointsV3.json   ABI
 #
 # Never touches packages/backend/data/ on the server: it is not part of
 # deploy/ and the uploader only writes files that are.
@@ -21,7 +21,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DEPLOY="$ROOT/deploy"
 BACKEND="$DEPLOY/packages/backend"
-ABI_DIR="packages/contracts/artifacts/contracts/SurveyPointsV2.sol"
+ABI_DIR="packages/contracts/artifacts/contracts/SurveyPointsV3.sol"
 
 rm -rf "$DEPLOY"
 mkdir -p "$BACKEND/dist" "$DEPLOY/$ABI_DIR"
@@ -29,7 +29,7 @@ mkdir -p "$BACKEND/dist" "$DEPLOY/$ABI_DIR"
 cp "$ROOT/packages/backend/dist/bundle/server.mjs" "$BACKEND/dist/server.mjs"
 cp -R "$ROOT/packages/frontend/dist" "$BACKEND/public"
 find "$BACKEND/public" -name '*.map' -delete
-cp "$ROOT/$ABI_DIR/SurveyPointsV2.json" "$DEPLOY/$ABI_DIR/SurveyPointsV2.json"
+cp "$ROOT/$ABI_DIR/SurveyPointsV3.json" "$DEPLOY/$ABI_DIR/SurveyPointsV3.json"
 
 cat > "$BACKEND/app.js" << 'APPJS'
 // Phusion Passenger entry point. Passenger loads CommonJS, the bundle is ESM.
