@@ -40,7 +40,7 @@ export default function PointsPage() {
     remove,
   } = useWallet()
   const { isWalletSubmitted: checkSubmitted } = useBlockchain()
-  const { getPointsData } = useApi()
+  const { getPointsData, getSurveys } = useApi()
   const navigate = useNavigate()
   const location = useLocation()
   // Set by the claim page when a student without a wallet comes from a claim
@@ -83,8 +83,13 @@ export default function PointsPage() {
     setDataError(false)
     setDataLoading(true)
 
+    // Titles are a nice-to-have; the history works without them.
+    const titles = getSurveys()
+      .then((surveys) => new Map(surveys.map((s) => [s.surveyId, s.title])))
+      .catch(() => new Map<number, string>())
+
     Promise.all([
-      getPointsData(wallet.address).then((data) => {
+      Promise.all([getPointsData(wallet.address), titles]).then(([data, titleById]) => {
         setTotalPoints(data.totalPoints)
         setHistory(
           data.surveys.map((s) => ({
@@ -92,6 +97,8 @@ export default function PointsPage() {
             points: s.points,
             txHash: s.txHash,
             blockNumber: 0,
+            title: titleById.get(s.surveyId) || undefined,
+            claimedAt: s.claimedAt,
           })),
         )
       }),
@@ -101,7 +108,7 @@ export default function PointsPage() {
     ])
       .catch(() => setDataError(true))
       .finally(() => setDataLoading(false))
-  }, [wallet?.address, getPointsData, checkSubmitted])
+  }, [wallet?.address, getPointsData, getSurveys, checkSubmitted])
 
   // ── Wallet actions ─────────────────────────────────────────────────────
   function handleCreateConfirm() {

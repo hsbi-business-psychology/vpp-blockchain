@@ -106,12 +106,14 @@
     "browser": {
       "title": "Browser-Wallet",
       "tag": "Einfachste Option",
+      "short": "Wird hier im Browser angelegt. Die einfachste Wahl, auch auf dem Handy.",
       "description": "Dein Wallet wird direkt hier im Browser erstellt und gespeichert. Du musst nichts installieren – ein Klick genügt. Ideal, wenn du zum ersten Mal mit Wallets arbeitest.",
       "button": "Wallet erstellen"
     },
     "metamask": {
       "title": "MetaMask",
       "tag": "Sicherer",
+      "short": "Für die MetaMask-Erweiterung im Browser am Computer.",
       "description": "MetaMask ist eine Browser-Erweiterung, die deinen Private Key verschlüsselt verwaltet. Du behältst dein Wallet auch nach dem Löschen des Browserverlaufs.",
       "button": "MetaMask verbinden",
       "notInstalled": "MetaMask nicht installiert",
@@ -151,7 +153,8 @@
     "import": {
       "title": "Wallet importieren",
       "tag": "Wiederherstellen",
-      "description": "Du hast bereits einen Private Key? Importiere ihn, um den Zugriff auf einem neuen Gerät wiederherzustellen.",
+      "short": "Mit deinen 12 Wörtern auf einem neuen Gerät.",
+      "description": "Du hast schon eine Wallet? Stelle sie mit deinen 12 Wörtern (oder dem Private Key) auf diesem Gerät wieder her.",
       "placeholder": "Private Key eingeben (0x...)",
       "button": "Importieren",
       "error": "Das Private-Key-Format ist ung\u00fcltig. Der Key muss 64 Hex-Zeichen lang sein (mit oder ohne 0x-Pr\u00e4fix).",
@@ -176,9 +179,9 @@
     },
     "delete": {
       "title": "Wallet löschen",
-      "description": "Das Wallet wird unwiderruflich aus deinem Browser entfernt. Deine Punkte bleiben auf der Blockchain, sind aber ohne den Private Key nicht mehr zugreifbar.",
-      "confirm": "Hast du deinen Private Key gesichert?",
-      "confirmDescription": "Ohne den Private Key kannst du nicht mehr auf deine Punkte zugreifen. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "description": "Das Wallet wird unwiderruflich aus deinem Browser entfernt. Deine Punkte bleiben auf der Blockchain, sind aber ohne deine 12 Wörter nicht mehr zugreifbar.",
+      "confirm": "Hast du deine 12 Wörter gesichert?",
+      "confirmDescription": "Ohne deine 12 Wörter kannst du nicht mehr auf deine Punkte zugreifen. Diese Aktion kann nicht rückgängig gemacht werden.",
       "button": "Wallet löschen",
       "confirmButton": "Ja, Wallet endgültig löschen",
       "success": "Wallet gelöscht"
@@ -186,7 +189,7 @@
     "reset": {
       "title": "Wallet wechseln",
       "description": "Ersetze dein aktuelles Wallet durch ein importiertes. Dein bisheriges Wallet wird dabei entfernt.",
-      "warning": "Sichere vorher unbedingt deinen Private Key!"
+      "warning": "Sichere vorher unbedingt deine 12 Wörter!"
     },
     "mnemonic": {
       "help": {
@@ -491,7 +494,7 @@
         "description": "Die Abgabe-Markierung wird von diesem Wallet entfernt. Es kann dann erneut zur Zulassung vorgelegt werden.",
         "button": "Markierung aufheben"
       },
-      "infoTip": "Wenn Studierende genügend Punkte gesammelt haben, zeigen sie ihren Public Key dem Prüfer. Dieser prüft den Punktestand und markiert das Wallet als abgegeben, damit es nicht erneut verwendet werden kann.",
+      "infoTip": "Wenn Studierende genügend Punkte gesammelt haben, zeigen sie ihre Wallet-Adresse (beginnt mit 0x) dem Prüfer. Dieser prüft den Punktestand und markiert das Wallet als abgegeben, damit es nicht erneut verwendet werden kann.",
       "infoLabel": "Informationen zur Abgabeverwaltung"
     },
     "roles": {

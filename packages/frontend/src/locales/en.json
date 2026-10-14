@@ -106,12 +106,14 @@
     "browser": {
       "title": "Browser Wallet",
       "tag": "Easiest option",
+      "short": "Created right here in your browser. The easiest choice, also on a phone.",
       "description": "Your wallet is created and stored directly in your browser. No installation needed — one click is all it takes. Ideal if this is your first time using wallets.",
       "button": "Create Wallet"
     },
     "metamask": {
       "title": "MetaMask",
       "tag": "More secure",
+      "short": "For the MetaMask browser extension on a computer.",
       "description": "MetaMask is a browser extension that manages your private key securely with encryption. Your wallet persists even after clearing browser data.",
       "button": "Connect MetaMask",
       "notInstalled": "MetaMask not installed",
@@ -151,7 +153,8 @@
     "import": {
       "title": "Import Wallet",
       "tag": "Restore access",
-      "description": "Already have a private key? Import it to restore access on a new device.",
+      "short": "With your 12 words on a new device.",
+      "description": "Already have a wallet? Restore it on this device with your 12 words (or the private key).",
       "placeholder": "Enter your private key (0x...)",
       "button": "Import",
       "error": "Invalid private key format. The key must be 64 hex characters (with or without 0x prefix).",
@@ -176,9 +179,9 @@
     },
     "delete": {
       "title": "Delete Wallet",
-      "description": "The wallet will be permanently removed from your browser. Your points remain on the blockchain but will no longer be accessible without the private key.",
-      "confirm": "Did you back up your private key?",
-      "confirmDescription": "Without the private key you can no longer access your points. This action cannot be undone.",
+      "description": "The wallet will be permanently removed from your browser. Your points remain on the blockchain but will no longer be accessible without your 12 words.",
+      "confirm": "Did you back up your 12 words?",
+      "confirmDescription": "Without your 12 words you can no longer access your points. This action cannot be undone.",
       "button": "Delete Wallet",
       "confirmButton": "Yes, permanently delete wallet",
       "success": "Wallet deleted"
@@ -186,7 +189,7 @@
     "reset": {
       "title": "Switch Wallet",
       "description": "Replace your current wallet with an imported one. Your current wallet will be removed.",
-      "warning": "Make sure to back up your private key first!"
+      "warning": "Make sure to back up your 12 words first!"
     },
     "mnemonic": {
       "help": {
@@ -491,7 +494,7 @@
         "description": "The submission mark will be removed from this wallet. It can then be presented for admission again.",
         "button": "Remove mark"
       },
-      "infoTip": "When students have collected enough points, they show their public key to the examiner. The examiner checks the balance and marks the wallet as \"submitted\" so it cannot be reused.",
+      "infoTip": "When students have collected enough points, they show their wallet address (starting with 0x) to the examiner. The examiner checks the balance and marks the wallet as \"submitted\" so it cannot be reused.",
       "infoLabel": "Information about submission management"
     },
     "roles": {

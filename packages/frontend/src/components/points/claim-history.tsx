@@ -19,6 +19,17 @@ export interface ClaimEntry {
   points: number
   txHash: string
   blockNumber: number
+  title?: string
+  claimedAt?: string
+}
+
+function formatDate(iso: string | undefined, locale: string): string {
+  if (!iso) return ''
+  return new Date(iso).toLocaleDateString(locale, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
 }
 
 interface ClaimHistoryProps {
@@ -52,6 +63,7 @@ export function ClaimHistory({ history, dataLoading }: ClaimHistoryProps) {
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t('points.table.surveyId')}</TableHead>
+                    <TableHead>{t('points.table.date')}</TableHead>
                     <TableHead className="text-right">{t('points.table.points')}</TableHead>
                     <TableHead>{t('points.table.tx')}</TableHead>
                   </TableRow>
@@ -59,7 +71,15 @@ export function ClaimHistory({ history, dataLoading }: ClaimHistoryProps) {
                 <TableBody>
                   {history.map((entry) => (
                     <TableRow key={entry.txHash}>
-                      <TableCell className="font-medium">#{entry.surveyId}</TableCell>
+                      <TableCell>
+                        <span className="font-medium">#{entry.surveyId}</span>
+                        {entry.title && (
+                          <span className="ml-2 text-muted-foreground">{entry.title}</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-muted-foreground">
+                        {formatDate(entry.claimedAt, i18n.language)}
+                      </TableCell>
                       <TableCell className="text-right font-semibold">
                         {formatPoints(entry.points, i18n.language)}
                       </TableCell>
@@ -89,8 +109,18 @@ export function ClaimHistory({ history, dataLoading }: ClaimHistoryProps) {
                   key={entry.txHash}
                   className="flex items-center justify-between rounded-lg border border-border p-3"
                 >
-                  <div>
-                    <p className="text-sm font-medium">#{entry.surveyId}</p>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">
+                      #{entry.surveyId}
+                      {entry.title && (
+                        <span className="font-normal text-muted-foreground"> {entry.title}</span>
+                      )}
+                    </p>
+                    {entry.claimedAt && (
+                      <p className="text-xs text-muted-foreground">
+                        {formatDate(entry.claimedAt, i18n.language)}
+                      </p>
+                    )}
                     <a
                       href={getTxUrl(entry.txHash)}
                       target="_blank"

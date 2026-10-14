@@ -34,6 +34,9 @@ export function WalletSetup({
               <Badge variant="secondary" className="mt-0.5 text-[10px]">
                 {t('wallet.browser.tag')}
               </Badge>
+              <p className="mt-1 text-xs text-muted-foreground md:hidden">
+                {t('wallet.browser.short')}
+              </p>
             </div>
           </div>
           <p className="hidden flex-1 text-sm leading-relaxed text-muted-foreground md:block">
@@ -61,6 +64,9 @@ export function WalletSetup({
               >
                 {t('wallet.metamask.tag')}
               </Badge>
+              <p className="mt-1 text-xs text-muted-foreground md:hidden">
+                {t('wallet.metamask.short')}
+              </p>
             </div>
           </div>
           <p className="hidden flex-1 text-sm leading-relaxed text-muted-foreground md:block">
@@ -77,7 +83,7 @@ export function WalletSetup({
                 <Button variant="outline" disabled size="sm" className="opacity-50 md:w-full">
                   {t('wallet.metamask.notInstalled')}
                 </Button>
-                <p className="hidden text-center text-xs text-muted-foreground md:block">
+                <p className="text-center text-xs text-muted-foreground">
                   {t('wallet.metamask.installHint')}{' '}
                   <a
                     href="https://metamask.io"
@@ -104,6 +110,9 @@ export function WalletSetup({
               <Badge variant="secondary" className="mt-0.5 text-[10px]">
                 {t('wallet.import.tag')}
               </Badge>
+              <p className="mt-1 text-xs text-muted-foreground md:hidden">
+                {t('wallet.import.short')}
+              </p>
             </div>
           </div>
           <p className="hidden flex-1 text-sm leading-relaxed text-muted-foreground md:block">
