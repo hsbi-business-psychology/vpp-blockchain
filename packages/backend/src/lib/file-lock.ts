@@ -6,7 +6,8 @@
  * a read-modify-write must hold a lock that every process can see. An
  * exclusive-create (`wx`) lock file is atomic on POSIX filesystems.
  */
-import { closeSync, openSync, statSync, unlinkSync } from 'node:fs'
+import { randomBytes } from 'node:crypto'
+import { closeSync, fstatSync, linkSync, openSync, renameSync, statSync, unlinkSync } from 'node:fs'
 
 /** A holder that crashed leaves its lock behind; older locks are broken. */
 const STALE_LOCK_MS = 10_000
@@ -19,11 +20,43 @@ function sleepSync(ms: number): void {
   Atomics.wait(sleepCell, 0, 0, ms)
 }
 
-function isStale(lockPath: string): boolean {
+/**
+ * Removes the lock if it is still the stale file that was looked at. Two
+ * processes may judge the same lock stale; the rename lets only one take
+ * it, and whoever moved a lock that turned out to be fresh puts it back.
+ */
+function breakIfStale(lockPath: string): void {
+  let seen: ReturnType<typeof statSync>
   try {
-    return Date.now() - statSync(lockPath).mtimeMs > STALE_LOCK_MS
+    seen = statSync(lockPath)
   } catch {
-    return false
+    return
+  }
+  if (Date.now() - seen.mtimeMs <= STALE_LOCK_MS) return
+  const grave = `${lockPath}.${process.pid}.${randomBytes(4).toString('hex')}`
+  try {
+    renameSync(lockPath, grave)
+  } catch {
+    return
+  }
+  if (statSync(grave).ino !== seen.ino) {
+    try {
+      linkSync(grave, lockPath)
+    } catch {
+      // A newer lock already sits there; ours was the one to give back.
+    }
+  }
+  unlinkSync(grave)
+}
+
+/** Unlinks the lock only while it is still the file this process created. */
+function release(lockPath: string, fd: number): void {
+  try {
+    if (statSync(lockPath).ino === fstatSync(fd).ino) unlinkSync(lockPath)
+  } catch {
+    // Already gone.
+  } finally {
+    closeSync(fd)
   }
 }
 
@@ -41,14 +74,7 @@ export function withFileLock<T>(path: string, fn: () => T): T {
       fd = openSync(lockPath, 'wx', 0o600)
     } catch (err) {
       if ((err as NodeJS.ErrnoException).code !== 'EEXIST') throw err
-      if (isStale(lockPath)) {
-        try {
-          unlinkSync(lockPath)
-        } catch {
-          // Another process removed it first.
-        }
-        continue
-      }
+      breakIfStale(lockPath)
       if (Date.now() > deadline) {
         throw new Error(`Timed out waiting for ${lockPath}`, { cause: err })
       }
@@ -58,12 +84,7 @@ export function withFileLock<T>(path: string, fn: () => T): T {
   try {
     return fn()
   } finally {
-    closeSync(fd)
-    try {
-      unlinkSync(lockPath)
-    } catch {
-      // Broken as stale by another process; nothing left to clean up.
-    }
+    release(lockPath, fd)
   }
 }
 
