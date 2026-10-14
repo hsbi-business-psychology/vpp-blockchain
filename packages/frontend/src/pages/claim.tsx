@@ -21,7 +21,7 @@ export default function ClaimPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const location = useLocation()
-  const { wallet, hasWallet, sign } = useWallet()
+  const { wallet, hasWallet, loading: walletLoading, sign } = useWallet()
   const { claimPoints } = useApi()
 
   // The launcher redirects to /claim#s=<surveyId>&n=<nonce>&t=<token>; the
@@ -53,6 +53,13 @@ export default function ClaimPage() {
       </div>
     )
   }
+
+  // The points page opens the matching dialog and comes back here once the
+  // wallet exists.
+  const goToWalletSetup = (open: 'create' | 'import') =>
+    navigate('/points', {
+      state: { returnTo: `${location.pathname}${location.search}${location.hash}`, open },
+    })
 
   const handleSign = async () => {
     setLoading(true)
@@ -157,7 +164,15 @@ export default function ClaimPage() {
       </div>
 
       {/* Step content */}
-      {currentStep === 'wallet' && !hasWallet && (
+      {currentStep === 'wallet' && walletLoading && (
+        <Card>
+          <CardContent className="flex justify-center py-8">
+            <Loader2 className="size-6 animate-spin text-muted-foreground" aria-hidden="true" />
+          </CardContent>
+        </Card>
+      )}
+
+      {currentStep === 'wallet' && !walletLoading && !hasWallet && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -166,16 +181,12 @@ export default function ClaimPage() {
             </CardTitle>
             <CardDescription>{t('claim.noWallet')}</CardDescription>
           </CardHeader>
-          <CardContent>
-            <Button
-              onClick={() =>
-                navigate('/points', {
-                  state: { returnTo: `${location.pathname}${location.search}${location.hash}` },
-                })
-              }
-              className="w-full"
-            >
+          <CardContent className="flex flex-col gap-2">
+            <Button onClick={() => goToWalletSetup('create')} className="w-full">
               {t('claim.createFirst')}
+            </Button>
+            <Button variant="outline" onClick={() => goToWalletSetup('import')} className="w-full">
+              {t('claim.restoreWallet')}
             </Button>
           </CardContent>
         </Card>

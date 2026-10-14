@@ -116,6 +116,44 @@ describe('ClaimPage', () => {
     expect(await screen.findByText(`returnTo=${link}`)).toBeInTheDocument()
   })
 
+  it('offers to restore an existing wallet with the 12 words', async () => {
+    const user = userEvent.setup()
+    function PointsProbe() {
+      const location = useLocation()
+      const state = location.state as { returnTo?: string; open?: string } | null
+      return (
+        <div>
+          open={state?.open} returnTo={state?.returnTo}
+        </div>
+      )
+    }
+    const link = `/claim#s=7&n=${VALID_NONCE}&t=${VALID_TOKEN}`
+
+    render(
+      <MemoryRouter initialEntries={[link]}>
+        <React.Suspense fallback={<div>Loading...</div>}>
+          <Routes>
+            <Route path="/claim" element={<ClaimPage />} />
+            <Route path="/points" element={<PointsProbe />} />
+          </Routes>
+        </React.Suspense>
+      </MemoryRouter>,
+    )
+    await user.click(screen.getByText('claim.restoreWallet'))
+
+    expect(await screen.findByText(`open=import returnTo=${link}`)).toBeInTheDocument()
+  })
+
+  it('does not ask for a wallet while the stored one is still loading', () => {
+    mockWalletReturn.loading = true
+
+    renderClaim()
+
+    expect(screen.queryByText('claim.createFirst')).not.toBeInTheDocument()
+    expect(screen.queryByText('claim.restoreWallet')).not.toBeInTheDocument()
+    mockWalletReturn.loading = false
+  })
+
   it('shows sign step when wallet exists', () => {
     mockWalletReturn.wallet = { address: '0xMyWallet', privateKey: '0xPK', type: 'local' }
     mockWalletReturn.hasWallet = true

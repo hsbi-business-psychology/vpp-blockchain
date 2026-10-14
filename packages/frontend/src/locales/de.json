@@ -267,8 +267,9 @@
       "completed": "Abgeschlossen",
       "currentStep": "Schritt {{step}} von {{total}}: {{name}}"
     },
-    "noWallet": "Du brauchst ein Wallet, um Punkte einzulösen.",
-    "createFirst": "Zuerst Wallet erstellen",
+    "noWallet": "In diesem Browser ist noch keine Wallet. Hast du schon eine angelegt, zum Beispiel in einem anderen Browser oder einer anderen App? Dann stelle sie mit deinen 12 Wörtern wieder her, damit alle Punkte in einer Wallet landen.",
+    "createFirst": "Neue Wallet anlegen",
+    "restoreWallet": "Mit 12 Wörtern wiederherstellen",
     "signing": "Nachricht wird signiert...",
     "submitting": "Claim wird eingereicht...",
     "surveyLabel": "Umfrage",

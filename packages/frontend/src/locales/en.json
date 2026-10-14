@@ -267,8 +267,9 @@
       "completed": "Completed",
       "currentStep": "Step {{step}} of {{total}}: {{name}}"
     },
-    "noWallet": "You need a wallet to claim points.",
-    "createFirst": "Create Wallet First",
+    "noWallet": "There is no wallet in this browser yet. Did you create one already, for example in another browser or app? Then restore it with your 12 words so all your points end up in one wallet.",
+    "createFirst": "Create a new wallet",
+    "restoreWallet": "Restore with 12 words",
     "signing": "Signing message...",
     "submitting": "Submitting claim...",
     "surveyLabel": "Survey",

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router'
 import { ArrowRight } from 'lucide-react'
@@ -48,6 +48,8 @@ export default function PointsPage() {
   const returnTo = (location.state as { returnTo?: unknown } | null)?.returnTo
   const claimReturn =
     typeof returnTo === 'string' && returnTo.startsWith('/claim') ? returnTo : null
+  const openOnArrival = (location.state as { open?: unknown } | null)?.open
+  const openedOnArrival = useRef(false)
 
   // The wallet only exists once its backup was verified, so going back to
   // the claim here never cuts the backup short.
@@ -73,6 +75,14 @@ export default function PointsPage() {
   const [pendingWallet, setPendingWallet] = useState<WalletData | null>(null)
   const [verifyIndices, setVerifyIndices] = useState<number[] | null>(null)
   const [creationStep, setCreationStep] = useState<'idle' | 'reveal' | 'verify'>('idle')
+
+  // Coming from a claim without a wallet: open the dialog the student chose.
+  useEffect(() => {
+    if (walletLoading || hasWallet || openedOnArrival.current) return
+    if (openOnArrival === 'create') setShowCreateDialog(true)
+    if (openOnArrival === 'import') setShowImportDialog(true)
+    openedOnArrival.current = true
+  }, [walletLoading, hasWallet, openOnArrival])
 
   // ── Data fetching ──────────────────────────────────────────────────────
   useEffect(() => {
