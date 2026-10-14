@@ -5,7 +5,7 @@
  *
  *   GET  /challenge?address=0x…  – Sign-In-with-Ethereum message to sign.
  *   POST /login                  – { message, signature } → session cookie.
- *   GET  /session                – current session, 401 without one.
+ *   GET  /session                – current session, null without one.
  *   POST /logout                 – clears the cookie.
  */
 import { Router } from 'express'
@@ -13,7 +13,7 @@ import { z } from 'zod'
 import { ethers } from 'ethers'
 import { AppError } from '../middleware/errorHandler.js'
 import { throwValidationError } from '../lib/validation.js'
-import { originAllowed, requireAdminHandler } from '../middleware/auth.js'
+import { originAllowed } from '../middleware/auth.js'
 import * as blockchain from '../services/blockchain.js'
 import {
   clearedSessionCookie,
@@ -68,13 +68,16 @@ router.post('/login', async (req, res, next) => {
   }
 })
 
-router.get('/session', requireAdminHandler, (req, res) => {
-  const session = readSession(readSessionCookie(req.headers.cookie))
-  if (!session) {
-    res.status(401).json({ success: false, error: 'NO_SESSION', message: 'Not signed in.' })
-    return
+// Answers null rather than 401 without a session: every admin page load
+// asks, and "not signed in yet" is the normal case, not an error.
+router.get('/session', async (req, res, next) => {
+  try {
+    const session = readSession(readSessionCookie(req.headers.cookie))
+    const active = session && (await blockchain.isAdmin(session.address)) ? session : null
+    res.json({ success: true, data: active })
+  } catch (err) {
+    next(err)
   }
-  res.json({ success: true, data: session })
 })
 
 router.post('/logout', (req, res) => {

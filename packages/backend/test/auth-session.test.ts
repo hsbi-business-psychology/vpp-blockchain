@@ -139,6 +139,13 @@ describe('admin sign-in', () => {
 })
 
 describe('admin session cookie', () => {
+  it('answers null without a session instead of an error', async () => {
+    const res = await request(app).get('/api/v1/auth/session')
+
+    expect(res.status).toBe(200)
+    expect(res.body.data).toBeNull()
+  })
+
   it('reports the session', async () => {
     const cookie = cookieOf(await login())
 
@@ -180,7 +187,8 @@ describe('admin session cookie', () => {
 
     const res = await request(app).get('/api/v1/auth/session').set('Cookie', forged)
 
-    expect(res.status).toBe(401)
+    expect(res.status).toBe(200)
+    expect(res.body.data).toBeNull()
   })
 
   it('stops working once the admin role is revoked', async () => {
@@ -190,7 +198,7 @@ describe('admin session cookie', () => {
 
     const res = await request(app).get('/api/v1/auth/session').set('Cookie', cookie)
 
-    expect(res.status).toBe(403)
+    expect(res.body.data).toBeNull()
   })
 
   it('ends when the secret file is replaced', async () => {
@@ -199,7 +207,7 @@ describe('admin session cookie', () => {
 
     const res = await request(app).get('/api/v1/auth/session').set('Cookie', cookie)
 
-    expect(res.status).toBe(401)
+    expect(res.body.data).toBeNull()
   })
 
   it('treats a cookie with odd characters as no session', async () => {
@@ -207,7 +215,8 @@ describe('admin session cookie', () => {
       .get('/api/v1/auth/session')
       .set('Cookie', `vpp_admin=${ADMIN.address.toLowerCase()}.9999999999.${'ä'.repeat(64)}`)
 
-    expect(res.status).toBe(401)
+    expect(res.status).toBe(200)
+    expect(res.body.data).toBeNull()
   })
 
   it('refuses a logout from another site', async () => {
