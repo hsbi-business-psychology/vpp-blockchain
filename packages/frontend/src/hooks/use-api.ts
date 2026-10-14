@@ -14,6 +14,7 @@
  *   - deactivateSurvey  → POST /api/v1/surveys/:id/deactivate
  *   - reactivateSurvey  → POST /api/v1/surveys/:id/reactivate
  *   - revokePoints      → POST /api/v1/surveys/:id/revoke
+ *   - awardPointsManually → POST /api/v1/surveys/:id/award   (action signature)
  *   - addAdmin          → POST /api/v1/admin/add
  *   - removeAdmin       → POST /api/v1/admin/remove
  *   - getSystemStatus   → GET  /api/v1/status
@@ -191,6 +192,21 @@ export function useApi() {
     [],
   )
 
+  const awardPointsManually = useCallback(
+    async (
+      surveyId: number,
+      student: string,
+      adminSignature: string,
+      adminMessage: string,
+    ): Promise<{ student: string; points: number; txHash: string; explorerUrl: string }> => {
+      return apiFetch(`/api/v1/surveys/${surveyId}/award`, {
+        method: 'POST',
+        body: JSON.stringify({ student, adminSignature, adminMessage }),
+      })
+    },
+    [],
+  )
+
   const getWalletSubmissionStatus = useCallback(
     async (
       address: string,
@@ -308,6 +324,7 @@ export function useApi() {
     deactivateSurvey,
     reactivateSurvey,
     revokePoints,
+    awardPointsManually,
     getWalletSubmissionStatus,
     markWalletSubmitted,
     unmarkWalletSubmitted,

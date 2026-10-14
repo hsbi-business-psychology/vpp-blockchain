@@ -8,6 +8,7 @@ import { MetricsCards } from '@/components/admin/metrics-cards'
 import { SurveyTable } from '@/components/admin/survey-table'
 import { RegisterSurveyDialog } from '@/components/admin/register-survey-dialog'
 import { RoleManagement } from '@/components/admin/role-management'
+import { AwardPoints } from '@/components/admin/award-points'
 import { SubmissionManagement } from '@/components/admin/submission-management'
 import { SystemStatus } from '@/components/admin/system-status'
 import { AdminAuthGate } from '@/components/admin/admin-auth-gate'
@@ -390,6 +391,14 @@ export default function AdminPage() {
             />
           )}
         </CollapsibleCard>
+        {wallet && (
+          <AwardPoints
+            surveys={surveys}
+            walletAddress={wallet.address}
+            sign={sign}
+            onAwarded={fetchSurveys}
+          />
+        )}
         <SubmissionManagement onSessionExpired={handleSessionExpired} />
         {wallet && (
           <RoleManagement
