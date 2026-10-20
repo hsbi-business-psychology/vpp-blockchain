@@ -68,7 +68,6 @@ export function createApp(): Express {
       },
     },
   })
-  // @ts-expect-error -- helmet v8 returns a type incompatible with Express 4 RequestHandler
   app.use(helmetMiddleware)
   app.use(cors({ origin: config.frontendUrl, methods: ['GET', 'POST', 'PUT'], credentials: true }))
   app.use(express.json())
