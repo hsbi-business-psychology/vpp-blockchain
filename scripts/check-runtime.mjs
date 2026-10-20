@@ -1,8 +1,8 @@
 /**
  * Reject Node and pnpm versions that break Hardhat.
  *
- * Hardhat 2.28 runs on Node 24. pnpm 10 and later skip Hardhat's install
- * scripts, so this repo stays on pnpm 9.15.4.
+ * Node 22.14+, 24, 25 and 26 can run Hardhat here. pnpm 10 and later skip
+ * Hardhat's install scripts, so this repo stays on pnpm 9.15.4.
  *
  * Run automatically before `pnpm install`. `bootstrap.mjs` imports the
  * checks and does not exit from this file.
@@ -16,13 +16,14 @@ const PNPM_VERSION = '9.15.4'
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 
 export function nodeSupportError(version = process.versions.node) {
-  const major = Number(version.split('.')[0])
-  if (major === 24) return null
+  const [major, minor] = version.split('.').map((part) => Number(part))
+  const supported = (major === 22 && minor >= 14) || major === 24 || major === 25 || major === 26
+  if (supported) return null
 
   return [
     `Node.js ${version} cannot run this project.`,
     'Install Node.js 24 LTS from https://nodejs.org/ (the button labelled LTS).',
-    'Do not install the button labelled Current.',
+    'If node -v already prints v22.14 or newer, v24, v25, or v26, do not install another Node.js.',
     'Close the terminal and open it again after installing.',
   ].join('\n')
 }

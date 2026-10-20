@@ -45,8 +45,10 @@ VPP replaces that with a tiny smart contract on Base L2:
 
 ## Run it locally
 
-Install [Git](https://git-scm.com/downloads) and [Node.js 24 LTS](https://nodejs.org/)
-(the button labelled LTS, not Current). Open a new terminal:
+Install [Git](https://git-scm.com/downloads). In a terminal, run `node -v`.
+If that command is not found, or the version is not v22.14 or later on the
+22 line, and not v24, v25, or v26, install [Node.js 24 LTS](https://nodejs.org/)
+(the button labelled LTS) and open a new terminal. Then:
 
 ```bash
 git clone https://github.com/hsbi-business-psychology/vpp-blockchain.git
@@ -85,7 +87,7 @@ threat model, and key-management design.
 
 ## Tech stack
 
-Solidity 0.8.24 · Hardhat · OpenZeppelin UUPS · ethers v6 · Node 24 · Express ·
+Solidity 0.8.24 · Hardhat · OpenZeppelin UUPS · ethers v6 · Node 22.14+ through 26 · Express ·
 React 19 · Vite 6 · Tailwind v4 · shadcn/ui · i18next · Vitest · Hardhat-Chai.
 
 Runs on Base mainnet for production, Base Sepolia for staging, and a local

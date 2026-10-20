@@ -25,7 +25,7 @@ This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.
    git clone https://github.com/YOUR_USERNAME/vpp-blockchain.git
    cd vpp-blockchain
    ```
-3. **Install dependencies** (Node.js 24 LTS, not Current):
+3. **Install dependencies** (Node.js 22.14+, 24, 25, or 26):
    ```bash
    node scripts/bootstrap.mjs
    ```
@@ -43,7 +43,7 @@ This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.
 
 ### Prerequisites
 
-- Node.js 24 LTS (see `.nvmrc`; not the Current release)
+- Node.js v22.14+, v24, v25, or v26 (CI uses 24, see `.nvmrc`)
 - pnpm 9.15.4, installed by `node scripts/bootstrap.mjs`
 
 ### Running Tests

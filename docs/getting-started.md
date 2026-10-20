@@ -4,10 +4,10 @@ This guide walks you through setting up the VPP Blockchain development environme
 
 ## Prerequisites
 
-| Tool    | Version    | Install                                                                                       |
-| ------- | ---------- | --------------------------------------------------------------------------------------------- |
-| Git     | any recent | [git-scm.com](https://git-scm.com/downloads). On Windows, choose “Git from the command line”. |
-| Node.js | 24 LTS     | [nodejs.org](https://nodejs.org/), the button labelled **LTS**. Not the Current button.       |
+| Tool    | Version               | Install                                                                                             |
+| ------- | --------------------- | --------------------------------------------------------------------------------------------------- |
+| Git     | any recent            | [git-scm.com](https://git-scm.com/downloads). On Windows, choose “Git from the command line”.       |
+| Node.js | 22.14+, 24, 25, or 26 | [nodejs.org](https://nodejs.org/), the **LTS** button, if `node -v` is missing or outside that set. |
 
 The Dockerfile only builds the API for a server. It is not used to run the
 test system.
@@ -20,7 +20,10 @@ git --version
 node --version
 ```
 
-`node --version` has to start with `v24`.
+`node -v` may print v22.14 or later on the 22 line, or v24, v25, or v26.
+Any of those can run the two commands below. You do not run `npm install`
+yourself. Node.js includes npm, and the bootstrap script uses it once to
+install pnpm 9.15.4.
 
 ## Installation
 
