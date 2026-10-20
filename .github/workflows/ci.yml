@@ -207,3 +207,22 @@ jobs:
 
       - name: Run Lighthouse CI
         run: npx @lhci/cli autorun
+
+  ci:
+    name: CI
+    if: always()
+    needs: [secret-scan, lint, contracts, backend, frontend, lighthouse]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require the other jobs to pass
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          node --input-type=module -e '
+            const needs = JSON.parse(process.env.NEEDS)
+            const bad = Object.entries(needs).filter(([, job]) => job.result !== "success" && job.result !== "skipped")
+            if (bad.length) {
+              console.error(bad.map(([name, job]) => name + ": " + job.result).join("\n"))
+              process.exit(1)
+            }
+          '
