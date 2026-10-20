@@ -1,5 +1,8 @@
+# Optional image of the API only. The local test system does not use Docker.
+# On a new computer: install Git and Node.js 24 LTS, clone, then
+# `node scripts/bootstrap.mjs` and `node scripts/dev.mjs`.
 # Stage 1: Build
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
@@ -7,6 +10,7 @@ WORKDIR /app
 
 # Copy workspace root files
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY scripts/check-runtime.mjs scripts/check-runtime.mjs
 COPY packages/backend/package.json packages/backend/
 COPY packages/contracts/package.json packages/contracts/
 
@@ -19,13 +23,14 @@ COPY packages/backend/ packages/backend/
 RUN pnpm --filter @vpp/backend build
 
 # Stage 2: Runtime
-FROM node:20-alpine
+FROM node:24-alpine
 
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
 WORKDIR /app
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY scripts/check-runtime.mjs scripts/check-runtime.mjs
 COPY packages/backend/package.json packages/backend/
 COPY packages/contracts/package.json packages/contracts/
 

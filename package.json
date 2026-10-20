@@ -14,8 +14,8 @@
   },
   "homepage": "https://vpstunden.hsbi.de",
   "engines": {
-    "node": ">=20.0.0",
-    "pnpm": ">=9.0.0"
+    "node": ">=24 <25",
+    "pnpm": ">=9.15.4 <10"
   },
   "packageManager": "pnpm@9.15.4",
   "scripts": {
@@ -27,11 +27,13 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "clean": "pnpm -r run clean",
-    "dev": "bash scripts/dev.sh",
+    "bootstrap": "node scripts/bootstrap.mjs",
+    "dev": "node scripts/dev.mjs",
     "dev:node": "pnpm --filter @vpp/contracts node",
-    "dev:deploy": "pnpm --filter @vpp/contracts deploy:dev",
-    "dev:backend": "cp -n packages/backend/.env.development packages/backend/.env 2>/dev/null; pnpm --filter @vpp/backend dev",
+    "dev:deploy": "pnpm --filter @vpp/contracts deploy:dev:v2",
+    "dev:backend": "node scripts/dev.mjs --prepare-backend-env && pnpm --filter @vpp/backend dev",
     "dev:frontend": "pnpm --filter @vpp/frontend dev",
+    "preinstall": "node scripts/check-runtime.mjs",
     "prepare": "husky"
   },
   "lint-staged": {
