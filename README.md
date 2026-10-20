@@ -43,17 +43,22 @@ VPP replaces that with a tiny smart contract on Base L2:
 - **Frictionless.** Participants don't need crypto, gas, MetaMask, or even an
   account — a wallet is created in their browser the first time they claim.
 
-## See it in 30 seconds
+## Run it locally
+
+Install [Git](https://git-scm.com/downloads) and [Node.js 24 LTS](https://nodejs.org/)
+(the button labelled LTS, not Current). Open a new terminal:
 
 ```bash
 git clone https://github.com/hsbi-business-psychology/vpp-blockchain.git
-cd vpp-blockchain && pnpm install
-pnpm dev
+cd vpp-blockchain
+node scripts/bootstrap.mjs
+node scripts/dev.mjs
 ```
 
-`pnpm dev` boots a local blockchain, deploys the contract, seeds three test
-surveys, and starts the API and frontend. Open <http://localhost:5173>, claim
-the printed test link, and watch the points land on-chain in your browser.
+Open <http://localhost:5173>. That starts a local chain, deploys the current
+contract, registers five test surveys, and serves the API and the website.
+Editing a file and opening a pull request is covered in
+[Getting started](docs/getting-started.md).
 
 ## How it works
 
@@ -71,7 +76,7 @@ Three components, all in this monorepo:
 
 | Package                                    | Role                                                                |
 | ------------------------------------------ | ------------------------------------------------------------------- |
-| [`packages/contracts`](packages/contracts) | `SurveyPointsV2.sol` — UUPS-upgradeable, role-gated points ledger.  |
+| [`packages/contracts`](packages/contracts) | `SurveyPointsV3.sol`, UUPS-upgradeable, role-gated points ledger.   |
 | [`packages/backend`](packages/backend)     | Stateless relayer. Validates HMAC claim tokens, signs the L2 tx.    |
 | [`packages/frontend`](packages/frontend)   | React app. In-browser wallet, MetaMask support, lecturer dashboard. |
 
@@ -80,7 +85,7 @@ threat model, and key-management design.
 
 ## Tech stack
 
-Solidity 0.8.24 · Hardhat · OpenZeppelin UUPS · ethers v6 · Node 20 · Express ·
+Solidity 0.8.24 · Hardhat · OpenZeppelin UUPS · ethers v6 · Node 24 · Express ·
 React 19 · Vite 6 · Tailwind v4 · shadcn/ui · i18next · Vitest · Hardhat-Chai.
 
 Runs on Base mainnet for production, Base Sepolia for staging, and a local

@@ -4,18 +4,37 @@ This guide walks you through setting up the VPP Blockchain development environme
 
 ## Prerequisites
 
-| Tool    | Version    | Install                                                      |
-| ------- | ---------- | ------------------------------------------------------------ |
-| Node.js | >= 20      | [nodejs.org](https://nodejs.org/) or `nvm install`           |
-| pnpm    | >= 9       | `corepack enable && corepack prepare pnpm@latest --activate` |
-| Git     | any recent | [git-scm.com](https://git-scm.com/)                          |
+| Tool    | Version    | Install                                                                                       |
+| ------- | ---------- | --------------------------------------------------------------------------------------------- |
+| Git     | any recent | [git-scm.com](https://git-scm.com/downloads). On Windows, choose “Git from the command line”. |
+| Node.js | 24 LTS     | [nodejs.org](https://nodejs.org/), the button labelled **LTS**. Not the Current button.       |
+
+The Dockerfile only builds the API for a server. It is not used to run the
+test system.
+
+After installing Git and Node.js, close the terminal and open a new one.
+Check the versions:
+
+```bash
+git --version
+node --version
+```
+
+`node --version` has to start with `v24`.
 
 ## Installation
 
 ```bash
 git clone https://github.com/hsbi-business-psychology/vpp-blockchain.git
 cd vpp-blockchain
-pnpm install
+node scripts/bootstrap.mjs
+```
+
+Bootstrap installs pnpm 9.15.4 and the project dependencies. Run it once
+per clone, then start the test system in the same terminal:
+
+```bash
+node scripts/dev.mjs
 ```
 
 ## Project Layout
@@ -49,11 +68,8 @@ pnpm --filter @vpp/contracts run compile
 # Run contract tests with gas report
 REPORT_GAS=true pnpm --filter @vpp/contracts test
 
-# Start a local Hardhat node
-pnpm --filter @vpp/contracts run node
-
-# Deploy to the local node
-pnpm --filter @vpp/contracts run deploy:local
+# Local chain, contract, API and website
+node scripts/dev.mjs
 
 # Deploy to Base Sepolia testnet (requires .env)
 cp packages/contracts/.env.example packages/contracts/.env
@@ -121,34 +137,58 @@ pnpm --filter @vpp/frontend preview
 
 The dev server proxies `/api` requests to `http://localhost:3000` automatically.
 
-## Full Local Stack (with Test Data)
-
-The easiest way to run the complete system locally with pre-seeded test data:
+## Full local stack (with test data)
 
 ```bash
-# Terminal 1 — Start local blockchain
-pnpm dev:node
-
-# Terminal 2 — Deploy contract + seed 3 surveys + 15 student points
-pnpm dev:deploy
-
-# Terminal 3 — Start backend (auto-copies .env.development → .env)
-pnpm dev:backend
-
-# Terminal 4 — Start frontend (uses .env.development automatically)
-pnpm dev:frontend
+node scripts/dev.mjs
 ```
 
-Open [http://localhost:5173](http://localhost:5173) and import one of the test wallets:
+This starts Hardhat, deploys SurveyPointsV3 at
+`0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512`, registers five test surveys,
+and starts the API and the website. Open
+[http://localhost:5173](http://localhost:5173). Stop it with Ctrl+C.
 
-| Role                 | Private Key                                                          |
-| -------------------- | -------------------------------------------------------------------- |
-| **Admin**            | `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80` |
-| **Student** (15 pts) | `0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d` |
+The keys below are Hardhat's published defaults. They control nothing
+outside this local chain:
+
+| Role                | Private Key                                                          |
+| ------------------- | -------------------------------------------------------------------- |
+| **Admin**           | `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80` |
+| **Student** (7 pts) | `0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d` |
 
 Admin access is verified **on-chain** — only wallets with `ADMIN_ROLE` on the smart contract can access the Lecturers' Area. Admins can grant/revoke `ADMIN_ROLE` for other wallets directly from the dashboard.
 
-See the main [README](../README.md#local-development-with-test-data) for detailed testing instructions.
+## Change a text and open a pull request
+
+Any editor works, including Notepad++. Leave `node scripts/dev.mjs` running.
+Saving a file under `packages/frontend` reloads the website.
+
+1. Create a branch:
+
+   ```bash
+   git checkout -b docs/my-change
+   ```
+
+2. Edit a visible string, for example `home.hero.title` in
+   `packages/frontend/src/locales/de.json` (the large heading on the start
+   page). Save the file and look at http://localhost:5173.
+3. Commit. The message has to look like the examples in
+   [CONTRIBUTING.md](../CONTRIBUTING.md). The hook rejects other messages.
+
+   ```bash
+   git add packages/frontend/src/locales/de.json
+   git commit -m "docs(frontend): change the German start-page heading"
+   ```
+
+4. Push the branch and open a pull request on GitHub:
+
+   ```bash
+   git push -u origin HEAD
+   ```
+
+   GitHub prints a link to open the pull request. You need a GitHub account
+   and write access to this repository, or your own fork. Merging is a
+   separate step and is done by a maintainer after the checks pass.
 
 ## Linting & Formatting
 
